@@ -1,0 +1,72 @@
+# Business logic
+
+What Wasla does and the rules it follows. If code and this file disagree, ask before changing either one.
+
+## Users and what they can see
+
+| Role | Uses | Can see / do |
+|---|---|---|
+| Patient | Mobile app | Only their own appointments, queue position, journey, released results and visit summaries |
+| Receptionist | Website | Appointments, check-in and queue for their assigned clinics. **No medical details** |
+| Doctor | Website | Their own patients' visits: notes, test orders, results, releasing results |
+| Lab / radiology | Website | Tests ordered for their department; uploads results |
+| Admin | Website | Staff, departments, clinics, statistics, the AI chatbot. **No medical records** |
+
+- Every request checks both the role **and** whether the record belongs to that user. Someone else's record returns "not found", so its existence isn't leaked.
+- Important actions (logins, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
+
+## Accounts
+- Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.
+- Patients are identified by an internal ID, **not** a National ID.
+- Staff accounts are created by an admin. Deactivating a staff member logs them out immediately.
+
+## Booking
+- Patients browse departments → doctors → free slots, then book one.
+- A slot can only ever have one active booking. Two people booking at the same moment: one succeeds, the other is told the slot was taken.
+- Patients can cancel (the slot opens again) or move an appointment to another free slot.
+- Staff create, block and cancel a doctor's slots. Patients affected by a staff cancellation are told why.
+
+## A visit, step by step
+
+Appointment status flow:
+
+```
+BOOKED → CHECKED_IN → IN_CONSULTATION → COMPLETED
+BOOKED → CANCELLED
+CHECKED_IN → NO_SHOW   (receptionist, with a reason)
+```
+
+Only these moves are allowed. For example, a visit can't be completed before it has started.
+
+- **Check-in:** the receptionist checks the patient in. They join their clinic's queue.
+- **Queue:** the doctor calls the next patient. The patient sees how many people are ahead and an estimated wait. The estimate is always labelled as an estimate.
+- **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data, in Arabic and English.
+
+## Tests and results
+- A doctor orders a test during a visit. It goes to the lab or radiology department.
+- Test status: `REQUESTED → IN_PROGRESS → AWAITING_REVIEW → RELEASED`
+- The lab uploads a PDF or image (max 10 MB). Files are stored privately and are never public links.
+- **The patient only sees a result after the doctor releases it.** Before that they see "waiting for review", with no content.
+
+## Visit notes
+- Doctors write and edit notes for a visit. Every edit keeps the previous version.
+- The patient sees a summary once the visit is completed.
+
+## AI features
+The AI is a helper, never a decision-maker, and the rest of the system must work with the AI turned off.
+
+- **Admin chatbot:** answers only from the approved hospital-information knowledge base, and always shows its sources. It says "I don't have that information" rather than guessing. It refuses medical questions and requests for patient data.
+- **Symptom checker:** suggests a department. Urgent symptoms are caught by a fixed list first and the patient is told to get help now, without asking the AI. If the AI is unsure, it says so.
+- **Result explanations:** the AI drafts a plain-language explanation. A doctor must approve it before the patient sees it. Every number and unit must match the original result.
+- **Wait-time estimate:** uses a learned model only if it beats the simple estimate (people ahead × average visit length) by at least 10%. Otherwise it uses the simple estimate.
+- Nothing that identifies a patient (name, phone, ID) is ever sent to the AI.
+
+## Always
+- Arabic and English everywhere, right-to-left layout for Arabic.
+- Times are stored in UTC and shown in Africa/Cairo time.
+- Only fake data. Never real patient data: not in seeds, tests, prompts or logs.
+- The core system keeps working when the AI service is down.
+- Every new endpoint checks both the role and the record owner.
+
+## Out of scope
+Caregivers managing dependents, reassigning appointments when a doctor is away, queue order overrides, urgent result flags, prescription templates, internal referrals, service approvals, recurring follow-ups, push notifications and reminders, an audit log viewer.

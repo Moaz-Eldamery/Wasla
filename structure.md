@@ -1,0 +1,170 @@
+# Codebase structure
+
+The architecture, the stack, and where everything lives. This layout is fixed: code goes where this file says, and nowhere else.
+
+## Changing the structure
+- **Don't create, rename, move or delete a directory without asking the user first.** This includes directories that scaffolding tools (Nest, Expo, Vite) would create.
+- Every folder in the layout below already exists.
+- No `.gitkeep` files. Folders are kept in git by their `README.md` (see "Folder READMEs" below).
+- A folder that isn't listed here doesn't get created unless the user agrees. Then this file is updated in the same change.
+- Scaffolding tools must not wipe or rearrange the existing folders. If a generator refuses to run in a non-empty folder, generate in a temporary folder and copy the files in.
+- Prefer a file over a folder. A folder is only worth it when it will hold several files.
+
+## Architecture
+
+```
+patient-app / hospital-dashboard
+        │ HTTPS
+   gateway (Traefik) ── forward-auth on every request ──► auth service
+        │
+        ▼
+   core service ──► ai service
+        │
+   Postgres (wasla_clinical: auth + core schemas · wasla_ai) · Redis · MinIO
+```
+
+- **Gateway:** Traefik. Routing, TLS, per-IP rate limits, body size limit, forward-auth. Configured with labels in `docker-compose.yml`; no folder, no code.
+- **Auth service (the Auth Layer):** NestJS + TypeScript. Login, OTP (simulated SMS), sessions in Redis, the forward-auth check, per-user rate limits.
+- **Core service:** NestJS + TypeScript, modular monolith (six modules), Socket.IO for live updates, BullMQ on Redis for async work, transactional outbox.
+- **AI service:** Python FastAPI, Claude API. Reachable only from the core, never from the internet.
+- **Database:** PostgreSQL 16 + pgvector, Prisma. One clinical database with `auth` and `core` schemas, plus a separate `wasla_ai` database. Each service has its own DB user (see `schema.md`).
+- **Mobile app:** React Native + Expo (expo-router), i18next.
+- **Website:** React + Vite, MUI, TanStack Query, i18next.
+- **Tooling:** pnpm monorepo, Docker Compose, GitHub Actions.
+
+The core and AI services trust the user ID and roles the gateway attaches, so they must only be reachable on the internal Docker network. The auth check covers "logged in, active, right role". The core still checks "is this record theirs".
+
+## Layout
+
+All folders below exist. Files marked **planned** don't exist yet; the card in brackets writes them.
+
+```
+/
+├── CLAUDE.md                    how the agent works in this repo
+├── business.md                  business logic and rules
+├── schema.md                    databases, schemas, tables
+├── structure.md                 this file
+├── changelog.md                 every change, newest first
+├── prompt_log.md                every prompt, newest first
+├── README.md
+├── package.json                 pnpm workspace root
+├── pnpm-workspace.yaml          which folders are JS/TS workspaces
+├── .gitignore
+├── docker-compose.yml           whole stack, incl. Traefik labels          planned (KAN-5)
+├── .env.example                 every env variable, with fake values       planned (KAN-5)
+├── .github/workflows/           CI (location required by GitHub)           ci.yml planned (KAN-5)
+│
+├── contracts/                   the agreed API, read by every app + service
+│   ├── openapi.yaml             every endpoint: request, response, errors  planned (KAN-4)
+│   └── events.md                live-update messages and internal events   planned (KAN-4)
+│
+├── database/                    everything about the database
+│   ├── init.sh                  runs once on first Postgres start: databases,
+│   │                            schemas, DB users                          planned (KAN-5)
+│   ├── clinical/                schema.prisma + migrations/ for wasla_clinical (auth + core)
+│   └── ai/                      schema + migrations for wasla_ai
+│
+├── apps/                        the frontends. They talk ONLY to the gateway
+│   ├── patient-app/             Expo                                       scaffolded in KAN-5
+│   │   ├── app/(auth)/          screens before login: sign-up, code, login
+│   │   ├── app/(tabs)/          screens after login: book, queue, journey, results, profile
+│   │   ├── lib/                 api.ts, socket.ts, api-types.ts: the ONLY backend calls
+│   │   └── translations/        ar.json, en.json
+│   └── hospital-dashboard/      Vite + React                               scaffolded in KAN-5
+│       └── src/
+│           ├── pages/           one folder per role: receptionist/ physician/ lab/ admin/
+│           ├── lib/             api.ts, socket.ts, api-types.ts: the ONLY backend calls
+│           └── translations/    ar.json, en.json
+│
+└── services/                    the backend: each one runs as its own program
+    ├── auth/                    the Auth Layer (NestJS)                    scaffolded in KAN-5
+    │   └── src/
+    │       ├── authentication/  login, OTP + simulated SMS, sessions, logout,
+    │       │                    recovery, lockout, rate limits
+    │       ├── authorization/   the check Traefik calls on every request
+    │       └── identity/        registration, profiles, staff accounts
+    ├── core/                    the Core Backend (NestJS)                  scaffolded in KAN-5
+    │   └── src/
+    │       ├── modules/         appointments/  queue-checkin/  clinical-care/
+    │       │                    patient-journey/  notifications/  admin-reporting/
+    │       ├── realtime/        Socket.IO; only listens to events
+    │       ├── events/          outbox + publishing events
+    │       └── shared/          code several modules use (audit, record-access checks,
+    │                            file storage, AI client), as files, not sub-folders
+    └── ai/                      the AI subsystem (Python FastAPI)          scaffolded in KAN-5
+        ├── app/
+        │   ├── admin_chatbot/
+        │   ├── patient_assistant/       symptom checker
+        │   ├── result_explanation/
+        │   ├── queue_time_estimator/
+        │   ├── llm.py                   Claude client                      planned
+        │   ├── privacy.py               strips names and IDs before
+        │   │                            anything reaches the LLM           planned
+        │   └── main.py                  FastAPI app                        planned (KAN-5)
+        ├── tests/
+        └── pyproject.toml                                                  planned (KAN-5)
+```
+
+Redis, MinIO (result files) and monitoring (Uptime Kuma) have no folder: they are entries in `docker-compose.yml`.
+
+## Folder READMEs
+Each folder we write code in has a `README.md` that says what the folder is for, its rules, and what each file in it does.
+
+- **Which folders have one:** every lowest-level folder in the layout above, plus `database/` and the root of each app and service (`apps/patient-app`, `apps/hospital-dashboard`, `services/auth`, `services/core`, `services/ai`). Pure grouping folders (`apps/`, `services/`, `src/`, `modules/`, `pages/`, `app/`, `.github/`) don't need one: this file explains them.
+- **What a README covers:** its own folder, plus any sub-folder without its own README. For example, `services/core/README.md` also lists `main.ts` and `app.module.ts` in `services/core/src/`.
+- **What it doesn't cover:** framework-generated folders (`node_modules/`, `dist/`, `test/`, `assets/`, `public/`, `migrations/`) get one line in their parent's README, not their own.
+- **Format:**
+
+```
+# <Folder name>
+
+<What the folder is for, in one or two sentences.>
+
+**Rule:** <only if the folder has one, e.g. "the only files that call the backend">
+
+## Files
+
+- `file-name.ts`: what it does, in one line.
+```
+
+## Inside each app and service: framework defaults
+Only the folders above are ours. Everything else follows the framework's standard layout, as its generator creates it: Nest CLI for `auth` and `core`, Expo for the patient app, Vite for the dashboard, FastAPI conventions for `ai`.
+- **Inside a NestJS module or area folder:** the Nest defaults (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/`). Unit tests sit next to the code as `*.spec.ts`; end-to-end tests go in the service's `test/` folder.
+- **Frontends:** shared UI pieces go in a `components/` folder once the first one is written, after asking. Tests sit next to the code as `*.test.tsx`.
+- **AI service:** tests go in `services/ai/tests/`.
+
+## Naming
+- Folders: lowercase with dashes (`queue-checkin`). Python folders and files use underscores (`admin_chatbot`).
+- TypeScript files: Nest naming (`appointments.service.ts`). React components: PascalCase (`BookingCard.tsx`).
+
+## Rules for where code goes
+- Frontends call the backend **only** through their `lib/` files, always via the gateway.
+- Core modules use each other only through their public service (IAppointments, IQueue, IClinical, IJourney, INotifications, IAdmin). Never import another module's internals.
+- `realtime/` reacts to events. Modules publish events through `events/`; they never call `realtime/` directly.
+- Only `services/auth` reads password hashes, sessions or OTP codes.
+- Only `services/ai` talks to the LLM, and only the AI client in `core/src/shared/` talks to `services/ai`.
+- `contracts/openapi.yaml` is the source of truth for the API. Each frontend generates its `lib/api-types.ts` from it; CI fails if they're out of date.
+- One Prisma schema (`database/clinical/schema.prisma`) covers both clinical schemas. Each service connects with its own DB user, so access is limited by the database, not by convention. See `schema.md`.
+
+## How the design maps to the code (prototype deployment profile)
+
+The Milestone 1 design is a logical view. Risk TR-1 says to keep the logical architecture, merge components where that's cheaper for the prototype, and state what differs. This is that statement.
+
+| Design component | In the prototype | Differs from the design? |
+|---|---|---|
+| Patients App | `apps/patient-app` | No |
+| Hospital Dashboard | `apps/hospital-dashboard` | No (approval-reviewer view not built: out of scope) |
+| API Gateway + Rate Limiter + Request Validator | Traefik, configured in `docker-compose.yml`. Per-user/OTP limits in `services/auth/src/authentication`; schema validation in each service | Single copy instead of two |
+| Auth Layer | `services/auth`, forward-auth from Traefik on every request, fails closed | Single copy instead of two |
+| Core Backend (6 modules) | `services/core/src/modules` | Single copy instead of two |
+| Realtime Hub | `services/core/src/realtime` (same process) | Yes: inside the core, as TR-1 allows. Still event-driven |
+| Message Queue + outbox | BullMQ on Redis + `services/core/src/events` | Yes: BullMQ instead of a separate broker, as TR-1 allows |
+| Notification Worker + push provider | Not built | Push is out of scope; in-app inbox only |
+| AI subsystem | `services/ai` | No |
+| Clinical Database | Postgres `wasla_clinical`, `auth` + `core` schemas | No hot standby; reports run on the primary |
+| AI Data Store | Postgres `wasla_ai` (same server, separate database and user) | Same server as the clinical database |
+| Redis Cache | One Redis container | No |
+| Private File Storage | MinIO private bucket | No |
+| SMS / OTP providers A + B | Simulated provider in `services/auth/src/authentication` | Simulated, no failover (TR-5) |
+| Secrets Manager / KMS | `.env` written by CI from GitHub secrets | Simplified |
+| Monitoring & Alerting | Uptime Kuma container in `docker-compose.yml` + Discord alerts | Simplified |
