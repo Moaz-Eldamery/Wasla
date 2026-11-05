@@ -44,12 +44,13 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 ├── business.md                  business logic and rules
 ├── schema.md                    databases, schemas, tables
 ├── structure.md                 this file
-├── changelog.md                 every change, newest first
-├── prompt_log.md                every prompt, newest first
+├── changelog.md                 every change, newest at the top (format in CLAUDE.md)
+├── prompt_log.md                every prompt, newest at the top (format in CLAUDE.md)
 ├── README.md
 ├── package.json                 pnpm workspace root
 ├── pnpm-workspace.yaml          which folders are JS/TS workspaces
 ├── .gitignore
+├── .gitattributes               merges both logs with "union" so parallel entries never conflict
 ├── docker-compose.yml           whole stack, incl. Traefik labels          planned (KAN-5)
 ├── .env.example                 every env variable, with fake values       planned (KAN-5)
 ├── .github/workflows/           CI (location required by GitHub)           ci.yml planned (KAN-5)

@@ -1,87 +1,99 @@
-# Prompt log
+## 2026-11-05 10:43 +0200 · NourElghaly
+Changes: 2026-11-05 10:43
 
-Every prompt given to the agent, word for word, newest first. New entries go at the top. Never edit old entries, except to fill in `Changes` for the current prompt. Secrets and real personal data are replaced with `[REDACTED]`.
+> can we just append all changes to the top? if this means sacrficing the description of the md file that we could do that (we technically don't need a description for the md file as it is in the claude.md)
 
-Entry format:
+## 2026-11-05 10:41 +0200 · NourElghaly
+Changes: 2026-11-05 10:41
 
-```
-## P-0000 · YYYY-MM-DD HH:MM +0200
-Author: name from `git config user.name`
-Changes: C-0000, C-0001   (or: none)
+> yes
 
-> the prompt, word for word
-```
+## 2026-11-05 10:40 +0200 · NourElghaly
+Changes: none
 
----
+> creating an extra file for each prompt would be too much is it possible for each merge we just append the prompts and changes as we have the time stamps so we can manually infer who did what (you dn't have to order by time)
 
-## P-0015 · 2026-11-04 18:01 +0200
-Author: NourElghaly
-Changes: C-0008
+## 2026-11-05 10:37 +0200 · NourElghaly
+Changes: none
+
+> also for the prompt_log.md and actualy in genral for any logs, keep in mind that multiple people will be editng this code base, so what would be a good approach to just have logs of eachperson's prompts and code changes?
+
+## 2026-11-05 10:30 +0200 · NourElghaly
+Changes: none
+
+> ok, i want in the description of each card to just add "linked to:" staating the fr number and and its title, the whole "out of scope" and 'nice to have" should be dropped and just given priority levels
+
+## 2026-11-05 10:28 +0200 · NourElghaly
+Changes: none
+
+> what are the frs exactly that are not linked to any of the cards?
+
+## 2026-11-05 10:26 +0200 · NourElghaly
+Changes: none
+
+> are all the fr and nfr included? or were some dropped?
+
+## 2026-11-05 10:22 +0200 · NourElghaly
+Changes: none
+
+> can you see if you can link all the cards created on jira to their rrespective functional and non-functional requirments? do you have access to the project document?
+
+## 2026-11-04 18:01 +0200 · NourElghaly
+Changes: 2026-11-04 18:01
 
 > how about instead of .gitigore, add like an md file explaining what the folders does and what is in the files, add this to the claude.md where (for each addition done in the folder, the coresponding docuemntation md for that folder is also updated_
 
-## P-0014 · 2026-11-04 17:56 +0200
-Author: NourElghaly
-Changes: C-0007
+## 2026-11-04 17:56 +0200 · NourElghaly
+Changes: 2026-11-04 17:56
 
 > now do it
 
-## P-0013 · 2026-11-04 17:39 +0200
-Author: NourElghaly
-Changes: C-0006
+## 2026-11-04 17:39 +0200 · NourElghaly
+Changes: 2026-11-04 17:39
 
 > don't add alot of folders for the sake of adding folders, don't over egnieeer the project, we will add folders when we need to. always ask permissoin to create an entire directory, we need to decide for a file structure, bascialyy all that goes in structure.md, and make it rigid and well defined before we proceed /grill-me
 
-## P-0012 · 2026-11-04 17:37 +0200
-Author: NourElghaly
+## 2026-11-04 17:37 +0200 · NourElghaly
 Changes: none
 
 > do you really need the packages folder?
 
-## P-0011 · 2026-11-04 17:35 +0200
-Author: NourElghaly
-Changes: C-0005
+## 2026-11-04 17:35 +0200 · NourElghaly
+Changes: 2026-11-04 17:35
 
 > why do you keep changing claude md whenever the strucute changes? claude.md is never changed, it tells the agent to read the structure.md. it just tells the agent how the code base is interpreted and approached
 
-## P-0010 · 2026-11-04 17:33 +0200
-Author: NourElghaly
-Changes: C-0004
+## 2026-11-04 17:33 +0200 · NourElghaly
+Changes: 2026-11-04 17:33
 
 > ok, then remove docs i id not inlcude this in the spevidations. infra im guessing is just the schema for postgress, then call it database, and then also what are packages? like what would an example?
 
-## P-0009 · 2026-11-04 17:31 +0200
-Author: NourElghaly
+## 2026-11-04 17:31 +0200 · NourElghaly
 Changes: none
 
 > so i now know that app is the application layer, the docs are for what? and what are infra and pakages? and ik that the services is the backend? which also include the auth layer?
 
-## P-0008 · 2026-11-04 17:27 +0200
-Author: NourElghaly
-Changes: C-0003
+## 2026-11-04 17:27 +0200 · NourElghaly
+Changes: 2026-11-04 17:27
 
 > ok, we're going with this, now please create the file structure now
 
-## P-0007 · 2026-11-04 17:19 +0200
-Author: NourElghaly
+## 2026-11-04 17:19 +0200 · NourElghaly
 Changes: none
 
 > if we were to create a spicified database for the auth layer and another database for the backend. and separate the auth layer from the backend as well as the api. how does it sound like to you
 
-## P-0006 · 2026-11-04 17:04 +0200
-Author: NourElghaly
+## 2026-11-04 17:04 +0200 · NourElghaly
 Changes: none
 
 > does having the above given file sturcure go against the high level design?
 
-## P-0005 · 2026-11-04 16:14 +0200
-Author: NourElghaly
+## 2026-11-04 16:14 +0200 · NourElghaly
 Changes: none
 
 > what did you put the auth inside the back end? is it a good idea in the first place?
 
-## P-0004 · 2026-11-04 16:09 +0200
-Author: NourElghaly
+## 2026-11-04 16:09 +0200 · NourElghaly
 Changes: none
 
 > [pasted folder structure]
@@ -120,21 +132,18 @@ Changes: none
 >
 > this is the proposed file strucutre, will this work?
 
-## P-0003 · 2026-11-04 15:25 +0200
-Author: NourElghaly
-Changes: C-0002
+## 2026-11-04 15:25 +0200 · NourElghaly
+Changes: 2026-11-04 15:25
 
 > also add the person who has written the prompt
 
-## P-0002 · 2026-11-04 15:18 +0200
-Author: NourElghaly
+## 2026-11-04 15:18 +0200 · NourElghaly
 Changes: none
 
 > can you check if you can give persmission to moazeldamery@aucegypt.edu access to delete cards?
 
-## P-0001 · 2026-11-04 15:00 +0200
-Author: NourElghaly
-Changes: C-0001
+## 2026-11-04 15:00 +0200 · NourElghaly
+Changes: 2026-11-04 15:00
 
 > ok can we start now with the project? can you create a "claude.md" file that explains the below process:
 >
