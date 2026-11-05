@@ -1,2 +1,6 @@
+# Several people add log entries at once: keep everyone's entries on merge.
+prompt_log.md merge=union
+changelog.md merge=union
+
 # Shell scripts run inside Linux containers and break with Windows line endings.
 *.sh text eol=lf
