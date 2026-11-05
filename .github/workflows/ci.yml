@@ -27,6 +27,43 @@ jobs:
       - run: pnpm test:e2e
       - run: pnpm build
 
+  database:
+    name: Core against a real database (migrations, e2e)
+    runs-on: ubuntu-latest
+    env:
+      # Same fake passwords as .env.example.
+      MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
+      DATABASE_URL: postgresql://wasla_core:fake-core-password@127.0.0.1:5432/wasla_clinical
+      SEED_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start Postgres (init.sh creates the databases, schemas and DB users)
+        run: |
+          docker run --detach --name postgres --publish 127.0.0.1:5432:5432 \
+            --env POSTGRES_PASSWORD=fake-postgres-password \
+            --env MIGRATOR_DB_PASSWORD=fake-migrator-password \
+            --env AUTH_DB_PASSWORD=fake-auth-password \
+            --env CORE_DB_PASSWORD=fake-core-password \
+            --env AI_DB_PASSWORD=fake-ai-password \
+            --volume "$PWD/database/init.sh:/docker-entrypoint-initdb.d/init.sh:ro" \
+            pgvector/pgvector:pg16
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wait for Postgres
+        # Over TCP: Postgres only listens there once init.sh has finished.
+        run: timeout 120 bash -c 'until docker exec postgres pg_isready -h 127.0.0.1 -U postgres -d wasla_clinical; do sleep 2; done'
+      - name: Apply migrations as wasla_migrator
+        run: pnpm db:migrate
+      - name: Core e2e tests as wasla_core
+        run: pnpm --filter @wasla/core test:e2e
+      - name: Postgres logs
+        if: failure()
+        run: docker logs postgres
+
   ai:
     name: AI service (lint, test)
     runs-on: ubuntu-latest

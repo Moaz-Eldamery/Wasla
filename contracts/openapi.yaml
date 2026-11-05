@@ -422,7 +422,7 @@ paths:
       parameters:
         - name: when
           in: query
-          description: '`upcoming` (starts now or later and not finished; soonest first) or `past` (everything else; most recent first)'
+          description: '`upcoming`: BOOKED and not over yet, or CHECKED_IN / IN_CONSULTATION; soonest first. `past`: everything else, most recent first.'
           schema:
             type: string
             enum: [upcoming, past]

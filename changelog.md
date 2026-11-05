@@ -1,3 +1,23 @@
+## 2026-11-05 14:51 +0200 · NourElghaly
+Prompt: 2026-11-05 14:50 · NourElghaly
+What: CI now runs the database tests. A new `database` job starts Postgres with database/init.sh, applies the migrations as wasla_migrator and runs the core e2e tests as wasla_core, so the simultaneous-booking, ownership, audit-log and DB-grant tests run on every pull request instead of being skipped.
+Files: .github/workflows/ci.yml, .github/workflows/README.md, services/core/README.md
+
+## 2026-11-05 14:49 +0200 · NourElghaly
+Prompt: 2026-11-05 13:50 · NourElghaly
+What: KAN-8 booking in the core. Patients browse departments, doctors and free slots and book one; the database lets exactly one of several simultaneous bookings through and the rest get SLOT_TAKEN, and a retried booking returns the existing one. Patients see only their own upcoming and past appointments (someone else's is "not found"), and receptionists see the day's appointments for clinics they're assigned to. Added the shared pieces every later feature uses: caller from the gateway headers, @Roles guard, the contract's error format, request validation, Cairo-time helpers and the append-only audit writer, which records every booking attempt and refused access. Unit tests plus an end-to-end test against a real database.
+Files: services/core/src/app.module.ts, services/core/src/shared/, services/core/src/modules/appointments/, services/core/test/booking.e2e-spec.ts, contracts/openapi.yaml, business.md, services/core/src/shared/README.md, services/core/src/modules/appointments/README.md, services/core/README.md
+
+## 2026-11-05 14:48 +0200 · NourElghaly
+Prompt: 2026-11-05 13:50 · NourElghaly
+What: Connected the services to the database. Prisma 7 now generates a typed client for the core into services/core/src/generated/ on pnpm install, and the first migration creates every auth and core table plus the hand-written SQL from schema.md (one active booking per slot, checks, append-only audit-log trigger, grants). A new one-off migrate service in docker-compose.yml applies migrations as wasla_migrator before auth and core start; pnpm db:migrate does the same by hand. Allowed Prisma's install scripts in pnpm-workspace.yaml, kept generated code out of git, lint and Docker builds.
+Files: database/clinical/schema.prisma, database/clinical/prisma.config.ts, database/clinical/migrations/, database/Dockerfile, docker-compose.yml, services/core/Dockerfile, services/core/package.json, services/core/.oxlintrc.json, package.json, pnpm-lock.yaml, pnpm-workspace.yaml, .gitignore, .dockerignore, structure.md, schema.md, database/README.md, database/clinical/README.md, services/core/README.md, README.md
+
+## 2026-11-05 14:47 +0200 · NourElghaly
+Prompt: 2026-11-05 13:50 · NourElghaly
+What: Fixed database/init.sh failing on macOS. Docker Desktop reports the non-executable script as executable, so Postgres tried to run it directly and stopped with "bad interpreter: Permission denied" on every fresh volume. The script is now executable (mode 755) in git.
+Files: database/init.sh, database/README.md
+
 ## 2026-11-05 13:47 +0200 · NourElghaly
 Prompt: 2026-11-05 13:47 · NourElghaly
 What: Correction to four entries by Moaz Mohamed that share one ID, `2026-11-05 09:57 +0200 · Moaz Mohamed`. They were logged in the same minute and were told apart only by their old numbers, which the switch to timestamp IDs dropped. The old entries stay as they are; from now on refer to them as below. All four belong to prompt `2026-11-05 08:49 · Moaz Mohamed`, whose `Changes: 2026-11-05 09:57` means all four.

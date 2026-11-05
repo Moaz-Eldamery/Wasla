@@ -7,6 +7,7 @@ The source of truth for the database. If a table or column isn't listed here, it
 - The AI database (`wasla_ai`) is migrated from `database/ai/`.
 - Databases, schemas and DB users are created by `database/init.sh`.
 - Update this file in the same change as any migration.
+- Migrations live in `database/clinical/migrations/` and run as `wasla_migrator`: the `migrate` service applies them on `docker compose up`, or run `pnpm db:migrate` with `MIGRATOR_DATABASE_URL` set. Prisma's own `_prisma_migrations` table sits in the `public` schema.
 
 ## Databases, schemas and who can access them
 
@@ -277,7 +278,7 @@ Constraints: a trigger refuses every `UPDATE`, `DELETE` and `TRUNCATE` (raw SQL)
 
 ## Raw SQL in the first migration
 
-Prisma can't express these. Whoever creates the first migration adds them to its SQL by hand:
+Prisma can't express these, so they are written by hand at the end of `database/clinical/migrations/20261105121531_init/migration.sql`:
 
 1. `CREATE UNIQUE INDEX appointments_one_active_per_slot ON core.appointments (slot_id) WHERE status <> 'CANCELLED';`
 2. Check on `core.slots`: `ends_at > starts_at`.

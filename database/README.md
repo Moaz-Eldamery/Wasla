@@ -9,4 +9,5 @@ Everything about the database. See `schema.md` for the databases, schemas, DB us
   - the `wasla_ai` database, with pgvector
   - the DB users and their access rules
 
-  Passwords come from `.env`. To run it again, delete the volume with `docker compose down -v`.
+  Passwords come from `.env`. To run it again, delete the volume with `docker compose down -v`. It must stay executable (mode 755): Docker Desktop on macOS otherwise fails to run it.
+- `Dockerfile`: image for the one-off `migrate` service. It installs only the Prisma CLI, then runs `prisma migrate deploy` as `wasla_migrator`.

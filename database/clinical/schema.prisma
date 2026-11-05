@@ -5,8 +5,13 @@
 // and must be added as raw SQL in the first migration. They are listed in
 // schema.md under "Raw SQL in the first migration".
 
-generator client {
-  provider = "prisma-client-js"
+// One generator per service that uses this database. Each writes a typed client
+// into that service's src/generated/ (gitignored, rebuilt on pnpm install).
+generator core {
+  provider            = "prisma-client"
+  output              = "../../services/core/src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
 }
 
 datasource db {

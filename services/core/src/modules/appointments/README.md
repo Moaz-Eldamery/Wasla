@@ -6,4 +6,11 @@ Slots, booking, cancel and reschedule, walk-ins, follow-ups.
 
 ## Files
 
-_None yet._ Filled by KAN-8, KAN-25, KAN-37, KAN-40.
+- `appointments.module.ts`: the module. Exports `AppointmentsService` (IAppointments).
+- `appointments.service.ts`: browsing (departments, doctors, free slots), booking, and seeing appointments, with the record-owner checks. Test: `appointments.service.spec.ts`.
+- `catalog.controller.ts`: `GET /departments`, `/departments/{id}/doctors`, `/doctors/{id}/slots`.
+- `appointments.controller.ts`: `POST /appointments`, `GET /me/appointments`, `/appointments/{id}`, `/me/clinics`, `/clinics/{id}/appointments`.
+- `appointment.views.ts`: the response shapes from the contract, and the Prisma selects that load them.
+- `dto/booking.dto.ts`: request bodies and query parameters, validated with class-validator.
+
+Still to come: cancel and reschedule, staff slot management (KAN-25), walk-ins (KAN-37), follow-ups (KAN-40).

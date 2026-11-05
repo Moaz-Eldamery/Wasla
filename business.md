@@ -13,7 +13,7 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 | Admin | Website | Staff, departments, clinics, statistics, the AI chatbot. **No medical records** |
 
 - Every request checks both the role **and** whether the record belongs to that user. Someone else's record returns "not found", so its existence isn't leaked.
-- Important actions (logins, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
+- Important actions (logins, bookings, including failed ones, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
 
 ## Hospital setup
 - A department has one or more clinics. A clinic is a place patients go (a clinic room, the lab, a radiology room) with a building, floor and directions in Arabic and English.
@@ -30,6 +30,8 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - Patients browse departments → doctors → free slots, then book one.
 - Each slot has its own start and end time; there is no fixed slot length.
 - A slot can only ever have one active booking. Two people booking at the same moment: one succeeds, the other is told the slot was taken.
+- A patient's appointments are split into **upcoming** (booked and not over yet, or checked in or with the doctor right now) and **past** (everything else, including cancelled and no-shows).
+- The receptionist's day list shows the clinic's appointments for one Cairo calendar day, without cancelled ones.
 - Patients can cancel (the slot opens again) or move an appointment to another free slot.
 - Staff create, block and cancel a doctor's slots. Patients affected by a staff cancellation are told why.
 

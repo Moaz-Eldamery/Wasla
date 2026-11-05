@@ -46,8 +46,8 @@ services:
       PORT: "3000"
       DATABASE_URL: postgresql://wasla_auth:${AUTH_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=auth
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     networks: [edge, data]
     restart: unless-stopped
     labels:
@@ -88,8 +88,8 @@ services:
       MINIO_RESULTS_BUCKET: ${MINIO_RESULTS_BUCKET:?}
       AI_SERVICE_URL: http://ai:8000
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       minio-init:
         condition: service_completed_successfully
     # Deliberately not waiting for the AI service: the core must work without it.
@@ -139,6 +139,20 @@ services:
       retries: 10
     networks: [data, ai]
     restart: unless-stopped
+
+  # One-off: applies the wasla_clinical migrations as wasla_migrator. auth and
+  # core start only after it succeeds, so they never see a missing table.
+  migrate:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    environment:
+      MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:${MIGRATOR_DB_PASSWORD:?}@postgres:5432/wasla_clinical
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [data]
+    restart: "no"
 
   # MinIO stopped publishing free images in 2025. pgsty/minio is a community
   # build of the same server, and it includes the mc client.

@@ -1,3 +1,13 @@
+## 2026-11-05 14:50 +0200 · NourElghaly
+Changes: 2026-11-05 14:51
+
+> can the ci run db tests? can you do that?
+
+## 2026-11-05 13:50 +0200 · NourElghaly
+Changes: 2026-11-05 14:47, 2026-11-05 14:48, 2026-11-05 14:49
+
+> now lets do kan 8
+
 ## 2026-11-05 13:47 +0200 · NourElghaly
 Changes: 2026-11-05 13:47
 

@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 
 # build output
+services/*/src/generated/
 dist/
 build/
 .expo/

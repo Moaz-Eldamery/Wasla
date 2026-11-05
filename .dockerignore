@@ -3,6 +3,8 @@
 .github
 **/node_modules
 **/dist
+# Generated Prisma clients are rebuilt inside the image by pnpm install.
+**/src/generated
 **/.venv
 **/__pycache__
 **/*.pyc

@@ -5,6 +5,8 @@ RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY services/core/package.json services/core/
+# Installing runs `prisma generate`, which needs the schema.
+COPY database/clinical/schema.prisma database/clinical/
 RUN pnpm install --frozen-lockfile --filter @wasla/core
 COPY services/core services/core
 RUN pnpm --filter @wasla/core build \

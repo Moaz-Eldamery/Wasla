@@ -18,7 +18,7 @@ docker compose up --build
 - **Gateway:** http://localhost:8080. `/auth/*` goes to the auth service, everything else to the core.
 - **Uptime Kuma:** http://localhost:3001 (set up the monitors there).
 
-`database/init.sh` only runs on an empty database. To start over, run `docker compose down -v`.
+`database/init.sh` only runs on an empty database. The `migrate` service then applies the migrations before auth and core start. To start over, run `docker compose down -v`.
 
 ## Work on one part
 
@@ -41,5 +41,6 @@ pnpm mock    # fake API from contracts/openapi.yaml on http://localhost:4010
 
 ```sh
 pnpm lint && pnpm test && pnpm test:e2e && pnpm build
+# core tests against a real database: see services/core/README.md
 cd services/ai && uv run ruff check . && uv run pytest
 ```

@@ -6,4 +6,6 @@ packages:
 # Dependency install scripts are off unless listed here as true.
 allowBuilds:
   "@parcel/watcher": false
+  "@prisma/engines": true
   "@scarf/scarf": false
+  prisma: true
