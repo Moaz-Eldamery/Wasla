@@ -6,4 +6,5 @@ The check Traefik calls before every protected request: is there a valid session
 
 ## Files
 
-_None yet._ Filled by KAN-7.
+- `authorization.controller.ts`: `GET /auth/check`, the gateway's forward-auth endpoint. Refuses every request (401) until sessions exist (KAN-7). On success it will answer 200 with `X-User-Id`, `X-User-Type` and `X-User-Roles`.
+- `authorization.controller.spec.ts`: checks that it refuses requests.

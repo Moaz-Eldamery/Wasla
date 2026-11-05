@@ -1,3 +1,51 @@
+## 2026-11-05 13:20 +0200 · Moaz Mohamed
+Prompt: 2026-11-05 13:20 · Moaz Mohamed
+What: Merged main (the new timestamp-based log format) into the KAN-5 branch. Converted the KAN-5 log entries, which only existed on this branch, from P-/C- numbers to timestamp + author, as the new format asks. Kept both sides of .gitattributes (union merge for the logs, LF for *.sh) and of the structure.md file list.
+Files: prompt_log.md, changelog.md, .gitattributes, structure.md
+
+## 2026-11-05 09:57 +0200 · Moaz Mohamed
+Prompt: 2026-11-05 08:49 · Moaz Mohamed
+What: Added the CI workflow (KAN-5). It runs on every pull request and on main, with three jobs:
+- `node`: lint, unit tests, e2e tests and build for the JS/TS packages.
+- `ai`: ruff and pytest for the AI service.
+- `stack`: starts the whole stack with docker compose. It checks that /auth/health answers through the gateway and that core routes get 401 without a session.
+Files: .github/workflows/ci.yml, .github/workflows/README.md
+
+## 2026-11-05 09:57 +0200 · Moaz Mohamed
+Prompt: 2026-11-05 08:49 · Moaz Mohamed
+What: Added `pnpm mock`, which serves a fake API from contracts/openapi.yaml with Prism on port 4010 (KAN-5). Wrote a starter openapi.yaml for it. It describes only the endpoints that exist so far: the auth and core health checks and the gateway's auth check. KAN-4 adds the rest.
+Files: package.json, pnpm-lock.yaml, contracts/openapi.yaml, contracts/README.md
+
+## 2026-11-05 09:57 +0200 · Moaz Mohamed
+Prompt: 2026-11-05 08:49 · Moaz Mohamed
+What: The whole stack now starts with one command, `docker compose up --build` (KAN-5).
+- **Services:** Traefik, Postgres with pgvector, Redis, MinIO with a one-off job that creates the private results bucket, Uptime Kuma, and the auth, core and AI services. Each service has its own Dockerfile, built from the repo root.
+- **Gateway:** Traefik is configured with labels. `/auth/*` goes to the auth service; everything else goes to the core after a forward-auth check. Every route strips client-sent `X-User-*` headers and has a per-IP rate limit and an 11 MB body limit.
+- **Networks:** four of them, so only the gateway (and Uptime Kuma, on localhost) has a published port, only the core can reach the AI service, and the data services have no internet.
+- **Database:** `database/init.sh` creates `wasla_clinical` (auth + core schemas) and `wasla_ai` (with pgvector). It also creates one DB user per service, plus a `wasla_migrator` user that owns the clinical tables and runs Prisma migrations, so runtime users can't change the schema. schema.md now lists every DB user and its default rights.
+- **MinIO image:** MinIO stopped publishing free images, so the stack uses the community build pgsty/minio. The user chose it.
+- **Other files:** `.env.example` lists every variable with fake values. `.gitattributes` keeps *.sh on LF line endings.
+- **Verified locally:**
+  - Every container comes up healthy, both on the first start and after a full reset.
+  - Routing and the 401 answer for core routes work, as do the body limit and the rate limit.
+  - Network isolation holds, every DB grant behaves as schema.md says, and the bucket is private.
+Files: docker-compose.yml, .env.example, .dockerignore, .gitattributes, .gitignore, database/init.sh, database/README.md, services/auth/Dockerfile, services/core/Dockerfile, services/ai/Dockerfile, schema.md, structure.md, README.md
+
+## 2026-11-05 09:57 +0200 · Moaz Mohamed
+Prompt: 2026-11-05 08:49 · Moaz Mohamed
+What: Scaffolded every app and service where structure.md says (KAN-5). Generators ran outside the repo and their files were copied in, without the demo content or the generator extras (AGENTS.md, a LICENSE, a nested .git).
+- **auth and core (NestJS 12):** each has a `/health` route. The auth service's routes live under `/auth`. Its `/auth/check` is the gateway's auth check, and it refuses everything until KAN-7 adds sessions, so it fails closed.
+- **hospital-dashboard (Vite + React):** a placeholder page.
+- **patient-app (Expo SDK 58 + expo-router):** a placeholder start screen. Its test sits outside `app/`, because expo-router turns every file there into a screen.
+- **ai (FastAPI, uv):** a `/health` route.
+- **Tests and lint:**
+  - auth, core and the dashboard: oxlint and Vitest.
+  - patient app: oxlint, tsc and jest-expo.
+  - AI service: ruff and pytest.
+  - Every package has a smoke test. The root `pnpm lint`, `pnpm test`, `pnpm test:e2e` and `pnpm build` run them all.
+- **pnpm settings:** the root package.json pins pnpm 11.6.0. pnpm-workspace.yaml denies install scripts for @scarf/scarf (telemetry) and @parcel/watcher (it ships prebuilt binaries).
+Files: package.json, pnpm-workspace.yaml, pnpm-lock.yaml, apps/hospital-dashboard/**, apps/patient-app/**, services/auth/**, services/core/**, services/ai/**, the READMEs of each of these folders, structure.md, README.md
+
 ## 2026-11-05 10:43 +0200 · NourElghaly
 Prompt: 2026-11-05 10:43 · NourElghaly
 What: Logs now keep the newest entry at the top. Removed the description header from both log files (the entry formats now live in CLAUDE.md) and flipped the existing entries to newest first. The union merge in .gitattributes still applies, so entries added at the top on different branches are both kept.

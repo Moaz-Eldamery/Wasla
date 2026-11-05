@@ -1,0 +1,12 @@
+# Every image builds from the repo root. Keep the context small and free of secrets.
+.git
+.github
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/*.pyc
+.env
+.env.*
+!.env.example
+apps

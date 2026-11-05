@@ -1,3 +1,43 @@
+## 2026-11-05 13:20 +0200 · Moaz Mohamed
+Changes: 2026-11-05 13:20
+
+> you do it, i am confused
+
+## 2026-11-05 13:18 +0200 · Moaz Mohamed
+Changes: none
+
+> would pulling then pushing overwrite my commit?
+
+## 2026-11-05 13:14 +0200 · Moaz Mohamed
+Changes: none (committed and pushed the KAN-5 changes on branch kan-5-setup)
+
+> can you push
+
+## 2026-11-05 10:09 +0200 · Moaz Mohamed
+Changes: none (created project/tests.md, outside the repo)
+
+> can you create a file that stores the names and slight details of everytest you make. i dont want it to be in the maaian directory, i want it to be right under /project
+
+## 2026-11-05 10:07 +0200 · Moaz Mohamed
+Changes: none
+
+> do you store the tests you have done?
+
+## 2026-11-05 08:49 +0200 · Moaz Mohamed
+Changes: 2026-11-05 09:57
+
+> ok can you start working on KAN-5 and when you do that put it in in process and when you finish it move it to review to test it. finally when tests pass and no more modifications are needed move it to done
+
+## 2026-11-05 07:43 +0200 · Moaz Mohamed
+Changes: none
+
+> which of the sprint backlog do you think we should start with?
+
+## 2026-11-05 07:10 +0200 · Moaz Mohamed
+Changes: none
+
+> .
+
 ## 2026-11-05 10:43 +0200 · NourElghaly
 Changes: 2026-11-05 10:43
 

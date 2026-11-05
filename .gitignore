@@ -11,6 +11,13 @@ build/
 .expo/
 web-build/
 coverage/
+*.tsbuildinfo
+
+# Expo (generated)
+expo-env.d.ts
+.metro-health-check*
+apps/patient-app/ios/
+apps/patient-app/android/
 
 # env and secrets (commit .env.example only)
 .env

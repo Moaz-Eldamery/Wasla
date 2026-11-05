@@ -1,0 +1,90 @@
+openapi: 3.1.0
+info:
+  title: Wasla API
+  version: 0.1.0
+  description: >
+    The agreed API, as seen through the gateway. Starter version from KAN-5:
+    only the endpoints that exist so far. KAN-4 adds every feature endpoint.
+servers:
+  - url: http://localhost:8080
+    description: Local gateway (docker compose)
+  - url: http://localhost:4010
+    description: Mock server (pnpm mock)
+paths:
+  /auth/health:
+    get:
+      summary: Auth service health
+      tags: [auth]
+      security: []
+      responses:
+        "200":
+          description: The auth service is up.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /auth/check:
+    get:
+      summary: Session check (gateway forward-auth)
+      description: >
+        Called by the gateway before every request to the core. Answers 200
+        with the user's identity headers when the session is valid; anything
+        else is refused.
+      tags: [auth]
+      responses:
+        "200":
+          description: Valid session.
+          headers:
+            X-User-Id:
+              schema: { type: string, format: uuid }
+            X-User-Type:
+              schema: { type: string, enum: [patient, staff] }
+            X-User-Roles:
+              description: Comma-separated roles.
+              schema: { type: string, example: receptionist }
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /health:
+    get:
+      summary: Core service health
+      description: Behind the auth check like every core route.
+      tags: [core]
+      responses:
+        "200":
+          description: The core service is up.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Session token from login (KAN-7).
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+    Error:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode: { type: integer, example: 401 }
+        message: { type: string, example: Unauthorized }
+  responses:
+    Unauthorized:
+      description: No valid session.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+security:
+  - session: []
