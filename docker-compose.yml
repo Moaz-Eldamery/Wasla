@@ -2,10 +2,10 @@
 #   docker compose up --build
 #
 # Only the gateway publishes a port (plus Uptime Kuma, on localhost). The auth,
-# core and AI services, Postgres, Redis and MinIO are reachable only inside
+# core and AI services, Postgres and MinIO are reachable only inside
 # Docker. Networks:
 #   edge    gateway <-> auth, core
-#   data    auth, core <-> Postgres, Redis, MinIO          (no internet)
+#   data    auth, core <-> Postgres, MinIO                 (no internet)
 #   ai      core <-> AI service <-> Postgres (wasla_ai)    (no internet)
 #   egress  outbound internet for the AI service (Claude API) and Uptime Kuma
 
@@ -45,11 +45,8 @@ services:
     environment:
       PORT: "3000"
       DATABASE_URL: postgresql://wasla_auth:${AUTH_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=auth
-      REDIS_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/0
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks: [edge, data]
     restart: unless-stopped
@@ -85,7 +82,6 @@ services:
     environment:
       PORT: "3000"
       DATABASE_URL: postgresql://wasla_core:${CORE_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=core
-      REDIS_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/1
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
@@ -93,8 +89,6 @@ services:
       AI_SERVICE_URL: http://ai:8000
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
       minio-init:
         condition: service_completed_successfully
@@ -144,21 +138,6 @@ services:
       timeout: 3s
       retries: 10
     networks: [data, ai]
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?}", "--appendonly", "yes"]
-    environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD:?}
-    volumes:
-      - redis-data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    networks: [data]
     restart: unless-stopped
 
   # MinIO stopped publishing free images in 2025. pgsty/minio is a community
@@ -224,6 +203,5 @@ networks:
 
 volumes:
   postgres-data:
-  redis-data:
   minio-data:
   uptime-kuma-data:

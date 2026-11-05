@@ -1,3 +1,22 @@
+## 2026-11-05 13:47 +0200 · NourElghaly
+Prompt: 2026-11-05 13:47 · NourElghaly
+What: Correction to four entries by Moaz Mohamed that share one ID, `2026-11-05 09:57 +0200 · Moaz Mohamed`. They were logged in the same minute and were told apart only by their old numbers, which the switch to timestamp IDs dropped. The old entries stay as they are; from now on refer to them as below. All four belong to prompt `2026-11-05 08:49 · Moaz Mohamed`, whose `Changes: 2026-11-05 09:57` means all four.
+- `2026-11-05 09:57 · Moaz Mohamed #1` (was C-0009): scaffolded every app and service
+- `2026-11-05 09:57 · Moaz Mohamed #2` (was C-0010): the whole stack with docker compose
+- `2026-11-05 09:57 · Moaz Mohamed #3` (was C-0011): `pnpm mock` and the starter openapi.yaml
+- `2026-11-05 09:57 · Moaz Mohamed #4` (was C-0012): the CI workflow
+Files: changelog.md
+
+## 2026-11-05 13:43 +0200 · NourElghaly
+Prompt: 2026-11-05 13:41 · NourElghaly
+What: Applied the earlier decisions to the files KAN-5 added. Removed Redis from docker-compose.yml (service, REDIS_URL for auth and core, depends_on, volume, comments), .env.example and the data-network line in structure.md. Moved CI (setup-node now reads .nvmrc), the auth and core Dockerfiles (node:24-alpine) and the README requirement to Node 24.
+Files: docker-compose.yml, .env.example, structure.md, .github/workflows/ci.yml, services/auth/Dockerfile, services/core/Dockerfile, README.md
+
+## 2026-11-05 13:42 +0200 · NourElghaly
+Prompt: 2026-11-05 13:41 · NourElghaly
+What: Resolved the conflicts between the merged KAN-5 setup and the local KAN-4 work. Kept the KAN-4 contract and added KAN-5's health endpoints and server URLs to it; kept both KAN-5's "DB users" section and the KAN-4 conventions in schema.md, and widened KAN-5's grants to what the new tables need (account `type` + `REFERENCES`, audit-log sequence and `TRUNCATE`); merged both sides of structure.md and contracts/README.md; kept Node ">=24.18" in package.json.
+Files: contracts/openapi.yaml, schema.md, structure.md, contracts/README.md, package.json
+
 ## 2026-11-05 13:20 +0200 · Moaz Mohamed
 Prompt: 2026-11-05 13:20 · Moaz Mohamed
 What: Merged main (the new timestamp-based log format) into the KAN-5 branch. Converted the KAN-5 log entries, which only existed on this branch, from P-/C- numbers to timestamp + author, as the new format asks. Kept both sides of .gitattributes (union merge for the logs, LF for *.sh) and of the structure.md file list.
@@ -45,6 +64,20 @@ What: Scaffolded every app and service where structure.md says (KAN-5). Generato
   - Every package has a smoke test. The root `pnpm lint`, `pnpm test`, `pnpm test:e2e` and `pnpm build` run them all.
 - **pnpm settings:** the root package.json pins pnpm 11.6.0. pnpm-workspace.yaml denies install scripts for @scarf/scarf (telemetry) and @parcel/watcher (it ships prebuilt binaries).
 Files: package.json, pnpm-workspace.yaml, pnpm-lock.yaml, apps/hospital-dashboard/**, apps/patient-app/**, services/auth/**, services/core/**, services/ai/**, the READMEs of each of these folders, structure.md, README.md
+## 2026-11-05 13:35 +0200 · NourElghaly
+Prompt: 2026-11-05 13:35 · NourElghaly
+What: Moved the repo to Node 24 LTS (engines now ">=24.18", new .nvmrc with 24). Node 20 is end-of-life, and Prism 5.16 (the fake API server from KAN-4) needs Node 24.18 or newer, so this keeps Prism current instead of downgrading it.
+Files: package.json, .nvmrc, structure.md
+
+## 2026-11-05 13:32 +0200 · NourElghaly
+Prompt: 2026-11-05 13:14 · NourElghaly
+What: KAN-4. Drafted the clinical database (auth + core tables for accounts, sessions, OTP codes, departments, clinics, staff assignments, slots, appointments, visit notes, tests, result files, journey stages, audit log) and the API contract for login, booking, queue, journey, visit notes, results and the chatbot, including the forward-auth contract. Recorded the rules decided along the way: departments have clinics, staff are assigned to clinics, everyone logs in with phone and password, and visit notes carry a separate patient summary. Checked with `prisma validate`, Redocly lint and a Prism mock run.
+Files: database/clinical/schema.prisma, contracts/openapi.yaml, schema.md, business.md, structure.md, contracts/README.md, database/clinical/README.md
+
+## 2026-11-05 13:31 +0200 · NourElghaly
+Prompt: 2026-11-05 13:14 · NourElghaly
+What: Removed Redis from the stack. Sessions and OTP codes now live in Postgres (`auth` schema) and per-user rate limits are counted there; BullMQ is replaced by a Postgres outbox table polled inside the core. Also edited Jira cards KAN-5 (no Redis container) and KAN-7 (sessions in `auth.sessions`).
+Files: structure.md, services/auth/src/authentication/README.md, services/core/src/events/README.md
 
 ## 2026-11-05 10:43 +0200 · NourElghaly
 Prompt: 2026-11-05 10:43 · NourElghaly

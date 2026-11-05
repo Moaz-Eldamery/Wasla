@@ -15,13 +15,20 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - Every request checks both the role **and** whether the record belongs to that user. Someone else's record returns "not found", so its existence isn't leaked.
 - Important actions (logins, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
 
+## Hospital setup
+- A department has one or more clinics. A clinic is a place patients go (a clinic room, the lab, a radiology room) with a building, floor and directions in Arabic and English.
+- Departments are clinical (patients book them), lab or radiology (they receive tests).
+- An admin assigns each doctor, receptionist and lab staff member to one or more clinics. Staff work only with their assigned clinics.
+
 ## Accounts
 - Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.
 - Patients are identified by an internal ID, **not** a National ID.
 - Staff accounts are created by an admin. Deactivating a staff member logs them out immediately.
+- Everyone logs in with phone number and password. Staff don't get a phone code: the admin created their account.
 
 ## Booking
 - Patients browse departments → doctors → free slots, then book one.
+- Each slot has its own start and end time; there is no fixed slot length.
 - A slot can only ever have one active booking. Two people booking at the same moment: one succeeds, the other is told the slot was taken.
 - Patients can cancel (the slot opens again) or move an appointment to another free slot.
 - Staff create, block and cancel a doctor's slots. Patients affected by a staff cancellation are told why.
@@ -43,14 +50,14 @@ Only these moves are allowed. For example, a visit can't be completed before it 
 - **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data, in Arabic and English.
 
 ## Tests and results
-- A doctor orders a test during a visit. It goes to the lab or radiology department.
+- A doctor orders a test during a visit. It goes to a clinic of the lab or radiology department, and the lab staff assigned to that clinic see it.
 - Test status: `REQUESTED → IN_PROGRESS → AWAITING_REVIEW → RELEASED`
 - The lab uploads a PDF or image (max 10 MB). Files are stored privately and are never public links.
 - **The patient only sees a result after the doctor releases it.** Before that they see "waiting for review", with no content.
 
 ## Visit notes
 - Doctors write and edit notes for a visit. Every edit keeps the previous version.
-- The patient sees a summary once the visit is completed.
+- Each version has the doctor's clinical notes and a separate short summary for the patient. The patient only ever sees the summary, once the visit is completed. The clinical notes are never shown to the patient.
 
 ## AI features
 The AI is a helper, never a decision-maker, and the rest of the system must work with the AI turned off.

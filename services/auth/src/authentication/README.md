@@ -1,6 +1,6 @@
 # Authentication
 
-Logging in and out: login, OTP codes and the simulated SMS provider, sessions (Redis), logout, password recovery, lockout, and rate limits for login and OTP.
+Logging in and out: login, OTP codes and the simulated SMS provider, sessions (Postgres, `auth.sessions`), logout, password recovery, lockout, and rate limits for login and OTP.
 
 ## Files
 

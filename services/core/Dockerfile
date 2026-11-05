@@ -1,6 +1,6 @@
 # Build context: the repo root (see docker-compose.yml), so pnpm can use the
 # workspace lockfile.
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -10,7 +10,7 @@ COPY services/core services/core
 RUN pnpm --filter @wasla/core build \
  && pnpm --filter @wasla/core deploy --prod --legacy /out
 
-FROM node:22-alpine
+FROM node:24-alpine
 ENV NODE_ENV=production
 WORKDIR /app
 COPY --from=build --chown=node:node /out ./

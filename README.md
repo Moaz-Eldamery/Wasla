@@ -4,7 +4,7 @@ Hospital visit app: a patient mobile app, a staff website and the backend behind
 
 ## What you need
 
-- Node 22+, with pnpm (`corepack enable` sets up the version in `package.json`)
+- Node 24.18+ (`nvm use` reads `.nvmrc`), with pnpm (`corepack enable` sets up the version in `package.json`)
 - Docker Desktop (or Docker Engine with Compose)
 - uv (Python), only if you work on the AI service
 

@@ -2,70 +2,1191 @@ openapi: 3.1.0
 info:
   title: Wasla API
   version: 0.1.0
-  description: >
-    The agreed API, as seen through the gateway. Starter version from KAN-5:
-    only the endpoints that exist so far. KAN-4 adds every feature endpoint.
+  description: |
+    Every endpoint the patient app, the hospital dashboard and the gateway use.
+    Change this file first, then the code.
+
+    ## Who serves what
+    Every operation has `x-service` (`auth` or `core`) and `x-roles` (who may call it).
+    Traefik sends `/auth/*` to the auth service and everything else to the core.
+    The AI service is not in this file: only the core calls it, inside the Docker network.
+
+    ## Forward-auth (the auth check)
+    - Traefik calls `GET /auth/check` on the auth service before every request,
+      except the public auth endpoints (register, verify-phone, resend-code, login).
+    - The client sends `Authorization: Bearer <session token>`. Traefik passes it to the check.
+    - `200`: the session exists, hasn't expired or been revoked, and the account is active.
+      Traefik copies these response headers onto the request it sends to the core:
+      - `X-User-Id`: the account's UUID
+      - `X-User-Type`: `PATIENT` or `STAFF`
+      - `X-User-Roles`: comma-separated staff roles (`RECEPTIONIST`, `DOCTOR`, `LAB`, `ADMIN`); empty for patients
+    - `401`: Traefik returns the 401 to the client and the core never sees the request.
+    - If the auth service is down or slow, Traefik refuses the request (fails closed).
+    - Traefik removes any `X-User-*` headers the client sent, so they can't be faked.
+    - The core trusts these headers for "logged in, active, right role". It still checks
+      that the record belongs to the caller.
+
+    ## Rules for every endpoint
+    - Times are UTC, ISO 8601 with `Z`. Query parameters named `date` are calendar
+      days in Africa/Cairo time (`YYYY-MM-DD`).
+    - Bilingual text is an object `{ ar, en }`.
+    - Every error uses the `Error` body. Apps show a message based on `error.code`.
+    - A record that exists but isn't the caller's returns `404 NOT_FOUND`, the same as one
+      that doesn't exist.
+    - The wrong role returns `403 FORBIDDEN`.
+
 servers:
   - url: http://localhost:8080
     description: Local gateway (docker compose)
   - url: http://localhost:4010
     description: Mock server (pnpm mock)
+
+security:
+  - session: []
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Booking
+  - name: Queue
+  - name: Journey
+  - name: Visit notes
+  - name: Tests and results
+  - name: Chatbot
+
 paths:
+  # ---------------------------------------------------------------- health
   /auth/health:
     get:
+      tags: [Health]
       summary: Auth service health
-      tags: [auth]
+      operationId: authHealth
+      x-service: auth
+      x-roles: [public]
       security: []
       responses:
-        "200":
-          description: The auth service is up.
+        '200':
+          description: The auth service is up
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Health"
-  /auth/check:
-    get:
-      summary: Session check (gateway forward-auth)
-      description: >
-        Called by the gateway before every request to the core. Answers 200
-        with the user's identity headers when the session is valid; anything
-        else is refused.
-      tags: [auth]
-      responses:
-        "200":
-          description: Valid session.
-          headers:
-            X-User-Id:
-              schema: { type: string, format: uuid }
-            X-User-Type:
-              schema: { type: string, enum: [patient, staff] }
-            X-User-Roles:
-              description: Comma-separated roles.
-              schema: { type: string, example: receptionist }
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+                $ref: '#/components/schemas/Health'
+
   /health:
     get:
+      tags: [Health]
       summary: Core service health
-      description: Behind the auth check like every core route.
-      tags: [core]
+      description: Behind the auth check like every core route. Uptime Kuma calls the core directly inside Docker instead.
+      operationId: coreHealth
+      x-service: core
+      x-roles: [PATIENT, RECEPTIONIST, DOCTOR, LAB, ADMIN]
       responses:
-        "200":
-          description: The core service is up.
+        '200':
+          description: The core service is up
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Health"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
+                $ref: '#/components/schemas/Health'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ---------------------------------------------------------------- auth service
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Patient sign-up
+      description: Creates an unverified patient account and "sends" a 6-digit code (simulated SMS).
+      operationId: register
+      x-service: auth
+      x-roles: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Account created, code sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeSent'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          description: '`PHONE_TAKEN`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/verify-phone:
+    post:
+      tags: [Auth]
+      summary: Confirm the phone number with the 6-digit code
+      operationId: verifyPhone
+      x-service: auth
+      x-roles: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPhoneRequest'
+      responses:
+        '204':
+          description: Phone verified. The patient can now log in.
+        '400':
+          description: '`VALIDATION_FAILED`, `CODE_INVALID` or `CODE_EXPIRED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/resend-code:
+    post:
+      tags: [Auth]
+      summary: Send a new verification code
+      operationId: resendCode
+      x-service: auth
+      x-roles: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone]
+              properties:
+                phone:
+                  $ref: '#/components/schemas/Phone'
+      responses:
+        '202':
+          description: A new code was sent. Also returned for unknown or already verified numbers, so it doesn't reveal which numbers are registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CodeSent'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Log in (patients and staff)
+      description: Phone number and password for everyone. Patients must have verified their phone first.
+      operationId: login
+      x-service: auth
+      x-roles: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: '`INVALID_CREDENTIALS` (wrong phone or password, or account inactive)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: '`PHONE_NOT_VERIFIED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Log out (ends this session)
+      operationId: logout
+      x-service: auth
+      x-roles: [PATIENT, RECEPTIONIST, DOCTOR, LAB, ADMIN]
+      responses:
+        '204':
+          description: Session ended
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: The logged-in user
+      operationId: getMe
+      x-service: auth
+      x-roles: [PATIENT, RECEPTIONIST, DOCTOR, LAB, ADMIN]
+      responses:
+        '200':
+          description: The current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/check:
+    get:
+      tags: [Auth]
+      summary: Forward-auth check (called by Traefik only)
+      description: See "Forward-auth" at the top of this file. Apps never call this.
+      operationId: authCheck
+      x-service: auth
+      x-roles: [gateway]
+      responses:
+        '200':
+          description: Session valid. The headers are copied onto the request sent to the core.
+          headers:
+            X-User-Id:
+              schema:
+                type: string
+                format: uuid
+            X-User-Type:
+              schema:
+                $ref: '#/components/schemas/AccountType'
+            X-User-Roles:
+              description: Comma-separated staff roles. Empty for patients.
+              schema:
+                type: string
+                examples: ['DOCTOR']
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ---------------------------------------------------------------- booking (core)
+  /departments:
+    get:
+      tags: [Booking]
+      summary: List active departments and their clinics
+      description: Patients use `kind=CLINICAL` to browse for booking. Doctors use `kind=LAB` or `kind=RADIOLOGY` to pick where a test goes.
+      operationId: listDepartments
+      x-service: core
+      x-roles: [PATIENT, RECEPTIONIST, DOCTOR, LAB, ADMIN]
+      parameters:
+        - name: kind
+          in: query
+          schema:
+            $ref: '#/components/schemas/DepartmentKind'
+      responses:
+        '200':
+          description: Departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Department'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /departments/{departmentId}/doctors:
+    get:
+      tags: [Booking]
+      summary: Doctors who work in a department's clinics
+      operationId: listDepartmentDoctors
+      x-service: core
+      x-roles: [PATIENT, RECEPTIONIST, ADMIN]
+      parameters:
+        - $ref: '#/components/parameters/DepartmentId'
+      responses:
+        '200':
+          description: Doctors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Doctor'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /doctors/{doctorId}/slots:
+    get:
+      tags: [Booking]
+      summary: A doctor's free slots
+      description: Only open slots in the future with no active appointment. Defaults to the next 14 days.
+      operationId: listFreeSlots
+      x-service: core
+      x-roles: [PATIENT, RECEPTIONIST]
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: from
+          in: query
+          description: First Cairo day to include. Defaults to today.
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          description: Last Cairo day to include. At most 31 days after `from`.
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Free slots, earliest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Slot'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /appointments:
+    post:
+      tags: [Booking]
+      summary: Book a slot
+      description: |
+        Only one active booking per slot, enforced by the database. Of two people booking at the same
+        moment, one gets `201` and the other `409 SLOT_TAKEN`.
+        Retrying is safe: if the caller already holds this slot, the existing appointment comes back with `200`.
+      operationId: bookAppointment
+      x-service: core
+      x-roles: [PATIENT]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slotId]
+              properties:
+                slotId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The caller had already booked this slot (a retry)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '201':
+          description: Booked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: '`SLOT_TAKEN` (someone else booked it) or `SLOT_UNAVAILABLE` (blocked, cancelled or in the past)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /me/appointments:
+    get:
+      tags: [Booking]
+      summary: The patient's own appointments
+      operationId: listMyAppointments
+      x-service: core
+      x-roles: [PATIENT]
+      parameters:
+        - name: when
+          in: query
+          description: '`upcoming` (starts now or later and not finished; soonest first) or `past` (everything else; most recent first)'
+          schema:
+            type: string
+            enum: [upcoming, past]
+            default: upcoming
+      responses:
+        '200':
+          description: Appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /appointments/{appointmentId}:
+    get:
+      tags: [Booking]
+      summary: One appointment
+      description: The patient who booked it, its doctor, or a receptionist of its clinic. Anyone else gets `404`.
+      operationId: getAppointment
+      x-service: core
+      x-roles: [PATIENT, RECEPTIONIST, DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: The appointment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me/clinics:
+    get:
+      tags: [Booking]
+      summary: The clinics the staff member is assigned to
+      operationId: listMyClinics
+      x-service: core
+      x-roles: [RECEPTIONIST, DOCTOR, LAB]
+      responses:
+        '200':
+          description: Clinics
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Clinic'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /clinics/{clinicId}/appointments:
+    get:
+      tags: [Booking]
+      summary: A clinic's appointments for one day (receptionist)
+      description: Only for receptionists assigned to this clinic. No medical details.
+      operationId: listClinicAppointments
+      x-service: core
+      x-roles: [RECEPTIONIST]
+      parameters:
+        - $ref: '#/components/parameters/ClinicId'
+        - $ref: '#/components/parameters/CairoDate'
+      responses:
+        '200':
+          description: Appointments, earliest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /doctors/me/appointments:
+    get:
+      tags: [Booking]
+      summary: The doctor's own appointments for one day
+      operationId: listDoctorAppointments
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/CairoDate'
+      responses:
+        '200':
+          description: Appointments, earliest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ---------------------------------------------------------------- queue (core)
+  /appointments/{appointmentId}/check-in:
+    post:
+      tags: [Queue]
+      summary: Check a patient in (BOOKED → CHECKED_IN)
+      description: Receptionist of the appointment's clinic. The patient joins the clinic's queue.
+      operationId: checkIn
+      x-service: core
+      x-roles: [RECEPTIONIST]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: Checked in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+
+  /clinics/{clinicId}/queue:
+    get:
+      tags: [Queue]
+      summary: Queue board for a clinic
+      description: Receptionists and doctors assigned to this clinic. Who is waiting and who is with the doctor. No medical details.
+      operationId: getClinicQueue
+      x-service: core
+      x-roles: [RECEPTIONIST, DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/ClinicId'
+      responses:
+        '200':
+          description: The queue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueBoard'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /doctors/me/queue/call-next:
+    post:
+      tags: [Queue]
+      summary: Call the next patient (CHECKED_IN → IN_CONSULTATION)
+      operationId: callNextPatient
+      x-service: core
+      x-roles: [DOCTOR]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [clinicId]
+              properties:
+                clinicId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: The appointment now in consultation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: '`QUEUE_EMPTY` (no one is waiting) or `ALREADY_IN_CONSULTATION` (finish the current visit first)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /appointments/{appointmentId}/complete:
+    post:
+      tags: [Queue]
+      summary: Finish the visit (IN_CONSULTATION → COMPLETED)
+      operationId: completeVisit
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: Completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Appointment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+
+  /appointments/{appointmentId}/queue-position:
+    get:
+      tags: [Queue]
+      summary: How many people are ahead of the patient
+      operationId: getQueuePosition
+      x-service: core
+      x-roles: [PATIENT]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: The patient's place in line
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueuePosition'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- journey (core)
+  /appointments/{appointmentId}/journey:
+    get:
+      tags: [Journey]
+      summary: Where the patient is in their visit and what to do next
+      operationId: getJourney
+      x-service: core
+      x-roles: [PATIENT]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: The current stage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Journey'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ---------------------------------------------------------------- visit notes (core)
+  /appointments/{appointmentId}/notes:
+    get:
+      tags: [Visit notes]
+      summary: The latest version of the visit notes
+      description: Only the appointment's doctor. Reading is written to the audit log.
+      operationId: getVisitNotes
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: Latest version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitNotes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: '`NOT_FOUND`: not the caller''s appointment, or no notes written yet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Visit notes]
+      summary: Write or edit the visit notes (saves a new version)
+      description: |
+        Every save adds a new version and keeps the old ones. Send the version you edited as `baseVersion`
+        (`0` for the first save). If someone saved in between, you get `409 VERSION_CONFLICT`.
+      operationId: saveVisitNotes
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveVisitNotesRequest'
+      responses:
+        '200':
+          description: The new version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitNotes'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: '`VERSION_CONFLICT`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /appointments/{appointmentId}/notes/versions:
+    get:
+      tags: [Visit notes]
+      summary: Every version of the visit notes, newest first
+      operationId: listVisitNoteVersions
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VisitNotes'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /appointments/{appointmentId}/summary:
+    get:
+      tags: [Visit notes]
+      summary: The patient's visit summary
+      description: The patient-facing summary from the latest notes version. Available once the visit is completed.
+      operationId: getVisitSummary
+      x-service: core
+      x-roles: [PATIENT]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: The summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VisitSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: '`NOT_YET_AVAILABLE`: the visit isn''t completed or has no summary yet'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ---------------------------------------------------------------- tests and results (core)
+  /appointments/{appointmentId}/tests:
+    get:
+      tags: [Tests and results]
+      summary: Tests ordered during a visit (doctor)
+      operationId: listVisitTests
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      responses:
+        '200':
+          description: Tests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags: [Tests and results]
+      summary: Order a test
+      description: Only the appointment's doctor, while the visit is IN_CONSULTATION. `clinicId` is a clinic of a LAB or RADIOLOGY department.
+      operationId: orderTest
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/AppointmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderTestRequest'
+      responses:
+        '201':
+          description: Ordered (REQUESTED)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+
+  /lab/tests:
+    get:
+      tags: [Tests and results]
+      summary: Tests ordered for the lab staff member's clinics
+      operationId: listLabTests
+      x-service: core
+      x-roles: [LAB]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TestStatus'
+      responses:
+        '200':
+          description: Tests, oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TestOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tests/{testId}/start:
+    post:
+      tags: [Tests and results]
+      summary: Mark a test as started (REQUESTED → IN_PROGRESS)
+      operationId: startTest
+      x-service: core
+      x-roles: [LAB]
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: Started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+
+  /tests/{testId}/result:
+    post:
+      tags: [Tests and results]
+      summary: Upload the result file (IN_PROGRESS → AWAITING_REVIEW)
+      description: One PDF, JPEG or PNG, at most 10 MB. Uploading again before release replaces the file.
+      operationId: uploadTestResult
+      x-service: core
+      x-roles: [LAB]
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  contentMediaType: application/octet-stream
+      responses:
+        '200':
+          description: Uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '400':
+          description: '`VALIDATION_FAILED` or `FILE_TYPE_NOT_ALLOWED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+        '413':
+          description: '`FILE_TOO_LARGE`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tests/{testId}/release:
+    post:
+      tags: [Tests and results]
+      summary: Release the result to the patient (AWAITING_REVIEW → RELEASED)
+      operationId: releaseTestResult
+      x-service: core
+      x-roles: [DOCTOR]
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: Released
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/InvalidTransition'
+
+  /tests/{testId}/result/file:
+    get:
+      tags: [Tests and results]
+      summary: Download the result file
+      description: |
+        The ordering doctor, the lab staff of the test's clinic, or the patient once it is RELEASED.
+        The core streams the file from private storage; there is never a public link.
+        Before release the patient gets `404`. Every download is written to the audit log.
+      operationId: downloadTestResult
+      x-service: core
+      x-roles: [PATIENT, DOCTOR, LAB]
+      parameters:
+        - $ref: '#/components/parameters/TestId'
+      responses:
+        '200':
+          description: The file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                contentMediaType: application/pdf
+            image/jpeg:
+              schema:
+                type: string
+                contentMediaType: image/jpeg
+            image/png:
+              schema:
+                type: string
+                contentMediaType: image/png
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /me/results:
+    get:
+      tags: [Tests and results]
+      summary: The patient's test results
+      description: Tests that aren't released show only `WAITING_FOR_REVIEW`, with no file and no content.
+      operationId: listMyResults
+      x-service: core
+      x-roles: [PATIENT]
+      responses:
+        '200':
+          description: Results, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PatientResult'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ---------------------------------------------------------------- chatbot (core → ai)
+  /admin/chatbot/messages:
+    post:
+      tags: [Chatbot]
+      summary: Ask the admin assistant a question
+      description: The core forwards the question to the AI service. Answers in the question's language, only from the knowledge base, with sources.
+      operationId: askChatbot
+      x-service: core
+      x-roles: [ADMIN]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question:
+                  type: string
+                  minLength: 1
+                  maxLength: 1000
+      responses:
+        '200':
+          description: The answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatbotAnswer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '503':
+          description: '`AI_UNAVAILABLE`: the AI service is down. Nothing else is affected.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     session:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: Session token from login (KAN-7).
+      type: http
+      scheme: bearer
+      description: The opaque session token from `POST /auth/login`.
+
+  parameters:
+    AppointmentId:
+      name: appointmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ClinicId:
+      name: clinicId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DepartmentId:
+      name: departmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    TestId:
+      name: testId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CairoDate:
+      name: date
+      in: query
+      description: Cairo calendar day. Defaults to today in Cairo.
+      schema:
+        type: string
+        format: date
+
+  responses:
+    ValidationError:
+      description: '`VALIDATION_FAILED`: `error.details` lists the bad fields'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: '`UNAUTHENTICATED`: no session, or it expired or was revoked'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: '`FORBIDDEN`: the caller''s role can''t do this'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: '`NOT_FOUND`: doesn''t exist, or isn''t the caller''s'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InvalidTransition:
+      description: '`INVALID_TRANSITION`: the status change isn''t allowed from the current status'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: '`RATE_LIMITED`: too many attempts. Try again after `Retry-After` seconds.'
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
   schemas:
+    # ---- shared
     Health:
       type: object
       required: [status]
@@ -73,18 +1194,539 @@ components:
         status:
           type: string
           enum: [ok]
+
     Error:
       type: object
-      required: [statusCode, message]
+      required: [error]
       properties:
-        statusCode: { type: integer, example: 401 }
-        message: { type: string, example: Unauthorized }
-  responses:
-    Unauthorized:
-      description: No valid session.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Error"
-security:
-  - session: []
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              $ref: '#/components/schemas/ErrorCode'
+            message:
+              type: string
+              description: English, for developers and logs. Apps show their own translated text.
+            details:
+              type: array
+              items:
+                type: object
+                required: [field, problem]
+                properties:
+                  field:
+                    type: string
+                  problem:
+                    type: string
+      examples:
+        - error:
+            code: SLOT_TAKEN
+            message: This slot was just booked by someone else.
+
+    ErrorCode:
+      type: string
+      enum:
+        - VALIDATION_FAILED
+        - UNAUTHENTICATED
+        - FORBIDDEN
+        - NOT_FOUND
+        - RATE_LIMITED
+        - PHONE_TAKEN
+        - PHONE_NOT_VERIFIED
+        - INVALID_CREDENTIALS
+        - CODE_INVALID
+        - CODE_EXPIRED
+        - SLOT_TAKEN
+        - SLOT_UNAVAILABLE
+        - INVALID_TRANSITION
+        - QUEUE_EMPTY
+        - ALREADY_IN_CONSULTATION
+        - VERSION_CONFLICT
+        - NOT_YET_AVAILABLE
+        - FILE_TYPE_NOT_ALLOWED
+        - FILE_TOO_LARGE
+        - AI_UNAVAILABLE
+        - INTERNAL
+
+    LocalizedText:
+      type: object
+      required: [ar, en]
+      properties:
+        ar:
+          type: string
+        en:
+          type: string
+
+    Phone:
+      type: string
+      description: Egyptian mobile number in E.164 form
+      pattern: '^\+201[0-9]{9}$'
+      examples: ['+201000000001']
+
+    AccountType:
+      type: string
+      enum: [PATIENT, STAFF]
+
+    StaffRole:
+      type: string
+      enum: [RECEPTIONIST, DOCTOR, LAB, ADMIN]
+
+    # ---- auth
+    RegisterRequest:
+      type: object
+      required: [name, phone, password]
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+        phone:
+          $ref: '#/components/schemas/Phone'
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+
+    CodeSent:
+      type: object
+      required: [expiresAt]
+      properties:
+        expiresAt:
+          type: string
+          format: date-time
+        simulatedCode:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: Prototype only (SMS is simulated). The app shows this code on screen. Removed when a real SMS provider is used.
+
+    VerifyPhoneRequest:
+      type: object
+      required: [phone, code]
+      properties:
+        phone:
+          $ref: '#/components/schemas/Phone'
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    LoginRequest:
+      type: object
+      required: [phone, password]
+      properties:
+        phone:
+          $ref: '#/components/schemas/Phone'
+        password:
+          type: string
+
+    LoginResponse:
+      type: object
+      required: [token, expiresAt, user]
+      properties:
+        token:
+          type: string
+          description: 'Send as `Authorization: Bearer <token>`.'
+        expiresAt:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      required: [id, type, name, phone, roles]
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/AccountType'
+        name:
+          type: string
+        phone:
+          $ref: '#/components/schemas/Phone'
+        roles:
+          type: array
+          description: Empty for patients
+          items:
+            $ref: '#/components/schemas/StaffRole'
+
+    # ---- hospital setup
+    DepartmentKind:
+      type: string
+      enum: [CLINICAL, LAB, RADIOLOGY]
+
+    Department:
+      type: object
+      required: [id, kind, name, clinics]
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          $ref: '#/components/schemas/DepartmentKind'
+        name:
+          $ref: '#/components/schemas/LocalizedText'
+        clinics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Clinic'
+
+    Clinic:
+      type: object
+      required: [id, departmentId, name, building, floor, directions]
+      properties:
+        id:
+          type: string
+          format: uuid
+        departmentId:
+          type: string
+          format: uuid
+        name:
+          $ref: '#/components/schemas/LocalizedText'
+        building:
+          type: string
+        floor:
+          type: string
+        directions:
+          $ref: '#/components/schemas/LocalizedText'
+
+    Doctor:
+      type: object
+      required: [id, name, clinics]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        clinics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Clinic'
+
+    # ---- booking
+    Slot:
+      type: object
+      required: [id, doctorId, clinic, startsAt, endsAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        doctorId:
+          type: string
+          format: uuid
+        clinic:
+          $ref: '#/components/schemas/Clinic'
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+
+    AppointmentStatus:
+      type: string
+      enum: [BOOKED, CHECKED_IN, IN_CONSULTATION, COMPLETED, CANCELLED, NO_SHOW]
+
+    Appointment:
+      type: object
+      description: No medical details. Receptionists see exactly this.
+      required: [id, status, startsAt, endsAt, patient, doctor, clinic, bookedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AppointmentStatus'
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        patient:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        doctor:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        clinic:
+          $ref: '#/components/schemas/Clinic'
+        bookedAt:
+          type: string
+          format: date-time
+        checkedInAt:
+          type: [string, 'null']
+          format: date-time
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        completedAt:
+          type: [string, 'null']
+          format: date-time
+
+    # ---- queue
+    QueueItem:
+      type: object
+      required: [appointmentId, patientName, doctorName, checkedInAt]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        patientName:
+          type: string
+        doctorName:
+          type: string
+        checkedInAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+
+    QueueBoard:
+      type: object
+      required: [clinicId, waiting, inConsultation]
+      properties:
+        clinicId:
+          type: string
+          format: uuid
+        waiting:
+          description: CHECKED_IN, earliest check-in first
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItem'
+        inConsultation:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItem'
+
+    QueuePosition:
+      type: object
+      required: [appointmentId, status, peopleAhead]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/AppointmentStatus'
+        peopleAhead:
+          type: [integer, 'null']
+          minimum: 0
+          description: Only while CHECKED_IN; `null` otherwise
+
+    # ---- journey
+    JourneyStageCode:
+      type: string
+      enum: [BOOKED, CHECKED_IN, WITH_DOCTOR, TEST_ORDERED, RESULT_READY, DONE]
+
+    Journey:
+      type: object
+      required: [appointmentId, stage, title, nextStep, location]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        stage:
+          $ref: '#/components/schemas/JourneyStageCode'
+        title:
+          $ref: '#/components/schemas/LocalizedText'
+        nextStep:
+          $ref: '#/components/schemas/LocalizedText'
+        location:
+          description: Where to go now; `null` when there's nowhere to go
+          oneOf:
+            - $ref: '#/components/schemas/Clinic'
+            - type: 'null'
+
+    # ---- visit notes
+    VisitNotes:
+      type: object
+      required: [appointmentId, version, clinicalNotes, patientSummary, authorName, createdAt]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 1
+        clinicalNotes:
+          type: string
+          description: Doctor only. Never shown to the patient.
+        patientSummary:
+          type: [string, 'null']
+          description: What the patient sees once the visit is completed
+        authorName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    SaveVisitNotesRequest:
+      type: object
+      required: [baseVersion, clinicalNotes]
+      properties:
+        baseVersion:
+          type: integer
+          minimum: 0
+        clinicalNotes:
+          type: string
+          minLength: 1
+          maxLength: 20000
+        patientSummary:
+          type: [string, 'null']
+          maxLength: 5000
+
+    VisitSummary:
+      type: object
+      required: [appointmentId, doctorName, completedAt, summary]
+      properties:
+        appointmentId:
+          type: string
+          format: uuid
+        doctorName:
+          type: string
+        completedAt:
+          type: string
+          format: date-time
+        summary:
+          type: string
+
+    # ---- tests and results
+    TestStatus:
+      type: string
+      enum: [REQUESTED, IN_PROGRESS, AWAITING_REVIEW, RELEASED]
+
+    OrderTestRequest:
+      type: object
+      required: [clinicId, testName]
+      properties:
+        clinicId:
+          type: string
+          format: uuid
+        testName:
+          type: string
+          minLength: 1
+          maxLength: 200
+        instructions:
+          type: [string, 'null']
+          maxLength: 2000
+
+    TestOrder:
+      type: object
+      description: Staff view of a test (doctor and lab)
+      required: [id, appointmentId, patientName, testName, clinic, status, orderedByName, orderedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        appointmentId:
+          type: string
+          format: uuid
+        patientName:
+          type: string
+        testName:
+          type: string
+        instructions:
+          type: [string, 'null']
+        clinic:
+          $ref: '#/components/schemas/Clinic'
+        status:
+          $ref: '#/components/schemas/TestStatus'
+        orderedByName:
+          type: string
+        orderedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: [string, 'null']
+          format: date-time
+        releasedAt:
+          type: [string, 'null']
+          format: date-time
+        file:
+          oneOf:
+            - $ref: '#/components/schemas/ResultFile'
+            - type: 'null'
+
+    ResultFile:
+      type: object
+      required: [fileName, contentType, sizeBytes, uploadedAt]
+      properties:
+        fileName:
+          type: string
+        contentType:
+          type: string
+          enum: [application/pdf, image/jpeg, image/png]
+        sizeBytes:
+          type: integer
+          maximum: 10485760
+        uploadedAt:
+          type: string
+          format: date-time
+
+    PatientResult:
+      type: object
+      description: Patient view. Nothing from the result is included until it is released.
+      required: [testId, appointmentId, testName, orderedAt, status]
+      properties:
+        testId:
+          type: string
+          format: uuid
+        appointmentId:
+          type: string
+          format: uuid
+        testName:
+          type: string
+        orderedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [WAITING_FOR_REVIEW, RELEASED]
+        releasedAt:
+          type: [string, 'null']
+          format: date-time
+        file:
+          description: Only when RELEASED. Download it with `GET /tests/{testId}/result/file`.
+          oneOf:
+            - $ref: '#/components/schemas/ResultFile'
+            - type: 'null'
+
+    # ---- chatbot
+    ChatbotAnswer:
+      type: object
+      required: [status, answer, language, sources]
+      properties:
+        status:
+          type: string
+          enum: [ANSWERED, NO_INFORMATION]
+          description: '`NO_INFORMATION` means the assistant said "I don''t have that information"'
+        answer:
+          type: string
+        language:
+          type: string
+          enum: [ar, en]
+        sources:
+          type: array
+          description: The knowledge-base entries the answer used. Empty when `NO_INFORMATION`.
+          items:
+            type: object
+            required: [entryId, title]
+            properties:
+              entryId:
+                type: string
+              title:
+                $ref: '#/components/schemas/LocalizedText'

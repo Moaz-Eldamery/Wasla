@@ -6,4 +6,5 @@ Prisma schema and migrations for `wasla_clinical`: the `auth` and `core` schemas
 
 ## Files
 
-_None yet._ Planned: `schema.prisma` (KAN-4) and `migrations/` (created by Prisma).
+- `schema.prisma`: every table and enum in the `auth` and `core` schemas. The rules Prisma can't express are listed in `schema.md` under "Raw SQL in the first migration".
+- `migrations/`: created by Prisma on the first migration. Planned.

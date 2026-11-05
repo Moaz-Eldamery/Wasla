@@ -1,0 +1,358 @@
+// The wasla_clinical database: the auth and core schemas.
+// Must always match schema.md. Update both in the same change.
+//
+// Times are stored in UTC (timestamptz). Some rules can't be written in Prisma
+// and must be added as raw SQL in the first migration. They are listed in
+// schema.md under "Raw SQL in the first migration".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["auth", "core"]
+}
+
+// ---------------------------------------------------------------------------
+// auth schema: accounts, sessions, OTP codes. Only services/auth reads
+// password hashes, sessions and OTP codes.
+// ---------------------------------------------------------------------------
+
+enum AccountType {
+  PATIENT
+  STAFF
+
+  @@schema("auth")
+}
+
+enum StaffRole {
+  RECEPTIONIST
+  DOCTOR
+  LAB
+  ADMIN
+
+  @@schema("auth")
+}
+
+enum OtpPurpose {
+  PHONE_VERIFICATION
+
+  @@schema("auth")
+}
+
+model Account {
+  id              String      @id @default(uuid()) @db.Uuid
+  type            AccountType
+  name            String
+  phone           String      @unique
+  passwordHash    String      @map("password_hash")
+  roles           StaffRole[]
+  active          Boolean     @default(true)
+  phoneVerifiedAt DateTime?   @map("phone_verified_at") @db.Timestamptz(3)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sessions Session[]
+  otpCodes OtpCode[]
+
+  staffClinics       StaffClinic[]
+  slotsAsDoctor      Slot[]
+  appointments       Appointment[]
+  noteVersions       VisitNoteVersion[]
+  testsOrdered       TestOrder[]        @relation("TestOrderedBy")
+  testsReleased      TestOrder[]        @relation("TestReleasedBy")
+  resultFilesUploads TestResultFile[]
+  auditEntries       AuditLog[]
+
+  @@map("accounts")
+  @@schema("auth")
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  accountId  String    @map("account_id") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSeenAt DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@map("sessions")
+  @@schema("auth")
+}
+
+model OtpCode {
+  id         String     @id @default(uuid()) @db.Uuid
+  accountId  String     @map("account_id") @db.Uuid
+  purpose    OtpPurpose
+  codeHash   String     @map("code_hash")
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt  DateTime   @map("expires_at") @db.Timestamptz(3)
+  consumedAt DateTime?  @map("consumed_at") @db.Timestamptz(3)
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, purpose, createdAt])
+  @@map("otp_codes")
+  @@schema("auth")
+}
+
+// ---------------------------------------------------------------------------
+// core schema: hospital setup, booking, visits, tests, journey, audit log.
+// ---------------------------------------------------------------------------
+
+enum DepartmentKind {
+  CLINICAL
+  LAB
+  RADIOLOGY
+
+  @@schema("core")
+}
+
+enum SlotStatus {
+  OPEN
+  BLOCKED
+  CANCELLED
+
+  @@schema("core")
+}
+
+enum AppointmentStatus {
+  BOOKED
+  CHECKED_IN
+  IN_CONSULTATION
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+
+  @@schema("core")
+}
+
+enum TestStatus {
+  REQUESTED
+  IN_PROGRESS
+  AWAITING_REVIEW
+  RELEASED
+
+  @@schema("core")
+}
+
+enum JourneyStageCode {
+  BOOKED
+  CHECKED_IN
+  WITH_DOCTOR
+  TEST_ORDERED
+  RESULT_READY
+  DONE
+
+  @@schema("core")
+}
+
+enum JourneyLocation {
+  APPOINTMENT_CLINIC
+  TEST_CLINIC
+  NONE
+
+  @@schema("core")
+}
+
+enum AuditOutcome {
+  SUCCESS
+  DENIED
+  FAILED
+
+  @@schema("core")
+}
+
+model Department {
+  id        String         @id @default(uuid()) @db.Uuid
+  kind      DepartmentKind
+  nameAr    String         @map("name_ar")
+  nameEn    String         @map("name_en")
+  active    Boolean        @default(true)
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  clinics Clinic[]
+
+  @@map("departments")
+  @@schema("core")
+}
+
+model Clinic {
+  id           String   @id @default(uuid()) @db.Uuid
+  departmentId String   @map("department_id") @db.Uuid
+  nameAr       String   @map("name_ar")
+  nameEn       String   @map("name_en")
+  building     String
+  floor        String
+  directionsAr String   @map("directions_ar")
+  directionsEn String   @map("directions_en")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  department Department    @relation(fields: [departmentId], references: [id])
+  staff      StaffClinic[]
+  slots      Slot[]
+  testOrders TestOrder[]
+
+  @@index([departmentId])
+  @@map("clinics")
+  @@schema("core")
+}
+
+model StaffClinic {
+  staffId    String   @map("staff_id") @db.Uuid
+  clinicId   String   @map("clinic_id") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz(3)
+
+  staff  Account @relation(fields: [staffId], references: [id])
+  clinic Clinic  @relation(fields: [clinicId], references: [id])
+
+  @@id([staffId, clinicId])
+  @@index([clinicId])
+  @@map("staff_clinics")
+  @@schema("core")
+}
+
+model Slot {
+  id        String     @id @default(uuid()) @db.Uuid
+  doctorId  String     @map("doctor_id") @db.Uuid
+  clinicId  String     @map("clinic_id") @db.Uuid
+  startsAt  DateTime   @map("starts_at") @db.Timestamptz(3)
+  endsAt    DateTime   @map("ends_at") @db.Timestamptz(3)
+  status    SlotStatus @default(OPEN)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  doctor       Account       @relation(fields: [doctorId], references: [id])
+  clinic       Clinic        @relation(fields: [clinicId], references: [id])
+  appointments Appointment[]
+
+  @@unique([doctorId, startsAt])
+  @@index([clinicId, startsAt])
+  @@map("slots")
+  @@schema("core")
+}
+
+model Appointment {
+  id           String            @id @default(uuid()) @db.Uuid
+  patientId    String            @map("patient_id") @db.Uuid
+  slotId       String            @map("slot_id") @db.Uuid
+  status       AppointmentStatus @default(BOOKED)
+  bookedAt     DateTime          @default(now()) @map("booked_at") @db.Timestamptz(3)
+  checkedInAt  DateTime?         @map("checked_in_at") @db.Timestamptz(3)
+  startedAt    DateTime?         @map("started_at") @db.Timestamptz(3)
+  completedAt  DateTime?         @map("completed_at") @db.Timestamptz(3)
+  cancelledAt  DateTime?         @map("cancelled_at") @db.Timestamptz(3)
+  cancelReason String?           @map("cancel_reason")
+  noShowReason String?           @map("no_show_reason")
+  updatedAt    DateTime          @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  patient      Account            @relation(fields: [patientId], references: [id])
+  slot         Slot               @relation(fields: [slotId], references: [id])
+  noteVersions VisitNoteVersion[]
+  testOrders   TestOrder[]
+
+  @@index([patientId])
+  @@index([slotId])
+  @@index([status, checkedInAt])
+  @@map("appointments")
+  @@schema("core")
+}
+
+model VisitNoteVersion {
+  id             String   @id @default(uuid()) @db.Uuid
+  appointmentId  String   @map("appointment_id") @db.Uuid
+  version        Int
+  clinicalNotes  String   @map("clinical_notes")
+  patientSummary String?  @map("patient_summary")
+  authorId       String   @map("author_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  author      Account     @relation(fields: [authorId], references: [id])
+
+  @@unique([appointmentId, version])
+  @@map("visit_note_versions")
+  @@schema("core")
+}
+
+model TestOrder {
+  id            String     @id @default(uuid()) @db.Uuid
+  appointmentId String     @map("appointment_id") @db.Uuid
+  clinicId      String     @map("clinic_id") @db.Uuid
+  testName      String     @map("test_name")
+  instructions  String?
+  status        TestStatus @default(REQUESTED)
+  orderedById   String     @map("ordered_by_id") @db.Uuid
+  orderedAt     DateTime   @default(now()) @map("ordered_at") @db.Timestamptz(3)
+  startedAt     DateTime?  @map("started_at") @db.Timestamptz(3)
+  releasedAt    DateTime?  @map("released_at") @db.Timestamptz(3)
+  releasedById  String?    @map("released_by_id") @db.Uuid
+
+  appointment Appointment     @relation(fields: [appointmentId], references: [id])
+  clinic      Clinic          @relation(fields: [clinicId], references: [id])
+  orderedBy   Account         @relation("TestOrderedBy", fields: [orderedById], references: [id])
+  releasedBy  Account?        @relation("TestReleasedBy", fields: [releasedById], references: [id])
+  resultFile  TestResultFile?
+
+  @@index([appointmentId])
+  @@index([clinicId, status])
+  @@map("test_orders")
+  @@schema("core")
+}
+
+model TestResultFile {
+  id           String   @id @default(uuid()) @db.Uuid
+  testOrderId  String   @unique @map("test_order_id") @db.Uuid
+  storageKey   String   @unique @map("storage_key")
+  fileName     String   @map("file_name")
+  contentType  String   @map("content_type")
+  sizeBytes    Int      @map("size_bytes")
+  uploadedById String   @map("uploaded_by_id") @db.Uuid
+  uploadedAt   DateTime @default(now()) @map("uploaded_at") @db.Timestamptz(3)
+
+  testOrder  TestOrder @relation(fields: [testOrderId], references: [id])
+  uploadedBy Account   @relation(fields: [uploadedById], references: [id])
+
+  @@map("test_result_files")
+  @@schema("core")
+}
+
+model JourneyStage {
+  code       JourneyStageCode @id
+  sortOrder  Int              @map("sort_order")
+  titleAr    String           @map("title_ar")
+  titleEn    String           @map("title_en")
+  nextStepAr String           @map("next_step_ar")
+  nextStepEn String           @map("next_step_en")
+  location   JourneyLocation
+
+  @@map("journey_stages")
+  @@schema("core")
+}
+
+model AuditLog {
+  id         BigInt       @id @default(autoincrement())
+  occurredAt DateTime     @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  actorId    String?      @map("actor_id") @db.Uuid
+  actorType  AccountType? @map("actor_type")
+  action     String
+  entityType String?      @map("entity_type")
+  entityId   String?      @map("entity_id")
+  outcome    AuditOutcome
+  ip         String?
+  details    Json?
+
+  actor Account? @relation(fields: [actorId], references: [id])
+
+  @@index([occurredAt])
+  @@index([actorId, occurredAt])
+  @@index([entityType, entityId])
+  @@map("audit_log")
+  @@schema("core")
+}
