@@ -1,3 +1,18 @@
+## 2026-11-05 19:18 +0200 · NourElghaly
+Changes: 2026-11-05 19:34, 2026-11-05 19:35
+
+> ok now lets do kan 7
+
+## 2026-11-05 19:17 +0200 · NourElghaly
+Changes: none
+
+> so now what is the better next step to do
+
+## 2026-11-05 14:52 +0200 · NourElghaly
+Changes: none
+
+> so kan 8 is now done right?
+
 ## 2026-11-05 14:50 +0200 · NourElghaly
 Changes: 2026-11-05 14:51
 

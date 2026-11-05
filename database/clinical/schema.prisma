@@ -14,6 +14,13 @@ generator core {
   importFileExtension = "js"
 }
 
+generator auth {
+  provider            = "prisma-client"
+  output              = "../../services/auth/src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
 datasource db {
   provider = "postgresql"
   schemas  = ["auth", "core"]

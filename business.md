@@ -25,6 +25,11 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - Patients are identified by an internal ID, **not** a National ID.
 - Staff accounts are created by an admin. Deactivating a staff member logs them out immediately.
 - Everyone logs in with phone number and password. Staff don't get a phone code: the admin created their account.
+- A session lasts 7 days from login; then the user logs in again. Logging out ends that session at once. A deactivated account can't log in, and its open sessions stop working at once.
+- A phone code is valid for 10 minutes and allows 5 wrong guesses; after that the patient asks for a new one. At most 3 codes per phone number per hour.
+- Signing up again with a number that was never verified starts over (new name, password and code). A verified number, or a staff member's, can't be used to sign up.
+- Wrong phone, wrong password and deactivated account all get the same "wrong phone number or password" answer, and asking to resend a code answers the same way for every number, so nobody can find out who is registered.
+- For now, login attempts are limited only by the gateway's per-IP limit. Locking an account after repeated failures comes with KAN-24.
 
 ## Booking
 - Patients browse departments → doctors → free slots, then book one.

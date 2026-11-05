@@ -1,3 +1,13 @@
+## 2026-11-05 19:35 +0200 · NourElghaly
+Prompt: 2026-11-05 19:18 · NourElghaly
+What: CI now covers login. The database job also runs the auth e2e tests as wasla_auth, and the stack job signs a patient up, logs in and calls a core endpoint through the gateway with that session.
+Files: .github/workflows/ci.yml, .github/workflows/README.md
+
+## 2026-11-05 19:34 +0200 · NourElghaly
+Prompt: 2026-11-05 19:18 · NourElghaly
+What: KAN-7 sign-up and login in the auth service. Patients register with name, phone and password and confirm the phone with a simulated 6-digit code (shown in the app and the logs); patients and staff log in and out with phone and password; sessions live 7 days in auth.sessions with only the token's hash stored. The gateway's auth check now answers live sessions of active accounts with X-User-Id, X-User-Type and X-User-Roles, and refuses everything else, so booking is reachable through the gateway. Passwords are argon2id; every login, sign-up, code check and logout is written to the audit log. Recorded the session, code and sign-up rules in business.md. Unit tests plus an end-to-end test against a real database.
+Files: services/auth/src/, services/auth/test/auth.e2e-spec.ts, services/auth/package.json, services/auth/Dockerfile, services/auth/.oxlintrc.json, services/core/package.json, database/clinical/schema.prisma, pnpm-lock.yaml, business.md, structure.md, services/auth/README.md, services/auth/src/authentication/README.md, services/auth/src/authorization/README.md, services/auth/src/identity/README.md
+
 ## 2026-11-05 14:51 +0200 · NourElghaly
 Prompt: 2026-11-05 14:50 · NourElghaly
 What: CI now runs the database tests. A new `database` job starts Postgres with database/init.sh, applies the migrations as wasla_migrator and runs the core e2e tests as wasla_core, so the simultaneous-booking, ownership, audit-log and DB-grant tests run on every pull request instead of being skipped.

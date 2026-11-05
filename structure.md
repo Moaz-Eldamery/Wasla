@@ -173,6 +173,7 @@ Only the folders above are ours. Everything else follows the framework's standar
 - Core modules use each other only through their public service (IAppointments, IQueue, IClinical, IJourney, INotifications, IAdmin). Never import another module's internals.
 - `realtime/` reacts to events. Modules publish events through `events/`; they never call `realtime/` directly.
 - Only `services/auth` reads password hashes, sessions or OTP codes.
+- Code the auth service's areas share (database client, audit writer, error format) sits at the root of `services/auth/src/`, next to `main.ts`.
 - Only `services/ai` talks to the LLM, and only the AI client in `core/src/shared/` talks to `services/ai`.
 - `contracts/openapi.yaml` is the source of truth for the API. Each frontend generates its `lib/api-types.ts` from it; CI fails if they're out of date.
 - One Prisma schema (`database/clinical/schema.prisma`) covers both clinical schemas. Each service connects with its own DB user, so access is limited by the database, not by convention. See `schema.md`.

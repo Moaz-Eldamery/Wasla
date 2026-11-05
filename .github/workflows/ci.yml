@@ -28,12 +28,12 @@ jobs:
       - run: pnpm build
 
   database:
-    name: Core against a real database (migrations, e2e)
+    name: Auth and core against a real database (migrations, e2e)
     runs-on: ubuntu-latest
     env:
-      # Same fake passwords as .env.example.
+      # Same fake passwords as .env.example. Each service's tests connect as
+      # that service's own DB user (DATABASE_URL, set per step).
       MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
-      DATABASE_URL: postgresql://wasla_core:fake-core-password@127.0.0.1:5432/wasla_clinical
       SEED_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
     steps:
       - uses: actions/checkout@v4
@@ -58,8 +58,14 @@ jobs:
         run: timeout 120 bash -c 'until docker exec postgres pg_isready -h 127.0.0.1 -U postgres -d wasla_clinical; do sleep 2; done'
       - name: Apply migrations as wasla_migrator
         run: pnpm db:migrate
+      - name: Auth e2e tests as wasla_auth
+        run: pnpm --filter @wasla/auth test:e2e
+        env:
+          DATABASE_URL: postgresql://wasla_auth:fake-auth-password@127.0.0.1:5432/wasla_clinical
       - name: Core e2e tests as wasla_core
         run: pnpm --filter @wasla/core test:e2e
+        env:
+          DATABASE_URL: postgresql://wasla_core:fake-core-password@127.0.0.1:5432/wasla_clinical
       - name: Postgres logs
         if: failure()
         run: docker logs postgres
@@ -93,6 +99,17 @@ jobs:
           code=$(curl --silent --output /dev/null --write-out '%{http_code}' http://localhost:8080/health)
           echo "GET /health -> $code"
           test "$code" = "401"
+      - name: A patient signs up, logs in and reaches the core through the gateway
+        run: |
+          json='content-type: application/json'
+          phone=+201000000099
+          code=$(curl --fail --silent --show-error -X POST http://localhost:8080/auth/register -H "$json" \
+            -d "{\"name\":\"CI Patient\",\"phone\":\"$phone\",\"password\":\"ci-password-1\"}" | jq -r .simulatedCode)
+          curl --fail --silent --show-error -X POST http://localhost:8080/auth/verify-phone -H "$json" \
+            -d "{\"phone\":\"$phone\",\"code\":\"$code\"}"
+          token=$(curl --fail --silent --show-error -X POST http://localhost:8080/auth/login -H "$json" \
+            -d "{\"phone\":\"$phone\",\"password\":\"ci-password-1\"}" | jq -r .token)
+          curl --fail --silent --show-error http://localhost:8080/me/appointments -H "Authorization: Bearer $token"
       - name: Logs
         if: failure()
         run: docker compose logs

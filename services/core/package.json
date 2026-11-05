@@ -8,7 +8,7 @@
     "dist"
   ],
   "scripts": {
-    "postinstall": "prisma generate --schema ../../database/clinical/schema.prisma",
+    "postinstall": "prisma generate --schema ../../database/clinical/schema.prisma --generator core",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
