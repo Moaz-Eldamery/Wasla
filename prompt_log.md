@@ -14,6 +14,36 @@ Changes: C-0000, C-0001   (or: none)
 
 ---
 
+## P-0020 · 2026-11-05 10:09 +0200
+Author: Moaz Mohamed
+Changes: none (created project/tests.md, outside the repo)
+
+> can you create a file that stores the names and slight details of everytest you make. i dont want it to be in the maaian directory, i want it to be right under /project
+
+## P-0019 · 2026-11-05 10:07 +0200
+Author: Moaz Mohamed
+Changes: none
+
+> do you store the tests you have done?
+
+## P-0018 · 2026-11-05 08:49 +0200
+Author: Moaz Mohamed
+Changes: C-0009, C-0010, C-0011, C-0012
+
+> ok can you start working on KAN-5 and when you do that put it in in process and when you finish it move it to review to test it. finally when tests pass and no more modifications are needed move it to done
+
+## P-0017 · 2026-11-05 07:43 +0200
+Author: Moaz Mohamed
+Changes: none
+
+> which of the sprint backlog do you think we should start with?
+
+## P-0016 · 2026-11-05 07:10 +0200
+Author: Moaz Mohamed
+Changes: none
+
+> .
+
 ## P-0015 · 2026-11-04 18:01 +0200
 Author: NourElghaly
 Changes: C-0008

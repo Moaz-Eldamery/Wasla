@@ -6,4 +6,5 @@ The agreed API that every app and service follows. The fake server reads it, and
 
 ## Files
 
-_None yet._ Planned: `openapi.yaml` (every endpoint: request, response, errors) and `events.md` (live-update messages and internal events), KAN-4.
+- `openapi.yaml`: every endpoint (request, response, errors) as seen through the gateway. `pnpm mock` serves it on port 4010. So far it holds only the health endpoints and the gateway's auth check (KAN-5); KAN-4 adds the rest.
+- Planned: `events.md` (live-update messages and internal events), KAN-4.

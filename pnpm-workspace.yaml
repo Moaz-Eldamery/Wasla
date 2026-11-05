@@ -2,3 +2,8 @@ packages:
   - "apps/*"
   - "services/auth"
   - "services/core"
+
+# Dependency install scripts are off unless listed here as true.
+allowBuilds:
+  "@parcel/watcher": false
+  "@scarf/scarf": false

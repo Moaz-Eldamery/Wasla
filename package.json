@@ -1,8 +1,18 @@
 {
   "name": "wasla",
   "private": true,
+  "packageManager": "pnpm@11.6.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
-  "scripts": {}
+  "scripts": {
+    "lint": "pnpm -r --if-present lint",
+    "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm -r --if-present test:e2e",
+    "build": "pnpm -r --if-present build",
+    "mock": "prism mock contracts/openapi.yaml --port 4010"
+  },
+  "devDependencies": {
+    "@stoplight/prism-cli": "^5.16.0"
+  }
 }

@@ -1,0 +1,229 @@
+# The whole Wasla stack. First run: cp .env.example .env, then
+#   docker compose up --build
+#
+# Only the gateway publishes a port (plus Uptime Kuma, on localhost). The auth,
+# core and AI services, Postgres, Redis and MinIO are reachable only inside
+# Docker. Networks:
+#   edge    gateway <-> auth, core
+#   data    auth, core <-> Postgres, Redis, MinIO          (no internet)
+#   ai      core <-> AI service <-> Postgres (wasla_ai)    (no internet)
+#   egress  outbound internet for the AI service (Claude API) and Uptime Kuma
+
+name: wasla
+
+services:
+  # ---------------------------------------------------------------- gateway
+  gateway:
+    image: traefik:v3.6
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=wasla-edge
+      - --entrypoints.web.address=:80
+      - --ping=true
+      - --accesslog=true
+    ports:
+      - "${GATEWAY_PORT:-8080}:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    depends_on:
+      auth:
+        condition: service_healthy
+    networks: [edge]
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- services
+  auth:
+    build:
+      context: .
+      dockerfile: services/auth/Dockerfile
+    environment:
+      PORT: "3000"
+      DATABASE_URL: postgresql://wasla_auth:${AUTH_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=auth
+      REDIS_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [edge, data]
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # /auth and /auth/* go to the auth service. No auth check: login has to
+      # be reachable without a session.
+      - traefik.http.routers.auth.rule=Path(`/auth`) || PathPrefix(`/auth/`)
+      - traefik.http.routers.auth.entrypoints=web
+      - traefik.http.routers.auth.middlewares=strip-identity,rate-limit,body-limit
+      - traefik.http.services.auth.loadbalancer.server.port=3000
+      # Middlewares shared by every route. They live here because the auth
+      # service is always running when the gateway is.
+      #   strip-identity: drops identity headers a client tries to send itself
+      - traefik.http.middlewares.strip-identity.headers.customrequestheaders.X-User-Id=
+      - traefik.http.middlewares.strip-identity.headers.customrequestheaders.X-User-Type=
+      - traefik.http.middlewares.strip-identity.headers.customrequestheaders.X-User-Roles=
+      #   auth-check: asks the auth service before every protected request.
+      #   Anything but a 2xx is refused (fails closed). On success the user's
+      #   ID, type and roles are copied onto the request for the core.
+      - traefik.http.middlewares.auth-check.forwardauth.address=http://auth:3000/auth/check
+      - traefik.http.middlewares.auth-check.forwardauth.authResponseHeaders=X-User-Id,X-User-Type,X-User-Roles
+      #   rate-limit: per client IP
+      - traefik.http.middlewares.rate-limit.ratelimit.average=20
+      - traefik.http.middlewares.rate-limit.ratelimit.burst=50
+      #   body-limit: 11 MB, room for a 10 MB result upload
+      - traefik.http.middlewares.body-limit.buffering.maxRequestBodyBytes=11534336
+
+  core:
+    build:
+      context: .
+      dockerfile: services/core/Dockerfile
+    environment:
+      PORT: "3000"
+      DATABASE_URL: postgresql://wasla_core:${CORE_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=core
+      REDIS_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/1
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
+      MINIO_RESULTS_BUCKET: ${MINIO_RESULTS_BUCKET:?}
+      AI_SERVICE_URL: http://ai:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    # Deliberately not waiting for the AI service: the core must work without it.
+    networks: [edge, data, ai]
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      # Everything that isn't /auth goes to the core, after the auth check.
+      - traefik.http.routers.core.rule=PathPrefix(`/`)
+      - traefik.http.routers.core.priority=1
+      - traefik.http.routers.core.entrypoints=web
+      - traefik.http.routers.core.middlewares=strip-identity,rate-limit,body-limit,auth-check
+      - traefik.http.services.core.loadbalancer.server.port=3000
+
+  ai:
+    build:
+      context: .
+      dockerfile: services/ai/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://wasla_ai:${AI_DB_PASSWORD:?}@postgres:5432/wasla_ai
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # No Traefik labels and no ports: only the core can reach it.
+    networks: [ai, egress]
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- data
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      MIGRATOR_DB_PASSWORD: ${MIGRATOR_DB_PASSWORD:?}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD:?}
+      CORE_DB_PASSWORD: ${CORE_DB_PASSWORD:?}
+      AI_DB_PASSWORD: ${AI_DB_PASSWORD:?}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    healthcheck:
+      # Over TCP: while init.sh runs, Postgres only listens on its socket, so
+      # this stays unhealthy until setup is finished.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d wasla_clinical"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [data, ai]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?}", "--appendonly", "yes"]
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [data]
+    restart: unless-stopped
+
+  # MinIO stopped publishing free images in 2025. pgsty/minio is a community
+  # build of the same server, and it includes the mc client.
+  minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks: [data]
+    restart: unless-stopped
+
+  # One-off: creates the results bucket and makes sure it is private.
+  minio-init:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" &&
+        mc mb --ignore-existing "local/$$MINIO_RESULTS_BUCKET" &&
+        mc anonymous set private "local/$$MINIO_RESULTS_BUCKET"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?}
+      MINIO_RESULTS_BUCKET: ${MINIO_RESULTS_BUCKET:?}
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks: [data]
+    restart: "no"
+
+  # ---------------------------------------------------------------- monitoring
+  # Monitors (and the Discord alert) are set up in its web UI, at
+  # http://localhost:${KUMA_PORT}. Check internal URLs, e.g. http://core:3000/health.
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    ports:
+      - "127.0.0.1:${KUMA_PORT:-3001}:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks: [data, ai, egress]
+    restart: unless-stopped
+
+networks:
+  edge:
+    name: wasla-edge
+  data:
+    name: wasla-data
+    internal: true
+  ai:
+    name: wasla-ai
+    internal: true
+  egress:
+    name: wasla-egress
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:
+  uptime-kuma-data:

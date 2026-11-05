@@ -4,4 +4,9 @@ Everything about the database. See `schema.md` for the databases, schemas, DB us
 
 ## Files
 
-_None yet._ Planned: `init.sh`, which runs once on the first Postgres start and creates the databases, the auth + core schemas and one DB user per service (KAN-5).
+- `init.sh`: runs once, when Postgres starts on an empty volume. It creates:
+  - the `wasla_clinical` database, with the `auth` and `core` schemas
+  - the `wasla_ai` database, with pgvector
+  - the DB users and their access rules
+
+  Passwords come from `.env`. To run it again, delete the volume with `docker compose down -v`.

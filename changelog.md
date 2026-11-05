@@ -13,6 +13,49 @@ Files: path/one, path/two
 
 ---
 
+## C-0012 · 2026-11-05 09:57 +0200
+Prompt: P-0018
+What: Added the CI workflow (KAN-5). It runs on every pull request and on main, with three jobs:
+- `node`: lint, unit tests, e2e tests and build for the JS/TS packages.
+- `ai`: ruff and pytest for the AI service.
+- `stack`: starts the whole stack with docker compose. It checks that /auth/health answers through the gateway and that core routes get 401 without a session.
+Files: .github/workflows/ci.yml, .github/workflows/README.md
+
+## C-0011 · 2026-11-05 09:57 +0200
+Prompt: P-0018
+What: Added `pnpm mock`, which serves a fake API from contracts/openapi.yaml with Prism on port 4010 (KAN-5). Wrote a starter openapi.yaml for it. It describes only the endpoints that exist so far: the auth and core health checks and the gateway's auth check. KAN-4 adds the rest.
+Files: package.json, pnpm-lock.yaml, contracts/openapi.yaml, contracts/README.md
+
+## C-0010 · 2026-11-05 09:57 +0200
+Prompt: P-0018
+What: The whole stack now starts with one command, `docker compose up --build` (KAN-5).
+- **Services:** Traefik, Postgres with pgvector, Redis, MinIO with a one-off job that creates the private results bucket, Uptime Kuma, and the auth, core and AI services. Each service has its own Dockerfile, built from the repo root.
+- **Gateway:** Traefik is configured with labels. `/auth/*` goes to the auth service; everything else goes to the core after a forward-auth check. Every route strips client-sent `X-User-*` headers and has a per-IP rate limit and an 11 MB body limit.
+- **Networks:** four of them, so only the gateway (and Uptime Kuma, on localhost) has a published port, only the core can reach the AI service, and the data services have no internet.
+- **Database:** `database/init.sh` creates `wasla_clinical` (auth + core schemas) and `wasla_ai` (with pgvector). It also creates one DB user per service, plus a `wasla_migrator` user that owns the clinical tables and runs Prisma migrations, so runtime users can't change the schema. schema.md now lists every DB user and its default rights.
+- **MinIO image:** MinIO stopped publishing free images, so the stack uses the community build pgsty/minio. The user chose it.
+- **Other files:** `.env.example` lists every variable with fake values. `.gitattributes` keeps *.sh on LF line endings.
+- **Verified locally:**
+  - Every container comes up healthy, both on the first start and after a full reset.
+  - Routing and the 401 answer for core routes work, as do the body limit and the rate limit.
+  - Network isolation holds, every DB grant behaves as schema.md says, and the bucket is private.
+Files: docker-compose.yml, .env.example, .dockerignore, .gitattributes, .gitignore, database/init.sh, database/README.md, services/auth/Dockerfile, services/core/Dockerfile, services/ai/Dockerfile, schema.md, structure.md, README.md
+
+## C-0009 · 2026-11-05 09:57 +0200
+Prompt: P-0018
+What: Scaffolded every app and service where structure.md says (KAN-5). Generators ran outside the repo and their files were copied in, without the demo content or the generator extras (AGENTS.md, a LICENSE, a nested .git).
+- **auth and core (NestJS 12):** each has a `/health` route. The auth service's routes live under `/auth`. Its `/auth/check` is the gateway's auth check, and it refuses everything until KAN-7 adds sessions, so it fails closed.
+- **hospital-dashboard (Vite + React):** a placeholder page.
+- **patient-app (Expo SDK 58 + expo-router):** a placeholder start screen. Its test sits outside `app/`, because expo-router turns every file there into a screen.
+- **ai (FastAPI, uv):** a `/health` route.
+- **Tests and lint:**
+  - auth, core and the dashboard: oxlint and Vitest.
+  - patient app: oxlint, tsc and jest-expo.
+  - AI service: ruff and pytest.
+  - Every package has a smoke test. The root `pnpm lint`, `pnpm test`, `pnpm test:e2e` and `pnpm build` run them all.
+- **pnpm settings:** the root package.json pins pnpm 11.6.0. pnpm-workspace.yaml denies install scripts for @scarf/scarf (telemetry) and @parcel/watcher (it ships prebuilt binaries).
+Files: package.json, pnpm-workspace.yaml, pnpm-lock.yaml, apps/hospital-dashboard/**, apps/patient-app/**, services/auth/**, services/core/**, services/ai/**, the READMEs of each of these folders, structure.md, README.md
+
 ## C-0008 · 2026-11-04 18:01 +0200
 Prompt: P-0015
 What: Replaced every .gitkeep with a README.md that explains the folder (purpose, rules, files, and which cards fill it). Added READMEs to database/ and the root of each app and service too, since files go there directly; 37 in total. CLAUDE.md now treats folder READMEs as project files: read the README of each folder before working in it, and update it whenever a file in that folder is added, renamed, deleted or changes what it does (new loop step 9). structure.md describes which folders have a README, what each covers and the format.
