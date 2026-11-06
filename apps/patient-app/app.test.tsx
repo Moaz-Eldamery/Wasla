@@ -84,7 +84,9 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     expect((await screen.findByTestId('redirect-target')).props.children).toBe('/(tabs)/book');
   });
 
-  it('signs up a patient, displays the simulated SMS code, and verifies the phone', async () => {
+  it(
+    'signs up a patient, displays the simulated SMS code, and verifies the phone',
+    async () => {
     (globalThis.fetch as jest.Mock)
       .mockResolvedValueOnce({
         ok: true,
@@ -127,7 +129,9 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
     });
-  });
+    },
+    15_000,
+  );
 
   it('logs in a patient and stores the session token', async () => {
     (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
@@ -519,4 +523,3 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     );
   });
 });
-

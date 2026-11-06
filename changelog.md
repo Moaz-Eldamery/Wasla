@@ -1,3 +1,8 @@
+## 2026-11-06 16:31 +0000 · copilot-swe-agent[bot]
+Prompt: 2026-11-06 16:29 · copilot-swe-agent[bot]
+What: Fixed the patient app CI failure by increasing the timeout for the sign-up + verify flow test that exceeded Jest’s default 5-second limit on GitHub runners.
+Files: apps/patient-app/app.test.tsx, prompt_log.md
+
 ## 2026-11-06 18:05 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: KAN-20 section 6, the audit log at `/admin/audit`, which completes the rewritten card:
