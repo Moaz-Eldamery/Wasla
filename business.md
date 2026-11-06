@@ -58,7 +58,13 @@ Only these moves are allowed. For example, a visit can't be completed before it 
   - Only the appointment's own doctor completes the visit.
   - The patient sees how many people are ahead of them in the same doctor's line, and an estimated wait. The estimate is always labelled as an estimate.
   - The clinic's queue board shows every doctor's waiting and in-consultation patients, each with their doctor. Receptionists and doctors assigned to the clinic can see it. No medical details.
-- **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data, in Arabic and English.
+- **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data in `core.journey_stages`, in Arabic and English:
+  - `BOOKED` → appointment clinic
+  - `CHECKED_IN` → appointment clinic
+  - `WITH_DOCTOR` (`IN_CONSULTATION` with no ordered tests) → appointment clinic
+  - `TEST_ORDERED` (an ordered test is not yet `RELEASED`) → that test's lab or radiology clinic
+  - `RESULT_READY` (`IN_CONSULTATION` and ordered test(s) are `RELEASED`) → appointment clinic
+  - `DONE` (`COMPLETED` with no pending tests, or `CANCELLED` / `NO_SHOW`) → no location (`null`)
 
 ## Tests and results
 - A doctor orders a test during a visit. It goes to a clinic of the lab or radiology department, and the lab staff assigned to that clinic see it.

@@ -1,3 +1,13 @@
+## 2026-11-06 08:44 +0200 · Youssef Salem
+Changes: none
+
+> push and open an pr
+
+## 2026-11-06 08:30 +0200 · Youssef Salem
+Changes: 2026-11-06 08:37
+
+> push then open an pr then lets work on kan 12
+
 ## 2026-11-06 07:43 +0200 · NourElghaly
 Changes: 2026-11-06 07:53
 

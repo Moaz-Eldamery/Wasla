@@ -229,7 +229,7 @@ The uploaded result file for a test. The file itself is in the private MinIO buc
 | uploaded_at | timestamptz | no | default now |
 
 ### core.journey_stages
-What the patient sees at each stage of a visit. Data, not code: change the text here, not in the apps.
+What the patient sees at each stage of a visit. Data, not code: change the text here, not in the apps. Seeded by migration `20261106083500_journey_stages` with all six stages (`BOOKED`, `CHECKED_IN`, `WITH_DOCTOR`, `TEST_ORDERED`, `RESULT_READY`, `DONE`).
 
 | Column | Type | Null | Notes |
 |---|---|---|---|
