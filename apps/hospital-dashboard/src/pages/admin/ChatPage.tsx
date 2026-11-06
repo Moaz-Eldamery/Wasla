@@ -11,7 +11,6 @@ import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AppShell } from '../../components/AppShell.tsx'
 import { ApiError, askChatbot, CHAT_QUESTION_MAX, type ChatbotAnswer } from '../../lib/api.ts'
 import { color } from '../../theme.ts'
 import { currentLanguage, errorMessage, localized } from '../../translations/i18n.ts'
@@ -46,7 +45,7 @@ function saveThread(turns: Turn[]): void {
 }
 
 /**
- * The admin's hospital-information assistant (KAN-20): ask in English or
+ * The admin's hospital-information assistant (KAN-20, `/admin/assistant`): ask in English or
  * Arabic, read the answer with its sources, and see plainly when the
  * assistant doesn't know or is down.
  */
@@ -99,107 +98,105 @@ export function ChatPage() {
   const suggestions = t('chat.suggestions', { returnObjects: true }) as string[]
 
   return (
-    <AppShell>
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: { md: 'calc(100vh - 64px)' } }}>
-        <Box sx={{ flex: 1, overflowY: 'auto' }}>
-          <Box sx={{ maxWidth: 820, mx: 'auto', px: { xs: 2, md: 3 }, pt: { xs: 3, md: 5 }, pb: 3 }}>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'flex-start', gap: { xs: 1, sm: 2 }, mb: 3 }}>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h1">{t('chat.title')}</Typography>
-                <Typography sx={{ color: color.muted, mt: 1, maxWidth: '68ch' }}>{t('chat.intro')}</Typography>
-              </Box>
-              {turns.length > 0 && (
-                <Button startIcon={<AddCommentRounded />} onClick={() => setTurns([])} disabled={busy} sx={{ flexShrink: 0 }}>
-                  {t('chat.newConversation')}
-                </Button>
-              )}
+    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: { sm: 'calc(100vh - 64px)' } }}>
+      <Box sx={{ flex: 1, overflowY: 'auto' }}>
+        <Box sx={{ maxWidth: 820, mx: 'auto', px: { xs: 2, md: 3 }, pt: { xs: 3, md: 5 }, pb: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'flex-start', gap: { xs: 1, sm: 2 }, mb: 3 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="h1">{t('chat.title')}</Typography>
+              <Typography sx={{ color: color.muted, mt: 1, maxWidth: '68ch' }}>{t('chat.intro')}</Typography>
             </Box>
+            {turns.length > 0 && (
+              <Button startIcon={<AddCommentRounded />} onClick={() => setTurns([])} disabled={busy} sx={{ flexShrink: 0 }}>
+                {t('chat.newConversation')}
+              </Button>
+            )}
+          </Box>
 
-            {turns.length === 0 ? (
-              <Box>
-                <Typography variant="h3" component="h2" sx={{ color: color.inkSoft, textTransform: 'uppercase', mb: 1.25 }}>
-                  {t('chat.tryAsking')}
-                </Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.25 }}>
-                  {suggestions.map((q) => (
-                    <Button
-                      key={q}
-                      variant="outlined"
-                      onClick={() => void ask(q)}
-                      sx={{ justifyContent: 'flex-start', textAlign: 'start', py: 1.5, px: 2, color: color.ink, borderColor: color.rule, bgcolor: color.panel, fontWeight: 500, '&:hover': { borderColor: color.brand, bgcolor: color.brandWash } }}
-                    >
-                      {q}
-                    </Button>
-                  ))}
-                </Box>
-              </Box>
-            ) : (
-              <Box component="ol" aria-label={t('chat.thread')} aria-live="polite" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 3 }}>
-                {turns.map((turn) => (
-                  <TurnView key={turn.id} turn={turn} onRetry={() => void ask(turn.question, turn.id)} retryDisabled={busy} />
+          {turns.length === 0 ? (
+            <Box>
+              <Typography variant="h3" component="h2" sx={{ color: color.inkSoft, textTransform: 'uppercase', mb: 1.25 }}>
+                {t('chat.tryAsking')}
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.25 }}>
+                {suggestions.map((q) => (
+                  <Button
+                    key={q}
+                    variant="outlined"
+                    onClick={() => void ask(q)}
+                    sx={{ justifyContent: 'flex-start', textAlign: 'start', py: 1.5, px: 2, color: color.ink, borderColor: color.rule, bgcolor: color.panel, fontWeight: 500, '&:hover': { borderColor: color.brand, bgcolor: color.brandWash } }}
+                  >
+                    {q}
+                  </Button>
                 ))}
               </Box>
-            )}
-            <div ref={endRef} />
-          </Box>
+            </Box>
+          ) : (
+            <Box component="ol" aria-label={t('chat.thread')} aria-live="polite" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 3 }}>
+              {turns.map((turn) => (
+                <TurnView key={turn.id} turn={turn} onRetry={() => void ask(turn.question, turn.id)} retryDisabled={busy} />
+              ))}
+            </Box>
+          )}
+          <div ref={endRef} />
         </Box>
+      </Box>
 
-        <Box sx={{ borderTop: `1px solid ${color.rule}`, bgcolor: color.ground, px: { xs: 2, md: 3 }, py: 2, position: 'sticky', bottom: 0, zIndex: 1 }}>
-          <Box component="form" onSubmit={submit} sx={{ maxWidth: 820, mx: 'auto' }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'flex-end',
-                gap: 1,
-                bgcolor: color.panel,
-                border: `1px solid ${tooLong ? color.now : color.rule}`,
-                borderRadius: '14px',
-                px: 2,
-                py: 1.25,
-                boxShadow: '0 2px 10px rgba(15, 23, 42, 0.06)',
-                '&:focus-within': { borderColor: tooLong ? color.now : color.brand, boxShadow: `0 0 0 3px ${tooLong ? color.nowTint : color.brandTint}` },
-              }}
-            >
-              <InputBase
-                inputRef={inputRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onKeyDown={onKeyDown}
-                placeholder={t('chat.placeholder')}
-                multiline
-                maxRows={6}
-                fullWidth
-                autoFocus
-                inputProps={{ 'aria-label': t('chat.label'), dir: 'auto' }}
-                sx={{ fontSize: '1rem', py: 0.5 }}
-              />
-              <Tooltip title={t('chat.send')}>
-                <span>
-                  <IconButton
-                    type="submit"
-                    aria-label={t('chat.send')}
-                    disabled={busy || tooLong || !draft.trim()}
-                    sx={{ bgcolor: color.brand, color: '#FFFFFF', '&:hover': { bgcolor: color.brandDeep }, '&.Mui-disabled': { bgcolor: color.ruleSoft, color: '#94A3B8' } }}
-                  >
-                    {busy ? <CircularProgress size={20} sx={{ color: 'inherit' }} /> : <ArrowUpwardRounded />}
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 0.75, px: 0.5 }}>
-              <Typography variant="body2" sx={{ color: tooLong ? color.now : color.muted }}>
-                {tooLong ? t('chat.tooLong', { max: CHAT_QUESTION_MAX }) : t('chat.hint')}
+      <Box sx={{ borderTop: `1px solid ${color.rule}`, bgcolor: color.ground, px: { xs: 2, md: 3 }, py: 2, position: 'sticky', bottom: 0, zIndex: 1 }}>
+        <Box component="form" onSubmit={submit} sx={{ maxWidth: 820, mx: 'auto' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-end',
+              gap: 1,
+              bgcolor: color.panel,
+              border: `1px solid ${tooLong ? color.now : color.rule}`,
+              borderRadius: '14px',
+              px: 2,
+              py: 1.25,
+              boxShadow: '0 2px 10px rgba(15, 23, 42, 0.06)',
+              '&:focus-within': { borderColor: tooLong ? color.now : color.brand, boxShadow: `0 0 0 3px ${tooLong ? color.nowTint : color.brandTint}` },
+            }}
+          >
+            <InputBase
+              inputRef={inputRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder={t('chat.placeholder')}
+              multiline
+              maxRows={6}
+              fullWidth
+              autoFocus
+              inputProps={{ 'aria-label': t('chat.label'), dir: 'auto' }}
+              sx={{ fontSize: '1rem', py: 0.5 }}
+            />
+            <Tooltip title={t('chat.send')}>
+              <span>
+                <IconButton
+                  type="submit"
+                  aria-label={t('chat.send')}
+                  disabled={busy || tooLong || !draft.trim()}
+                  sx={{ bgcolor: color.brand, color: '#FFFFFF', '&:hover': { bgcolor: color.brandDeep }, '&.Mui-disabled': { bgcolor: color.ruleSoft, color: '#94A3B8' } }}
+                >
+                  {busy ? <CircularProgress size={20} sx={{ color: 'inherit' }} /> : <ArrowUpwardRounded />}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 0.75, px: 0.5 }}>
+            <Typography variant="body2" sx={{ color: tooLong ? color.now : color.muted }}>
+              {tooLong ? t('chat.tooLong', { max: CHAT_QUESTION_MAX }) : t('chat.hint')}
+            </Typography>
+            {draft.length > CHAT_QUESTION_MAX * 0.8 && (
+              <Typography variant="body2" className="tabular" sx={{ color: tooLong ? color.now : color.muted }}>
+                {t('chat.count', { count: draft.length, max: CHAT_QUESTION_MAX })}
               </Typography>
-              {draft.length > CHAT_QUESTION_MAX * 0.8 && (
-                <Typography variant="body2" className="tabular" sx={{ color: tooLong ? color.now : color.muted }}>
-                  {t('chat.count', { count: draft.length, max: CHAT_QUESTION_MAX })}
-                </Typography>
-              )}
-            </Box>
+            )}
           </Box>
         </Box>
       </Box>
-    </AppShell>
+    </Box>
   )
 }
 

@@ -1,3 +1,12 @@
+## 2026-11-06 18:01 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: The admin frame for the rewritten KAN-20 (card section 1):
+- **Navigation:** `/admin/...` now has a rail of five sections (Statistics, Assistant, Staff, Departments & clinics, Audit log). The user chose a side rail. It shows icons with short labels on a tablet and becomes a strip of tabs on a phone.
+- **Not allowed:** staff without a role who open its page by URL now see a "not allowed" screen with a link to their own screen, instead of being sent away silently. The server still refuses the data.
+- **Assistant:** moved to `/admin/assistant`, unchanged.
+- **Strings and tests:** the Arabic and English strings for every admin section are added here. Tests wait up to 5 s for a file's first render, because the full suite runs every file at once and a cold render could take over a second.
+Files: apps/hospital-dashboard/src/pages/admin/ (AdminLayout.tsx, ChatPage.tsx, ChatPage.test.tsx), apps/hospital-dashboard/src/components/ (NotAllowed.tsx, README.md), apps/hospital-dashboard/src/App.tsx, apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (test-fixtures.ts, test-setup.ts), apps/hospital-dashboard/vite.config.ts, PRODUCT.md
+
 ## 2026-11-06 18:00 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: KAN-20 was rewritten into the whole admin dashboard, whose staff, hospital setup, statistics and audit endpoints aren't in the contract. The user chose to leave `openapi.yaml` alone and serve a draft beside it, so:
