@@ -92,7 +92,9 @@
     "PHONE_NOT_VERIFIED": "This phone number hasn't been verified yet.",
     "INVALID_TRANSITION": "That step isn't possible any more. The list has been refreshed.",
     "INTERNAL": "Something went wrong on our side. Try again in a moment.",
-    "NETWORK": "The server can't be reached. Check the connection and try again."
+    "NETWORK": "The server can't be reached. Check the connection and try again.",
+    "FILE_TOO_LARGE": "The file is over 10 MB. Choose a smaller file.",
+    "FILE_TYPE_NOT_ALLOWED": "Only PDF, JPEG or PNG files can be sent."
   },
   "doctor": {
     "title": "My patients today",
@@ -168,5 +170,46 @@
       "AWAITING_REVIEW": "Ready to review",
       "RELEASED": "Released"
     }
+  },
+  "lab": {
+    "title": "Lab worklist",
+    "clinics": "Tests ordered for {{clinics}}",
+    "tabToStart": "To start",
+    "tabInProgress": "In progress",
+    "tabSent": "Sent to doctor",
+    "emptyToStart": "Nothing to start. New orders appear here as doctors place them.",
+    "emptyInProgress": "No tests in progress.",
+    "emptySent": "No results are waiting for a doctor.",
+    "waiting": "waiting {{time}}",
+    "waitingLong": "waiting {{time}}, over an hour",
+    "minutes": "{{count}} min",
+    "hours": "{{h}} h {{m}} min",
+    "orderedBy": "Ordered by {{name}}",
+    "orderedAt": "Ordered {{time}}",
+    "instructions": "Instructions from the doctor",
+    "noInstructions": "No instructions.",
+    "selectTitle": "Choose a test",
+    "selectBody": "Pick a test from the list to start it or send its result to the doctor.",
+    "start": "Start test",
+    "starting": "Starting…",
+    "started": "{{test}} for {{name}} is in progress.",
+    "uploadTitle": "Result file",
+    "dropHere": "Drop the result file here, or",
+    "choose": "choose a file",
+    "fileRules": "PDF, JPEG or PNG, up to 10 MB.",
+    "wrongType": "{{file}} isn't a PDF, JPEG or PNG. Choose another file.",
+    "tooLarge": "{{file}} is {{size}}. Results can be at most 10 MB.",
+    "chosen": "Ready to send",
+    "checkPatient": "Check this is {{name}}'s {{test}} before sending.",
+    "send": "Send to doctor",
+    "sending": "Sending…",
+    "sent": "{{test}} for {{name}} was sent to the doctor.",
+    "remove": "Choose a different file",
+    "current": "Sent file",
+    "replace": "Replace file",
+    "replaceHint": "Until the doctor releases it, you can replace the file.",
+    "viewFile": "View file",
+    "loadFailed": "The worklist couldn't be loaded.",
+    "noClinics": "You aren't assigned to a lab or radiology clinic yet. Ask your hospital admin."
   }
 }

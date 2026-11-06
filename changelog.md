@@ -1,3 +1,14 @@
+## 2026-11-06 13:29 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 13:19 · Moaz Mohamed
+What: KAN-19, the lab and radiology worklist at `/lab`:
+- **Worklist:** the department's tests, oldest first, in tabs (To start, In progress, Sent to doctor) with counts. Each test shows how long it has waited, in amber after an hour.
+- **Side panel:** shows the doctor's instructions, Start test, then the result upload.
+- **Upload:** pick, check, then send, as the user chose. The file is checked right away (PDF, JPEG or PNG, at most 10 MB) and shows a preview for images and a reminder to check the patient and test. Nothing is sent until "Send to doctor".
+- **Sent files:** can be viewed or replaced until the doctor releases them.
+
+The lab endpoints have no backend yet (KAN-10), so the screen follows the contract and was checked through the local stand-in. `formatBytes` is now shared with the doctor's tests panel.
+Files: apps/hospital-dashboard/src/pages/lab/ (LabPage, ResultUpload, resultFile.ts, LabPage.test.tsx, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts), apps/hospital-dashboard/src/pages/physician/TestsSection.tsx, apps/hospital-dashboard/README.md
+
 ## 2026-11-06 12:52 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 12:39 · Moaz Mohamed
 What: KAN-18, the doctor's screen at `/doctor`:

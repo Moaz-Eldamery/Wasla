@@ -7,6 +7,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from './components/AppShell.tsx'
 import type { StaffRole } from './lib/api.ts'
 import { LoginPage } from './LoginPage.tsx'
+import { LabPage } from './pages/lab/LabPage.tsx'
 import { DoctorPage } from './pages/physician/DoctorPage.tsx'
 import { TodayPage } from './pages/receptionist/TodayPage.tsx'
 import { homePathFor } from './roles.ts'
@@ -69,6 +70,14 @@ export default function App() {
         element={
           <RequireRole role="DOCTOR">
             <DoctorPage />
+          </RequireRole>
+        }
+      />
+      <Route
+        path="/lab"
+        element={
+          <RequireRole role="LAB">
+            <LabPage />
           </RequireRole>
         }
       />
