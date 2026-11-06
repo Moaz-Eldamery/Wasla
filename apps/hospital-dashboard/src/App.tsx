@@ -10,6 +10,7 @@ import type { StaffRole } from './lib/api.ts'
 import { LoginPage } from './LoginPage.tsx'
 import { AdminLayout } from './pages/admin/AdminLayout.tsx'
 import { ChatPage } from './pages/admin/ChatPage.tsx'
+import { StaffPage } from './pages/admin/StaffPage.tsx'
 import { LabPage } from './pages/lab/LabPage.tsx'
 import { DoctorPage } from './pages/physician/DoctorPage.tsx'
 import { TodayPage } from './pages/receptionist/TodayPage.tsx'
@@ -97,6 +98,7 @@ export default function App() {
       >
         <Route index element={<Navigate to="assistant" replace />} />
         <Route path="assistant" element={<ChatPage />} />
+        <Route path="staff" element={<StaffPage />} />
         <Route path="*" element={<Navigate to="assistant" replace />} />
       </Route>
       <Route

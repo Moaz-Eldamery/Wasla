@@ -1,3 +1,16 @@
+## 2026-11-06 18:03 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 3, staff and roles at `/admin/staff`:
+- **List:** every staff account with roles and active or inactive status. Search by name or phone, and filter all, active or inactive.
+- **Add:** name, mobile number (accepted as staff type it, e.g. `010 1234 5678`) and roles.
+- **Roles:** a person can hold several, as the user chose.
+- **Temporary password:** the server makes it and it's shown once, with Copy, as the user chose.
+- **Deactivate and reactivate:** both ask first. Deactivating says the person is logged out immediately.
+- **Self-protection:** an admin can't deactivate themselves or drop their own admin role.
+
+`ConfirmDialog` is shared with the hospital screen. 9 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (StaffPage.tsx, StaffPage.test.tsx, staff.ts, ConfirmDialog.tsx), apps/hospital-dashboard/src/App.tsx
+
 ## 2026-11-06 18:01 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: The admin frame for the rewritten KAN-20 (card section 1):
