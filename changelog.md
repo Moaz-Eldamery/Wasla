@@ -1,3 +1,8 @@
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:37 · Moaz Mohamed
+What: Swapped the login photo for the user's final choice (the same exam-room scene, with the doctor and patient smiling). The blur, blue wash and crop are unchanged.
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp
+
 ## 2026-11-06 12:35 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 12:35 · Moaz Mohamed
 What: Replaced the login photo with the one the user chose instead (a doctor talking with a patient in an exam room), with the same blur and blue wash. It is re-encoded as WebP (63 kB), and the crop is centred on the doctor.

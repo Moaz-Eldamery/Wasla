@@ -1,3 +1,8 @@
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:37
+
+> ok final change. change the image to this one [image attached: the same exam-room scene, the doctor and patient smiling]
+
 ## 2026-11-06 12:35 +0200 · Moaz Mohamed
 Changes: 2026-11-06 12:35
 
