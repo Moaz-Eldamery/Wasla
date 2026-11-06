@@ -79,7 +79,7 @@ export function LoginPage() {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            objectPosition: '42% 30%',
+            objectPosition: '38% 35%',
             filter: 'blur(3px) saturate(0.9)',
             transform: 'scale(1.06)',
           }}

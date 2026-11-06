@@ -25,7 +25,7 @@ The site calls `/api/...` on its own origin, and the dev server forwards those c
 - `src/Providers.tsx`: theme, the style cache for left-to-right or right-to-left, the TanStack Query client and the session, around the whole app.
 - `src/App.tsx`: the routes. `/login`, `/reception` (receptionists only), and `/`, which sends staff to their first role's screen.
 - `src/LoginPage.tsx`: staff login with phone and password. Patient accounts are turned away. The blue panel shows `src/assets/login-doctor.webp`, blurred under a blue wash. Test: `LoginPage.test.tsx`.
-- `src/assets/`: images bundled by Vite. `login-doctor.webp` is the login photo, supplied by Moaz and re-encoded from PNG to WebP (33 kB).
+- `src/assets/`: images bundled by Vite. `login-doctor.webp` is the login photo, supplied by Moaz and re-encoded from PNG to WebP (63 kB).
 - `src/session.tsx`: who is signed in. It restores the user after a reload (`GET /auth/me`) and returns to login when the gateway answers 401.
 - `src/roles.ts`: which roles have a screen, and where each role lands after login.
 - `src/theme.ts`: Wasla's palette (shared with the patient app), the status colours, the type scale and the MUI theme.

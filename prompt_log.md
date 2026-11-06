@@ -1,3 +1,8 @@
+## 2026-11-06 12:35 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:35
+
+> sry replace it with this image instead [image attached: a doctor talking with an older patient in an exam room]
+
 ## 2026-11-06 12:29 +0200 · Moaz Mohamed
 Changes: 2026-11-06 12:31
 
