@@ -3,6 +3,9 @@ import type { Language } from './translations/i18n.ts'
 /** Every time on the website is shown in the hospital's time zone, whatever the computer's. */
 export const HOSPITAL_TIME_ZONE = 'Africa/Cairo'
 
+/** How often panels ask the server again, until live updates (KAN-27) exist. */
+export const REFRESH_MS = 15_000
+
 function parts(date: Date): Record<'year' | 'month' | 'day' | 'hour' | 'minute', number> {
   const out = { year: 0, month: 0, day: 0, hour: 0, minute: 0 }
   const fmt = new Intl.DateTimeFormat('en-GB', {

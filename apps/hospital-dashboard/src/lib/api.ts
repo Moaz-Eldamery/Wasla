@@ -13,6 +13,12 @@ export type Appointment = Schemas['Appointment']
 export type AppointmentStatus = Schemas['AppointmentStatus']
 export type QueueItem = Schemas['QueueItem']
 export type QueueBoard = Schemas['QueueBoard']
+export type Department = Schemas['Department']
+export type VisitNotes = Schemas['VisitNotes']
+export type SaveVisitNotesRequest = Schemas['SaveVisitNotesRequest']
+export type TestOrder = Schemas['TestOrder']
+export type TestStatus = Schemas['TestStatus']
+export type OrderTestRequest = Schemas['OrderTestRequest']
 
 /** A non-2xx answer from the gateway, or a network failure (`status` 0). */
 export class ApiError extends Error {
@@ -159,4 +165,70 @@ export function checkIn(appointmentId: string): Promise<Appointment> {
 
 export function getClinicQueue(clinicId: string): Promise<QueueBoard> {
   return request(`/clinics/${encodeURIComponent(clinicId)}/queue`)
+}
+
+export function listDepartments(): Promise<Department[]> {
+  return request('/departments')
+}
+
+// ------------------------------------------------------------------ doctor
+
+/** The signed-in doctor's appointments for one Cairo day (today when left out). */
+export function listDoctorAppointments(date?: string): Promise<Appointment[]> {
+  return request('/doctors/me/appointments', { query: { date } })
+}
+
+/** Calls the earliest checked-in patient in this clinic (CHECKED_IN → IN_CONSULTATION). */
+export function callNextPatient(clinicId: string): Promise<Appointment> {
+  return request('/doctors/me/queue/call-next', { method: 'POST', body: { clinicId } })
+}
+
+/** Finishes the visit (IN_CONSULTATION → COMPLETED). */
+export function completeVisit(appointmentId: string): Promise<Appointment> {
+  return request(`/appointments/${encodeURIComponent(appointmentId)}/complete`, { method: 'POST' })
+}
+
+/** The latest notes, or null when none have been written yet (the API answers 404). */
+export async function getVisitNotes(appointmentId: string): Promise<VisitNotes | null> {
+  try {
+    return await request<VisitNotes>(`/appointments/${encodeURIComponent(appointmentId)}/notes`)
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null
+    throw error
+  }
+}
+
+/** Saves a new version. `baseVersion` is the version edited (0 for the first); a newer save gives 409 VERSION_CONFLICT. */
+export function saveVisitNotes(appointmentId: string, body: SaveVisitNotesRequest): Promise<VisitNotes> {
+  return request(`/appointments/${encodeURIComponent(appointmentId)}/notes`, { method: 'PUT', body })
+}
+
+export function listVisitTests(appointmentId: string): Promise<TestOrder[]> {
+  return request(`/appointments/${encodeURIComponent(appointmentId)}/tests`)
+}
+
+export function orderTest(appointmentId: string, body: OrderTestRequest): Promise<TestOrder> {
+  return request(`/appointments/${encodeURIComponent(appointmentId)}/tests`, { method: 'POST', body })
+}
+
+/** Releases the result to the patient (AWAITING_REVIEW → RELEASED). */
+export function releaseTestResult(testId: string): Promise<TestOrder> {
+  return request(`/tests/${encodeURIComponent(testId)}/release`, { method: 'POST' })
+}
+
+/** Fetches the private result file with the session and returns it as a Blob to open in a new tab. */
+export async function downloadTestResult(testId: string): Promise<Blob> {
+  const token = session.token
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/tests/${encodeURIComponent(testId)}/result/file`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+  } catch {
+    throw new ApiError(0, 'INTERNAL', 'The server could not be reached.')
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, response.status === 404 ? 'NOT_FOUND' : 'INTERNAL', response.statusText)
+  }
+  return response.blob()
 }

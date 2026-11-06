@@ -1,3 +1,17 @@
+## 2026-11-06 12:52 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:39 · Moaz Mohamed
+What: KAN-18, the doctor's screen at `/doctor`:
+- **Day:** the doctor's day on the day book, without the doctor column.
+- **Call next patient:** for the chosen clinic. It stays disabled until the current visit is finished.
+- **Visit panel:** sits beside the day (agreed with the user) and holds:
+  - Finish visit, which warns first when no notes are saved (agreed rule).
+  - Notes with an explicit Save and versioning by `baseVersion`. An unsaved draft is kept in sessionStorage, so it survives a reload but not a closed tab. A save conflict keeps the doctor's text and shows the newer version.
+  - Tests: order a lab or radiology test during the visit, open the private result file, and release it to the patient after confirming.
+- **Past visits:** finished visits open from the day.
+
+Built to the contract without new backend, as the user asked. Notes, tests and release have no backend yet (KAN-10, KAN-11). The core also doesn't serve `GET /doctors/me/appointments` yet (KAN-8/9), so on the real stack the day shows "couldn't be loaded" until it does. The screenshots were checked through a throwaway local stand-in for those calls.
+Files: apps/hospital-dashboard/src/pages/physician/ (DoctorPage, VisitPanel, NotesEditor, TestsSection, DoctorPage.test.tsx, README.md), apps/hospital-dashboard/src/components/ (DayBook showDoctor option, StatusChip TestStatusChip, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts, theme.ts, time.ts), apps/hospital-dashboard/src/pages/receptionist/TodayPage.tsx (REFRESH_MS moved to time.ts), apps/hospital-dashboard/README.md
+
 ## 2026-11-06 12:37 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 12:37 · Moaz Mohamed
 What: Swapped the login photo for the user's final choice (the same exam-room scene, with the doctor and patient smiling). The blur, blue wash and crop are unchanged.

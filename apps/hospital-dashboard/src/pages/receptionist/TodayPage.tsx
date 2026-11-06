@@ -18,12 +18,10 @@ import { QueuePanel } from '../../components/QueuePanel.tsx'
 import { UpdatedAt } from '../../components/UpdatedAt.tsx'
 import { checkIn, getClinicQueue, listClinicAppointments, listMyClinics, type Appointment, type Clinic } from '../../lib/api.ts'
 import { color } from '../../theme.ts'
-import { cairoDate } from '../../time.ts'
+import { cairoDate, REFRESH_MS } from '../../time.ts'
 import { useNow } from '../../useNow.ts'
 import { currentLanguage, errorMessage, localized } from '../../translations/i18n.ts'
 
-/** How often panels ask the server again, until live updates (KAN-27) exist. */
-export const REFRESH_MS = 15_000
 const CLINIC_KEY = 'wasla.reception.clinic'
 
 function rememberedClinic(): string | null {

@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles'
-import type { AppointmentStatus } from './lib/api.ts'
+import type { AppointmentStatus, TestStatus } from './lib/api.ts'
 
 /**
  * Wasla's palette, shared with the patient app: deep blue on cool slate.
@@ -35,6 +35,14 @@ export const statusTone: Record<AppointmentStatus | 'LATE', { fg: string; bg: st
   CANCELLED: { fg: '#475569', bg: color.ruleSoft },
   NO_SHOW: { fg: '#475569', bg: color.ruleSoft },
   LATE: { fg: color.now, bg: color.nowTint },
+}
+
+/** Chip colours per test status: amber marks the one that needs the doctor. */
+export const testTone: Record<TestStatus, { fg: string; bg: string }> = {
+  REQUESTED: { fg: '#475569', bg: color.ruleSoft },
+  IN_PROGRESS: { fg: color.brand, bg: color.brandTint },
+  AWAITING_REVIEW: { fg: color.consult, bg: color.consultTint },
+  RELEASED: { fg: color.waiting, bg: color.waitingTint },
 }
 
 export const FONT_FAMILY = '"Readex Pro Variable", "Readex Pro", "Segoe UI", system-ui, sans-serif'
