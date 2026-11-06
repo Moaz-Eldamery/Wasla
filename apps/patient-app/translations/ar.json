@@ -60,6 +60,30 @@
     "changeDepartment": "تغيير القسم",
     "changeDoctor": "تغيير الطبيب"
   },
+  "queue": {
+    "tabTitle": "الدور",
+    "screenTitle": "ترتيبك في الانتظار",
+    "selectVisitLabel": "اختر الزيارة",
+    "noActiveVisits": "ليس لديك زيارات قادمة لمتابعة الدور.",
+    "peopleAheadLabel": "عدد المرضى قبلك",
+    "youAreNext": "أنت التالي في الدور!",
+    "notInQueueYet": "يظهر ترتيبك في الانتظار بعد تسجيل الحضور في استقبال العيادة.",
+    "inConsultationNow": "أنت الآن في الكشف مع الطبيب.",
+    "pullToRefreshHint": "اسحب للأسفل أو اضغط تحديث لمعرفة آخر ترتيب.",
+    "refreshButton": "تحديث"
+  },
+  "journey": {
+    "tabTitle": "رحلة الزيارة",
+    "screenTitle": "مسار الزيارة",
+    "selectVisitLabel": "اختر الزيارة",
+    "noVisits": "لا توجد مواعيد لعرض مسار الزيارة.",
+    "currentStageLabel": "المرحلة الحالية",
+    "nextStepLabel": "الخطوة التالية",
+    "whereToGoLabel": "إلى أين تتجه",
+    "noLocationNeeded": "لا يوجد مكان آخر مطلوب التوجه إليه.",
+    "directionsLabel": "الاتجاهات",
+    "refreshButton": "تحديث"
+  },
   "status": {
     "BOOKED": "محجوز",
     "CHECKED_IN": "تم تسجيل الحضور",

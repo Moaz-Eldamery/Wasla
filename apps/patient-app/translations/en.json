@@ -60,6 +60,30 @@
     "changeDepartment": "Change department",
     "changeDoctor": "Change doctor"
   },
+  "queue": {
+    "tabTitle": "Queue",
+    "screenTitle": "Queue Position",
+    "selectVisitLabel": "Select Visit",
+    "noActiveVisits": "You have no upcoming visits to track in the queue.",
+    "peopleAheadLabel": "People ahead of you",
+    "youAreNext": "You are next in line!",
+    "notInQueueYet": "Queue position is shown once you check in at the clinic reception.",
+    "inConsultationNow": "You are currently in consultation with the doctor.",
+    "pullToRefreshHint": "Pull down or tap Refresh to update your position.",
+    "refreshButton": "Refresh"
+  },
+  "journey": {
+    "tabTitle": "Journey",
+    "screenTitle": "Visit Journey",
+    "selectVisitLabel": "Select Visit",
+    "noVisits": "You have no appointments to show a journey for.",
+    "currentStageLabel": "Current Stage",
+    "nextStepLabel": "What to do next",
+    "whereToGoLabel": "Where to go",
+    "noLocationNeeded": "No further clinic visit required.",
+    "directionsLabel": "Directions",
+    "refreshButton": "Refresh"
+  },
   "status": {
     "BOOKED": "Booked",
     "CHECKED_IN": "Checked in",

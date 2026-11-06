@@ -25,6 +25,18 @@ export default function TabsLayout() {
           title: t('booking.tabTitle'),
         }}
       />
+      <Tabs.Screen
+        name="queue"
+        options={{
+          title: t('queue.tabTitle'),
+        }}
+      />
+      <Tabs.Screen
+        name="journey"
+        options={{
+          title: t('journey.tabTitle'),
+        }}
+      />
     </Tabs>
   );
 }

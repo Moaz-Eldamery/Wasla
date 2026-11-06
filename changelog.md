@@ -1,3 +1,8 @@
+## 2026-11-06 08:52 +0200 · Youssef Salem
+Prompt: 2026-11-06 08:48 · Youssef Salem
+What: KAN-15 patient mobile app queue position and visit journey screens. Added getQueuePosition and getAppointmentJourney to apps/patient-app/lib/api.ts, added the queue and journey tabs in apps/patient-app/app/(tabs)/ with pull-to-refresh and manual refresh, added Arabic (RTL) and English strings in translations/ar.json and translations/en.json, and added tests in apps/patient-app/app.test.tsx.
+Files: apps/patient-app/lib/api.ts, apps/patient-app/app/(tabs)/_layout.tsx, apps/patient-app/app/(tabs)/queue.tsx, apps/patient-app/app/(tabs)/journey.tsx, apps/patient-app/translations/en.json, apps/patient-app/translations/ar.json, apps/patient-app/app.test.tsx, apps/patient-app/README.md, apps/patient-app/app/(tabs)/README.md, apps/patient-app/lib/README.md
+
 ## 2026-11-06 08:14 +0200 · Youssef Salem
 Prompt: 2026-11-06 07:45 · Youssef Salem
 What: KAN-14 patient mobile app sign-up, phone verification, login, logout, and appointment booking. Added generated API types from contracts/openapi.yaml (checked in lint), gateway HTTP and socket helpers in apps/patient-app/lib/, Arabic (RTL) and English translations with i18next, auth screens (login, sign-up, 6-digit verification code with simulated SMS banner), and the booking screen to browse clinical departments → doctors → free slots, book a slot, and view upcoming/past appointments.
