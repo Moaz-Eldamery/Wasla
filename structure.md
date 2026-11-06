@@ -78,11 +78,11 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 │
 ├── apps/                        the frontends. They talk ONLY to the gateway
 │   ├── patient-app/             Expo (expo-router)
-│   │   ├── app/                 _layout.tsx + one file per screen (index.tsx is a placeholder until KAN-14)
-│   │   ├── app/(auth)/          screens before login: sign-up, code, login
+│   │   ├── app/                 _layout.tsx + one file per screen (index.tsx redirects to (auth) or (tabs))
+│   │   ├── app/(auth)/          screens before login: sign-up, verify-code, login
 │   │   ├── app/(tabs)/          screens after login: book, queue, journey, results, profile
 │   │   ├── lib/                 api.ts, socket.ts, api-types.ts: the ONLY backend calls
-│   │   └── translations/        ar.json, en.json
+│   │   └── translations/        ar.json, en.json, i18n.ts
 │   └── hospital-dashboard/      Vite + React
 │       └── src/
 │           ├── pages/           one folder per role: receptionist/ physician/ lab/ admin/

@@ -1,3 +1,18 @@
+## 2026-11-06 08:22 +0200 · Youssef Salem
+Changes: none
+
+> is there any ticket that is blocker for what we implemented yet
+
+## 2026-11-06 08:01 +0200 · Youssef Salem
+Changes: none
+
+> pull the repo again it looks like it has an update 
+
+## 2026-11-06 07:45 +0200 · Youssef Salem
+Changes: 2026-11-06 08:14
+
+> first pull the repo from https://github.com/Moaz-Eldamery/Wasla to /Users/joe/Local documents/AUC materials/swe/project then pick some of sprint backlog  change their status to assign it to me then lets start implement it , inside the repo you'll find a handful of md files that will help you navigate the repo , start by reading the claud.md file
+
 ## 2026-11-06 07:43 +0200 · NourElghaly
 Changes: 2026-11-06 07:53
 

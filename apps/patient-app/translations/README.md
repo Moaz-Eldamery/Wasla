@@ -6,4 +6,7 @@ All text the app shows, in Arabic and English.
 
 ## Files
 
-_None yet._ Planned: `ar.json`, `en.json` (KAN-14).
+- `ar.json`: Arabic strings for every screen, status and error code.
+- `en.json`: English strings for every screen, status and error code.
+- `i18n.ts`: `i18next` setup, Arabic/English language switcher with right-to-left (`I18nManager`) support, `pickLocalized` for `{ ar, en }` backend fields, `formatCairoDateTime` (`Africa/Cairo`), and `translateErrorCode`.
+

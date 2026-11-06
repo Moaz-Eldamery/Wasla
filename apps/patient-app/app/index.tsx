@@ -1,19 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { getSessionToken, subscribeAuth } from '../lib/api';
+import '../translations/i18n';
 
-// Placeholder start screen from KAN-5. KAN-14 replaces it with a redirect to
-// the (auth) or (tabs) group, depending on whether the patient is logged in.
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text>Wasla</Text>
-    </View>
-  );
-}
+  const [token, setToken] = useState<string | null>(getSessionToken);
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+  useEffect(() => {
+    return subscribeAuth(() => {
+      setToken(getSessionToken());
+    });
+  }, []);
+
+  if (token) {
+    return <Redirect href="/(tabs)/book" />;
+  }
+  return <Redirect href="/(auth)/login" />;
+}
