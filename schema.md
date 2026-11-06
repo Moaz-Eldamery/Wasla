@@ -4,10 +4,10 @@ The source of truth for the database. If a table or column isn't listed here, it
 
 - PostgreSQL 16 with pgvector, managed with Prisma.
 - The Prisma schema for the clinical database lives at `database/clinical/schema.prisma`. This file must always match it.
-- The AI database (`wasla_ai`) is migrated from `database/ai/`.
+- The AI database (`wasla_ai`) is migrated from `database/ai/` with its own Prisma config and migration history, separate from Clinical.
 - Databases, schemas and DB users are created by `database/init.sh`.
 - Update this file in the same change as any migration.
-- Migrations live in `database/clinical/migrations/` and run as `wasla_migrator`: the `migrate` service applies them on `docker compose up`, or run `pnpm db:migrate` with `MIGRATOR_DATABASE_URL` set. Prisma's own `_prisma_migrations` table sits in the `public` schema.
+- Clinical migrations live in `database/clinical/migrations/` and run as `wasla_migrator`: the `migrate` service applies them on `docker compose up`, or run `pnpm db:migrate` with `MIGRATOR_DATABASE_URL` set. AI migrations live in `database/ai/migrations/` and use `AI_MIGRATOR_DATABASE_URL` via the separate `ai-migrate` service or `pnpm db:ai:migrate`. Each database has its own Prisma `_prisma_migrations` table in `public`.
 
 ## Databases, schemas and who can access them
 
@@ -17,7 +17,7 @@ One Postgres server, two databases. Each service connects with its own DB user, 
 |---|---|---|---|
 | `wasla_clinical` | `auth` | Accounts (patients and staff), password hashes, sessions, OTP codes | `wasla_auth`: read/write. `wasla_core`: read-only on `auth.accounts` (id, type, name, phone, roles, active) plus `REFERENCES` for foreign keys; **no access** to password hashes, sessions or OTP codes |
 | `wasla_clinical` | `core` | Appointments, slots, queue, visits, notes, tests, results, notifications, journey, audit log, outbox | `wasla_core`: read/write (audit log: insert and read only). `wasla_auth`: insert-only on the audit log, so login events go into the same log |
-| `wasla_ai` | `public` | Knowledge-base entries and embeddings, queue history for the wait model, model versions, AI output log. **De-identified data only** | `wasla_ai`: read/write. No other user. The AI service has **no** user on `wasla_clinical` |
+| `wasla_ai` | `public` | Knowledge-base entries and embeddings, queue history for the wait model, model versions, AI output log. **De-identified data only** | `wasla_ai`: schema usage and per-object runtime privileges; `wasla_migrator`: migration access only. The AI service has **no** user on `wasla_clinical` |
 
 Tables in `core` may reference `auth` tables with foreign keys (same database), so an appointment can't point to a patient that doesn't exist.
 
@@ -25,12 +25,12 @@ Tables in `core` may reference `auth` tables with foreign keys (same database), 
 
 | User | Used by | Can do |
 |---|---|---|
-| `wasla_migrator` | Prisma migrations for `wasla_clinical`, never a running service | Owns `wasla_clinical` and the `auth` and `core` schemas, so it owns every table it creates. Can create databases (Prisma's shadow database) |
+| `wasla_migrator` | Prisma migrations for `wasla_clinical` and `wasla_ai`, never a running service | Owns `wasla_clinical` and the `auth` and `core` schemas, so it owns every Clinical table it creates. In `wasla_ai`, has `CONNECT` and `USAGE, CREATE` on `public`; AI application migrations grant `wasla_ai` object-specific runtime access. It does not own the AI database or manage extensions. Can create databases (Prisma's Clinical shadow database) |
 | `wasla_auth` | auth service | Connects to `wasla_clinical`. Read/write on every table in `auth`. Sees the `core` schema but no table, except what a migration grants |
 | `wasla_core` | core service | Connects to `wasla_clinical`. Read/write on every table in `core`. Sees the `auth` schema but no table, except what a migration grants |
-| `wasla_ai` | AI service | Owns `wasla_ai` and runs its own migrations there. Can't connect to `wasla_clinical` |
+| `wasla_ai` | AI service | Owns `wasla_ai`; has `USAGE` on `public` and only the table/sequence privileges explicitly granted by AI application migrations. It does not run migrations and can't connect to `wasla_clinical` |
 
-- **Default rights:** `init.sh` sets default privileges, so every table the migrator creates in `auth` is read/write for `wasla_auth`, and every table in `core` is read/write for `wasla_core`. Nobody else gets anything by default.
+- **Default rights:** `init.sh` sets default privileges, so every table the migrator creates in `auth` is read/write for `wasla_auth`, and every table in `core` is read/write for `wasla_core`. AI tables receive no schema-wide runtime defaults; each AI application migration grants only the required access to `wasla_ai`. Its Prisma migration log is excluded. Nobody else gets access by default.
 - **Rights that go further** come from the migration that creates the table:
   - `auth.accounts`: `GRANT SELECT (id, type, name, phone, roles, active)` and `GRANT REFERENCES (id)` to `wasla_core`
   - `core.audit_log`: `GRANT INSERT` on the table and `USAGE` on its id sequence to `wasla_auth`, and `REVOKE UPDATE, DELETE, TRUNCATE` from `wasla_core`. A trigger also refuses those three for everyone (see "Raw SQL in the first migration")
@@ -260,6 +260,39 @@ Who did what, when. Append-only.
 Indexes: `occurred_at`; (`actor_id`, `occurred_at`); (`entity_type`, `entity_id`).
 
 Constraints: a trigger refuses every `UPDATE`, `DELETE` and `TRUNCATE` (raw SQL), on top of the grants.
+
+### public.knowledge_base_entries
+Approved de-identified hospital information used by the admin chatbot. `source_id` preserves the stable source-file ID so imports are idempotent. Removed source entries are marked inactive by a subsequent sync rather than physically deleted.
+
+| Column | Type | Null | Notes |
+|---|---|---|---|
+| id | uuid | no | primary key |
+| source_id | varchar(64) | no | unique stable ID from the source dataset |
+| slug | varchar(128) | no | unique source slug |
+| category | varchar(64) | no | |
+| title_en, title_ar | text | no | bilingual titles |
+| content_en, content_ar | text | no | bilingual content |
+| data_type | varchar(64) | no | e.g. `synthetic_demo` |
+| is_active | boolean | no | default `true`; inactive entries are excluded from retrieval |
+| created_at, updated_at | timestamptz(3) | no | UTC; defaults to now |
+
+Indexes: unique `source_id`; unique `slug`; `category`.
+
+### public.knowledge_base_embeddings
+One normalized Gemini document vector per active source entry and language. The model and source-content hash allow safe refreshes after content or model changes.
+
+| Column | Type | Null | Notes |
+|---|---|---|---|
+| entry_id | uuid | no | primary key part; foreign key to `public.knowledge_base_entries.id`, cascade delete |
+| language | varchar(2) | no | primary key part; `en` or `ar` |
+| model | varchar(128) | no | currently `gemini-embedding-2` |
+| content_hash | char(64) | no | SHA-256 of model, language, title and content |
+| embedding | vector(1536) | no | pgvector; HNSW cosine index |
+| created_at, updated_at | timestamptz(3) | no | UTC; defaults to now |
+
+Indexes: primary key (`entry_id`, `language`); HNSW cosine similarity on `embedding`.
+
+The `wasla_ai` runtime role has `SELECT`, `INSERT`, and `UPDATE` on these two tables only. It has no delete privilege and cannot access `_prisma_migrations`.
 
 ## Enums
 

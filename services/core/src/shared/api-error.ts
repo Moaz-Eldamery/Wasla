@@ -16,6 +16,7 @@ export type ErrorCode =
   | 'FILE_TOO_LARGE'
   | 'VERSION_CONFLICT'
   | 'NOT_YET_AVAILABLE'
+  | 'AI_UNAVAILABLE'
   | 'INTERNAL';
 
 export interface ErrorDetail {

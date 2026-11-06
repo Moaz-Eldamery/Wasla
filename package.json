@@ -13,6 +13,8 @@
     "mock": "node contracts/mock.mjs",
     "db:migrate": "prisma migrate deploy --config database/clinical/prisma.config.ts",
     "db:migrate:dev": "prisma migrate dev --config database/clinical/prisma.config.ts",
+    "db:ai:migrate": "prisma migrate deploy --config database/ai/prisma.config.ts",
+    "db:ai:migrate:dev": "prisma migrate dev --config database/ai/prisma.config.ts",
     "db:seed": "node database/clinical/seed.mts"
   },
   "devDependencies": {

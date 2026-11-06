@@ -34,6 +34,7 @@ jobs:
       # Same fake passwords as .env.example. Each service's tests connect as
       # that service's own DB user (DATABASE_URL, set per step).
       MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
+      AI_MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_ai
       SEED_DATABASE_URL: postgresql://wasla_migrator:fake-migrator-password@127.0.0.1:5432/wasla_clinical
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +47,7 @@ jobs:
             --env CORE_DB_PASSWORD=fake-core-password \
             --env AI_DB_PASSWORD=fake-ai-password \
             --volume "$PWD/database/init.sh:/docker-entrypoint-initdb.d/init.sh:ro" \
+            --volume "$PWD/database/ai/migrator_permissions.sql:/etc/wasla/ai-migrator-permissions.sql:ro" \
             pgvector/pgvector:pg16
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
@@ -58,6 +60,8 @@ jobs:
         run: timeout 120 bash -c 'until docker exec postgres pg_isready -h 127.0.0.1 -U postgres -d wasla_clinical; do sleep 2; done'
       - name: Apply migrations as wasla_migrator
         run: pnpm db:migrate
+      - name: Apply AI migrations as wasla_migrator
+        run: pnpm db:ai:migrate
       - name: Load the demo data (the tests must work alongside it)
         run: pnpm db:seed
       - name: Auth e2e tests as wasla_auth
@@ -95,6 +99,23 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+
+  chatbot-integration:
+    name: Core-to-AI chatbot integration (local mocks only)
+    needs: [node, ai]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+        working-directory: services/ai
+      - run: pnpm --filter @wasla/core test:integration
 
   stack:
     name: Whole stack (docker compose smoke test)

@@ -6,6 +6,7 @@ WORKDIR /app
 COPY services/ai/pyproject.toml services/ai/uv.lock services/ai/.python-version ./
 RUN uv sync --locked --no-dev --no-install-project
 COPY services/ai/app ./app
+COPY services/ai/data ./data
 RUN useradd --create-home --uid 1000 wasla
 USER wasla
 ENV PATH="/app/.venv/bin:$PATH"

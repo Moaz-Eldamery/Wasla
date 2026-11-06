@@ -65,8 +65,14 @@ ALTER DEFAULT PRIVILEGES FOR ROLE wasla_migrator IN SCHEMA core
   GRANT USAGE, SELECT ON SEQUENCES TO wasla_core;
 SQL
 
-# wasla_ai: only the AI service's user, which owns it and runs its migrations.
+# wasla_ai: the AI service's user owns the database; Prisma migrations run as
+# wasla_migrator with narrowly scoped access provisioned below.
 run_sql --dbname wasla_ai <<'SQL'
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 CREATE EXTENSION IF NOT EXISTS vector;
 SQL
+
+# Provision the dedicated migration role and runtime access to its objects.
+# This script also has a documented one-time command for existing volumes;
+# initdb scripts only run automatically when the Postgres volume is empty.
+run_sql --dbname postgres --file /etc/wasla/ai-migrator-permissions.sql

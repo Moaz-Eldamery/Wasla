@@ -11,7 +11,13 @@ The Python FastAPI AI service, managed with uv. This README also covers its own 
 - `.python-version`: the Python version (3.12).
 - `Dockerfile`: the service image. Builds from the repo root.
 - `app/__init__.py`: makes `app` a package.
-- `app/main.py`: the FastAPI app; `GET /health`.
-- Planned: `app/llm.py` and `app/privacy.py` (KAN-22).
+- `app/main.py`: the FastAPI app; health and internal admin-chatbot routes.
+- `app/admin_chatbot/`: bilingual retrieval, identifier redaction, Claude grounding,
+  source attribution, and `POST /internal/admin/chatbot/answer` (KAN-21/KAN-22).
+
+Set `ANTHROPIC_API_KEY` and optionally `ANTHROPIC_MODEL` (defaults to
+`claude-sonnet-5-5`). Chatbot requests are not logged. Common direct identifiers are
+redacted before query embedding and answer generation. The AI endpoint is internal to
+the core/AI Docker network.
 
 `.venv/` is created by `uv sync` and isn't committed.

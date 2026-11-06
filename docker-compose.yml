@@ -111,9 +111,15 @@ services:
     environment:
       DATABASE_URL: postgresql://wasla_ai:${AI_DB_PASSWORD:?}@postgres:5432/wasla_ai
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:?}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-5-5}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_EMBEDDING_MODEL: ${GEMINI_EMBEDDING_MODEL:-gemini-embedding-2}
+      GEMINI_EMBEDDING_DIMENSIONS: ${GEMINI_EMBEDDING_DIMENSIONS:-1536}
     depends_on:
       postgres:
         condition: service_healthy
+      ai-migrate:
+        condition: service_completed_successfully
     # No Traefik labels and no ports: only the core can reach it.
     networks: [ai, egress]
     restart: unless-stopped
@@ -130,6 +136,7 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./database/init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+      - ./database/ai/migrator_permissions.sql:/etc/wasla/ai-migrator-permissions.sql:ro
     healthcheck:
       # Over TCP: while init.sh runs, Postgres only listens on its socket, so
       # this stays unhealthy until setup is finished.
@@ -152,6 +159,20 @@ services:
       postgres:
         condition: service_healthy
     networks: [data]
+    restart: "no"
+
+  # Applies only the independent wasla_ai Prisma migration history.
+  ai-migrate:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    command: ["node_modules/.bin/prisma", "migrate", "deploy", "--config", "database/ai/prisma.config.ts"]
+    environment:
+      AI_MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:${MIGRATOR_DB_PASSWORD:?}@postgres:5432/wasla_ai
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [ai]
     restart: "no"
 
   # Fake demo data (KAN-13), on request only: docker compose run --rm seed

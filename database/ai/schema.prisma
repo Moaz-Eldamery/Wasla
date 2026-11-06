@@ -1,0 +1,44 @@
+// The wasla_ai database. Keep this schema and its migrations separate from
+// database/clinical; the Python AI service uses its own database client.
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+model KnowledgeBaseEntry {
+  id        String   @id @default(uuid()) @db.Uuid
+  sourceId  String   @unique @map("source_id") @db.VarChar(64)
+  slug      String   @unique @db.VarChar(128)
+  category  String   @db.VarChar(64)
+  titleEn   String   @map("title_en")
+  titleAr   String   @map("title_ar")
+  contentEn String   @map("content_en")
+  contentAr String   @map("content_ar")
+  dataType  String   @map("data_type") @db.VarChar(64)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  embeddings KnowledgeBaseEmbedding[]
+
+  @@index([category])
+  @@map("knowledge_base_entries")
+  @@schema("public")
+}
+
+model KnowledgeBaseEmbedding {
+  entryId     String   @map("entry_id") @db.Uuid
+  language    String   @db.VarChar(2)
+  model       String   @db.VarChar(128)
+  contentHash String   @map("content_hash") @db.Char(64)
+  embedding   Unsupported("vector(1536)")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  entry KnowledgeBaseEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+
+  @@id([entryId, language])
+  @@map("knowledge_base_embeddings")
+  @@schema("public")
+}

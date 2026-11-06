@@ -14,6 +14,13 @@ The NestJS core backend: the six business modules, live updates and events, in o
 - `src/main.ts`: starts the service on `PORT` (3000).
 - `src/app.module.ts`: the root module: the shared module, the feature modules, health.
 - `src/health.controller.ts`: `GET /health`, for Docker and Uptime Kuma. Test: `health.controller.spec.ts`.
+- `src/modules/admin-chatbot/`: `POST /admin/chatbot/messages`, restricted to `ADMIN`;
+  forwards questions to the internal AI service with a bounded timeout and returns
+  `AI_UNAVAILABLE` if that service fails. Unit/controller tests cover forwarding,
+  validation, and role authorization.
+- Run the Core-to-AI chatbot contract test with `pnpm --filter @wasla/core test:integration`
+  after `uv sync --locked` in `services/ai`. It starts a local FastAPI fixture with
+  test-only retrieval, Gemini, and Claude mocks; it does not call external providers.
 - `test/app.e2e-spec.ts`: end-to-end test for the health endpoint.
 - `test/booking.e2e-spec.ts`: booking against a real, migrated database (simultaneous bookings, record ownership, audit log, DB grants). Skipped unless `DATABASE_URL` (as `wasla_core`) and `SEED_DATABASE_URL` (as `wasla_migrator`) are set; use a throwaway database. CI's `database` job runs it; to run it yourself, follow that job's steps in `.github/workflows/ci.yml`.
 - `test/queue.e2e-spec.ts`: check-in and the queue against a real, migrated database (simultaneous check-ins and call-next presses, each doctor's own line, record ownership, audit log). Same setup and skip rule as the booking test.

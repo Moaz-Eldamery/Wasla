@@ -1,0 +1,379 @@
+{
+  "dataset_name": "Wasla KAN-21 Synthetic Hospital Knowledge Base",
+  "purpose": "Reviewable prototype sample data only; all hospital details are fictional.",
+  "entry_count": 36,
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "categories": {
+    "opening-hours": 6,
+    "departments": 6,
+    "locations": 6,
+    "booking-rules": 6,
+    "what-to-bring": 6,
+    "visiting-hours": 6
+  },
+  "entries": [
+    {
+      "id": "KB-001",
+      "slug": "main-reception-hours",
+      "category": "opening-hours",
+      "title_en": "Main Reception Hours",
+      "title_ar": "مواعيد الاستقبال الرئيسي",
+      "content_en": "The main reception desk is open daily from 8:00 AM to 8:00 PM.",
+      "content_ar": "مكتب الاستقبال الرئيسي مفتوح يوميًا من الساعة 8:00 صباحًا حتى 8:00 مساءً.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-002",
+      "slug": "outpatient-clinic-hours",
+      "category": "opening-hours",
+      "title_en": "Outpatient Clinic Hours",
+      "title_ar": "مواعيد العيادات الخارجية",
+      "content_en": "Outpatient clinics operate from Sunday to Thursday, 9:00 AM to 5:00 PM. They are closed on Fridays and Saturdays.",
+      "content_ar": "تعمل العيادات الخارجية من الأحد إلى الخميس، من الساعة 9:00 صباحًا حتى 5:00 مساءً. وهي مغلقة يومي الجمعة والسبت.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-003",
+      "slug": "emergency-department-hours",
+      "category": "opening-hours",
+      "title_en": "Emergency Department Hours",
+      "title_ar": "مواعيد قسم الطوارئ",
+      "content_en": "The emergency department is open 24 hours a day, every day of the week.",
+      "content_ar": "يعمل قسم الطوارئ على مدار 24 ساعة يوميًا، طوال أيام الأسبوع.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-004",
+      "slug": "laboratory-hours",
+      "category": "opening-hours",
+      "title_en": "Laboratory Hours",
+      "title_ar": "مواعيد المعمل",
+      "content_en": "The laboratory is open Sunday to Thursday from 7:00 AM to 6:00 PM, and Saturday from 8:00 AM to 1:00 PM.",
+      "content_ar": "المعمل مفتوح من الأحد إلى الخميس من الساعة 7:00 صباحًا حتى 6:00 مساءً، ويوم السبت من الساعة 8:00 صباحًا حتى 1:00 ظهرًا.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-005",
+      "slug": "radiology-hours",
+      "category": "opening-hours",
+      "title_en": "Radiology Department Hours",
+      "title_ar": "مواعيد قسم الأشعة",
+      "content_en": "The radiology department handles scheduled appointments Sunday to Thursday from 8:00 AM to 6:00 PM. Emergency imaging is available through the emergency department at all times.",
+      "content_ar": "يستقبل قسم الأشعة الحالات المحجوزة من الأحد إلى الخميس، من الساعة 8:00 صباحًا حتى 6:00 مساءً. وتتوفر الأشعة الطارئة من خلال قسم الطوارئ في جميع الأوقات.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-006",
+      "slug": "pharmacy-hours",
+      "category": "opening-hours",
+      "title_en": "Hospital Pharmacy Hours",
+      "title_ar": "مواعيد صيدلية المستشفى",
+      "content_en": "The hospital pharmacy is open daily from 9:00 AM to 9:00 PM.",
+      "content_ar": "صيدلية المستشفى مفتوحة يوميًا من الساعة 9:00 صباحًا حتى 9:00 مساءً.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-007",
+      "slug": "cardiology-department",
+      "category": "departments",
+      "title_en": "Cardiology Department",
+      "title_ar": "قسم القلب",
+      "content_en": "The Cardiology Department provides consultations and follow-up appointments for heart and circulation concerns. Routine appointments are booked through the main reception.",
+      "content_ar": "يقدم قسم القلب الاستشارات ومواعيد المتابعة المتعلقة بصحة القلب والدورة الدموية. ويتم حجز المواعيد العادية من خلال الاستقبال الرئيسي.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-008",
+      "slug": "pediatrics-department",
+      "category": "departments",
+      "title_en": "Pediatrics Department",
+      "title_ar": "قسم طب الأطفال",
+      "content_en": "The Pediatrics Department provides consultations for infants, children, and adolescents. A parent or legal guardian should accompany patients under 18.",
+      "content_ar": "يقدم قسم طب الأطفال الاستشارات للرضع والأطفال والمراهقين. ويجب أن يصطحب أحد الوالدين أو الوصي القانوني المرضى الأقل من 18 عامًا.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-009",
+      "slug": "dermatology-department",
+      "category": "departments",
+      "title_en": "Dermatology Department",
+      "title_ar": "قسم الجلدية",
+      "content_en": "The Dermatology Department provides consultations for skin, hair, and nail concerns. Patients should bring a list of current medicines when available.",
+      "content_ar": "يقدم قسم الجلدية الاستشارات المتعلقة بمشكلات الجلد والشعر والأظافر. ويُفضل أن يحضر المريض قائمة بالأدوية التي يستخدمها حاليًا إن توفرت.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-010",
+      "slug": "orthopedics-department",
+      "category": "departments",
+      "title_en": "Orthopedics Department",
+      "title_ar": "قسم العظام",
+      "content_en": "The Orthopedics Department assesses bone, joint, and muscle concerns. Bring previous imaging reports if they are available.",
+      "content_ar": "يقوم قسم العظام بتقييم مشكلات العظام والمفاصل والعضلات. يُرجى إحضار تقارير الأشعة السابقة إذا كانت متوفرة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-011",
+      "slug": "laboratory-department",
+      "category": "departments",
+      "title_en": "Laboratory Department",
+      "title_ar": "قسم المعمل",
+      "content_en": "The Laboratory Department collects samples for requested tests. Some tests may require fasting; patients should follow the instructions given when the test is booked.",
+      "content_ar": "يقوم قسم المعمل بسحب العينات لإجراء التحاليل المطلوبة. قد تتطلب بعض التحاليل الصيام؛ ويجب اتباع التعليمات التي يتم توضيحها عند حجز التحليل.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-012",
+      "slug": "radiology-department",
+      "category": "departments",
+      "title_en": "Radiology Department",
+      "title_ar": "قسم الأشعة",
+      "content_en": "The Radiology Department provides scheduled diagnostic imaging services. The required preparation depends on the type of scan and is explained during booking.",
+      "content_ar": "يقدم قسم الأشعة خدمات التصوير التشخيصي بالحجز المسبق. وتختلف التجهيزات المطلوبة حسب نوع الفحص، ويتم توضيحها أثناء الحجز.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-013",
+      "slug": "main-reception-location",
+      "category": "locations",
+      "title_en": "Main Reception Location",
+      "title_ar": "موقع الاستقبال الرئيسي",
+      "content_en": "The main reception desk is on the ground floor, immediately inside the main entrance.",
+      "content_ar": "يقع مكتب الاستقبال الرئيسي في الطابق الأرضي، مباشرة بعد المدخل الرئيسي.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-014",
+      "slug": "outpatient-clinics-location",
+      "category": "locations",
+      "title_en": "Outpatient Clinics Location",
+      "title_ar": "موقع العيادات الخارجية",
+      "content_en": "The outpatient clinics are on the first floor. Follow the blue signs from the main elevators.",
+      "content_ar": "تقع العيادات الخارجية في الطابق الأول. اتبع اللافتات الزرقاء بدءًا من المصاعد الرئيسية.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-015",
+      "slug": "emergency-location",
+      "category": "locations",
+      "title_en": "Emergency Department Location",
+      "title_ar": "موقع قسم الطوارئ",
+      "content_en": "The emergency department is on the ground floor, through the entrance marked Emergency on the east side of the building.",
+      "content_ar": "يقع قسم الطوارئ في الطابق الأرضي، من خلال المدخل المكتوب عليه «الطوارئ» في الجانب الشرقي من المبنى.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-016",
+      "slug": "laboratory-location",
+      "category": "locations",
+      "title_en": "Laboratory Location",
+      "title_ar": "موقع المعمل",
+      "content_en": "The laboratory is on the first floor, opposite the outpatient clinic waiting area.",
+      "content_ar": "يقع المعمل في الطابق الأول، مقابل منطقة انتظار العيادات الخارجية.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-017",
+      "slug": "radiology-location",
+      "category": "locations",
+      "title_en": "Radiology Department Location",
+      "title_ar": "موقع قسم الأشعة",
+      "content_en": "The radiology department is in the basement level, next to the imaging reception desk.",
+      "content_ar": "يقع قسم الأشعة في الطابق السفلي، بجوار مكتب استقبال الأشعة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-018",
+      "slug": "pharmacy-location",
+      "category": "locations",
+      "title_en": "Hospital Pharmacy Location",
+      "title_ar": "موقع صيدلية المستشفى",
+      "content_en": "The hospital pharmacy is on the ground floor, to the left of the main reception desk.",
+      "content_ar": "تقع صيدلية المستشفى في الطابق الأرضي، على يسار مكتب الاستقبال الرئيسي.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-019",
+      "slug": "appointment-booking-methods",
+      "category": "booking-rules",
+      "title_en": "How to Book an Appointment",
+      "title_ar": "طرق حجز الموعد",
+      "content_en": "Routine outpatient appointments can be requested through the hospital's booking desk or its demo booking portal. Emergency cases should go directly to the emergency department.",
+      "content_ar": "يمكن طلب مواعيد العيادات الخارجية من خلال مكتب الحجز أو بوابة الحجز التجريبية للمستشفى. أما الحالات الطارئة فيجب أن تتوجه مباشرة إلى قسم الطوارئ.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-020",
+      "slug": "appointment-confirmation",
+      "category": "booking-rules",
+      "title_en": "Appointment Confirmation",
+      "title_ar": "تأكيد الموعد",
+      "content_en": "An appointment is considered confirmed only after the patient receives a confirmation message containing the date and time.",
+      "content_ar": "يُعتبر الموعد مؤكدًا فقط بعد استلام المريض رسالة تأكيد تحتوي على التاريخ والوقت.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-021",
+      "slug": "arrive-before-appointment",
+      "category": "booking-rules",
+      "title_en": "When to Arrive for an Appointment",
+      "title_ar": "موعد الحضور قبل الكشف",
+      "content_en": "Patients are asked to arrive 15 minutes before their scheduled appointment to complete reception procedures.",
+      "content_ar": "يُطلب من المرضى الحضور قبل الموعد المحدد بـ 15 دقيقة لاستكمال إجراءات الاستقبال.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-022",
+      "slug": "reschedule-appointment",
+      "category": "booking-rules",
+      "title_en": "Rescheduling an Appointment",
+      "title_ar": "تغيير موعد الحجز",
+      "content_en": "To reschedule, contact the booking desk at least 4 hours before the appointment. New times depend on availability.",
+      "content_ar": "لتغيير الموعد، تواصل مع مكتب الحجز قبل الموعد بأربع ساعات على الأقل. وتخضع المواعيد البديلة للأوقات المتاحة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-023",
+      "slug": "cancel-appointment",
+      "category": "booking-rules",
+      "title_en": "Canceling an Appointment",
+      "title_ar": "إلغاء الموعد",
+      "content_en": "Patients can request cancellation through the booking desk. Please provide the appointment reference number when available.",
+      "content_ar": "يمكن للمريض طلب إلغاء الموعد من خلال مكتب الحجز. يُرجى تقديم الرقم المرجعي للموعد إن كان متوفرًا.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-024",
+      "slug": "late-arrival-policy",
+      "category": "booking-rules",
+      "title_en": "Late Arrival Policy",
+      "title_ar": "سياسة التأخر عن الموعد",
+      "content_en": "Patients arriving more than 20 minutes late may need to wait for the next available opening or reschedule.",
+      "content_ar": "قد يحتاج المرضى الذين يصلون متأخرين أكثر من 20 دقيقة إلى انتظار أقرب موعد متاح أو إعادة الحجز.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-025",
+      "slug": "identity-document",
+      "category": "what-to-bring",
+      "title_en": "Identity Document to Bring",
+      "title_ar": "إحضار إثبات الهوية",
+      "content_en": "Bring a valid identity document to the appointment so reception staff can verify the patient's registration details.",
+      "content_ar": "يُرجى إحضار إثبات هوية ساري إلى الموعد حتى يتمكن موظفو الاستقبال من مراجعة بيانات تسجيل المريض.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-026",
+      "slug": "appointment-confirmation-details",
+      "category": "what-to-bring",
+      "title_en": "Appointment Confirmation Details",
+      "title_ar": "بيانات تأكيد الموعد",
+      "content_en": "Bring or show the appointment confirmation message, including its reference number if one was provided.",
+      "content_ar": "يُرجى إحضار رسالة تأكيد الموعد أو عرضها، بما في ذلك الرقم المرجعي إذا تم إصداره.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-027",
+      "slug": "previous-medical-reports",
+      "category": "what-to-bring",
+      "title_en": "Previous Medical Reports",
+      "title_ar": "التقارير الطبية السابقة",
+      "content_en": "Bring relevant previous medical reports and test results that may help the clinician understand the reason for the visit.",
+      "content_ar": "يُرجى إحضار التقارير الطبية ونتائج التحاليل السابقة ذات الصلة، فقد تساعد الطبيب على فهم سبب الزيارة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-028",
+      "slug": "current-medication-list",
+      "category": "what-to-bring",
+      "title_en": "List of Current Medicines",
+      "title_ar": "قائمة الأدوية الحالية",
+      "content_en": "Bring a current list of medicines, including dose information when known. Do not stop or change prescribed medicines based on this information.",
+      "content_ar": "يُرجى إحضار قائمة بالأدوية الحالية، مع توضيح الجرعات إذا كانت معروفة. لا توقف أو تغيّر أي دواء موصوف بناءً على هذه المعلومة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-029",
+      "slug": "insurance-information",
+      "category": "what-to-bring",
+      "title_en": "Insurance Information",
+      "title_ar": "بيانات التأمين",
+      "content_en": "If the visit is covered by insurance, bring the insurance card and any required approval documents.",
+      "content_ar": "إذا كانت الزيارة مغطاة بالتأمين، يُرجى إحضار بطاقة التأمين وأي مستندات موافقة مطلوبة.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-030",
+      "slug": "child-appointment-documents",
+      "category": "what-to-bring",
+      "title_en": "Documents for a Child's Appointment",
+      "title_ar": "مستندات موعد الطفل",
+      "content_en": "For a patient under 18, a parent or legal guardian should attend and bring the child's identity document or available registration document.",
+      "content_ar": "بالنسبة للمريض الأقل من 18 عامًا، يجب حضور أحد الوالدين أو الوصي القانوني مع إحضار إثبات هوية الطفل أو مستند التسجيل المتاح.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-031",
+      "slug": "general-ward-visiting-hours",
+      "category": "visiting-hours",
+      "title_en": "General Ward Visiting Hours",
+      "title_ar": "مواعيد زيارة الأقسام الداخلية",
+      "content_en": "General ward visiting hours are daily from 4:00 PM to 6:00 PM.",
+      "content_ar": "مواعيد زيارة الأقسام الداخلية يوميًا من الساعة 4:00 مساءً حتى 6:00 مساءً.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-032",
+      "slug": "intensive-care-visiting-hours",
+      "category": "visiting-hours",
+      "title_en": "Intensive Care Visiting Hours",
+      "title_ar": "مواعيد زيارة العناية المركزة",
+      "content_en": "Intensive care visits are limited to one approved visitor per patient, from 5:00 PM to 5:15 PM, subject to the care team's approval.",
+      "content_ar": "تقتصر زيارة العناية المركزة على زائر واحد معتمد لكل مريض، من الساعة 5:00 مساءً حتى 5:15 مساءً، وفقًا لموافقة فريق الرعاية.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-033",
+      "slug": "pediatric-ward-visiting-hours",
+      "category": "visiting-hours",
+      "title_en": "Pediatric Ward Visiting Hours",
+      "title_ar": "مواعيد زيارة قسم الأطفال",
+      "content_en": "One parent or legal guardian may stay with a child in the pediatric ward. Other visitors are allowed from 4:00 PM to 5:00 PM.",
+      "content_ar": "يمكن لأحد الوالدين أو الوصي القانوني البقاء مع الطفل في قسم الأطفال. وتُسمح بزيارة باقي الزوار من الساعة 4:00 مساءً حتى 5:00 مساءً.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-034",
+      "slug": "visitor-limit",
+      "category": "visiting-hours",
+      "title_en": "Visitor Limit",
+      "title_ar": "عدد الزوار المسموح به",
+      "content_en": "For general wards, no more than two visitors may visit one patient at the same time.",
+      "content_ar": "في الأقسام الداخلية العامة، يُسمح بزيارة مريض واحد بواسطة زائرين كحد أقصى في الوقت نفسه.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-035",
+      "slug": "visitor-age-guidance",
+      "category": "visiting-hours",
+      "title_en": "Visitor Age Guidance",
+      "title_ar": "إرشادات أعمار الزوار",
+      "content_en": "Visitors under 12 should be accompanied by an adult. Some clinical areas may have additional age restrictions.",
+      "content_ar": "يجب أن يكون الزوار الأقل من 12 عامًا برفقة شخص بالغ. وقد تفرض بعض الأقسام الطبية قيودًا إضافية على الأعمار.",
+      "data_type": "synthetic_demo"
+    },
+    {
+      "id": "KB-036",
+      "slug": "visitor-health-guidance",
+      "category": "visiting-hours",
+      "title_en": "Visitor Health Guidance",
+      "title_ar": "إرشادات صحة الزوار",
+      "content_en": "Visitors who have fever, cough, or other contagious symptoms should postpone their visit and contact the hospital for guidance.",
+      "content_ar": "يُفضل أن يؤجل الزوار الذين يعانون من الحمى أو السعال أو أعراض عدوى أخرى زيارتهم، وأن يتواصلوا مع المستشفى للحصول على الإرشادات.",
+      "data_type": "synthetic_demo"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   // Resolves the path aliases declared in tsconfig.json, including the ones
@@ -8,5 +8,9 @@ export default defineConfig({
     globals: true,
     root: './',
     include: ['**/*.spec.ts'],
+    exclude: [
+      ...configDefaults.exclude,
+      'src/modules/admin-chatbot/admin-chatbot.cross.integration.spec.ts',
+    ],
   },
 });

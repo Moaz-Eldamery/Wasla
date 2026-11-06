@@ -7,7 +7,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 # Only the root package: it holds the Prisma CLI.
 RUN pnpm install --frozen-lockfile --filter .
 COPY database/clinical database/clinical
+COPY database/ai database/ai
 USER node
 # Runs the CLI directly: the data network has no internet, so pnpm can't be
-# fetched at runtime.
+# fetched at runtime. Compose selects the separate Clinical or AI config.
 CMD ["node_modules/.bin/prisma", "migrate", "deploy", "--config", "database/clinical/prisma.config.ts"]
