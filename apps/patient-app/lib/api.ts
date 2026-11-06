@@ -16,6 +16,9 @@ export type Doctor = components['schemas']['Doctor'];
 export type Slot = components['schemas']['Slot'];
 export type Appointment = components['schemas']['Appointment'];
 export type AppointmentStatus = components['schemas']['AppointmentStatus'];
+export type QueuePosition = components['schemas']['QueuePosition'];
+export type Journey = components['schemas']['Journey'];
+export type JourneyStageCode = components['schemas']['JourneyStageCode'];
 
 /** Error thrown when the backend returns a non-2xx response or network error. */
 export class ApiClientError extends Error {
@@ -263,6 +266,24 @@ export async function listMyAppointments(
   when: 'upcoming' | 'past' = 'upcoming',
 ): Promise<Appointment[]> {
   return request<Appointment[]>(`/me/appointments?when=${encodeURIComponent(when)}`, {
+    method: 'GET',
+    authenticated: true,
+  });
+}
+
+/** Queue position and patient journey endpoints */
+export async function getQueuePosition(appointmentId: string): Promise<QueuePosition> {
+  return request<QueuePosition>(
+    `/appointments/${encodeURIComponent(appointmentId)}/queue-position`,
+    {
+      method: 'GET',
+      authenticated: true,
+    },
+  );
+}
+
+export async function getAppointmentJourney(appointmentId: string): Promise<Journey> {
+  return request<Journey>(`/appointments/${encodeURIComponent(appointmentId)}/journey`, {
     method: 'GET',
     authenticated: true,
   });
