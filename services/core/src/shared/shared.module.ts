@@ -10,6 +10,8 @@ import { ApiExceptionFilter } from './api-exception.filter.js';
 import { AuditService } from './audit.service.js';
 import { PrismaService } from './prisma.service.js';
 import { RolesGuard } from './roles.guard.js';
+import { RecordAccessService } from './record-access.service.js';
+import { FileStorageService } from './file-storage.service.js';
 
 /** Request validation for every route. Bad input becomes 400 VALIDATION_FAILED. */
 function validationPipe(): ValidationPipe {
@@ -41,10 +43,12 @@ function validationPipe(): ValidationPipe {
   providers: [
     PrismaService,
     AuditService,
+    RecordAccessService,
+    FileStorageService,
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_FILTER, useClass: ApiExceptionFilter },
     { provide: APP_PIPE, useFactory: validationPipe },
   ],
-  exports: [PrismaService, AuditService],
+  exports: [PrismaService, AuditService, RecordAccessService, FileStorageService],
 })
 export class SharedModule {}
