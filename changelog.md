@@ -1,3 +1,13 @@
+## 2026-11-06 18:00 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 was rewritten into the whole admin dashboard, whose staff, hospital setup, statistics and audit endpoints aren't in the contract. The user chose to leave `openapi.yaml` alone and serve a draft beside it, so:
+- **Draft:** `contracts/drafts/admin.yaml` (a new folder, agreed with the user) describes them with example data: staff and roles on the auth service (deactivating revokes sessions), and departments, clinics, assignments, statistics and the audit log on the core, all `ADMIN` only.
+- **Mock:** `pnpm mock` now runs `contracts/mock.mjs`, which joins the contract and the drafts for Prism and signs the mock user in with every staff role. Prism runs straight from node, so stopping the script stops the server. Added `yaml` as a root dev dependency.
+- **Client:** the dashboard generates `lib/admin-api-types.ts` from the draft (checked in `lint`), and `api.ts` gains one function per admin endpoint.
+
+No backend code.
+Files: contracts/drafts/admin.yaml, contracts/drafts/README.md, contracts/mock.mjs, contracts/README.md, package.json, pnpm-lock.yaml, README.md, structure.md, apps/hospital-dashboard/package.json, apps/hospital-dashboard/src/lib/ (admin-api-types.ts, api.ts, README.md)
+
 ## 2026-11-06 15:06 +0200 · NourElghaly
 Prompt: 2026-11-06 15:04 · NourElghaly
 What: Review fixes for KAN-12 (PR #3). The journey module imported the appointments module's internals, which structure.md forbids, so the clinic shape, select and mapper moved to services/core/src/shared/clinic.views.ts and both modules use it from there. A test AWAITING_REVIEW no longer sends the patient back to the lab: only REQUESTED and IN_PROGRESS tests give TEST_ORDERED; otherwise the patient is WITH_DOCTOR during the visit or DONE after it. Added a unit test for this and updated the journey rule in business.md.

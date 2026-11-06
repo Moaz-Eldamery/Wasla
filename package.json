@@ -10,7 +10,7 @@
     "test": "pnpm -r --if-present test",
     "test:e2e": "pnpm -r --if-present test:e2e",
     "build": "pnpm -r --if-present build",
-    "mock": "prism mock contracts/openapi.yaml --port 4010",
+    "mock": "node contracts/mock.mjs",
     "db:migrate": "prisma migrate deploy --config database/clinical/prisma.config.ts",
     "db:migrate:dev": "prisma migrate dev --config database/clinical/prisma.config.ts",
     "db:seed": "node database/clinical/seed.mts"
@@ -19,6 +19,7 @@
     "@node-rs/argon2": "^2.2.2",
     "@stoplight/prism-cli": "^5.16.0",
     "pg": "^8.23.1",
-    "prisma": "7.10.1"
+    "prisma": "7.10.1",
+    "yaml": "^2.9.1"
   }
 }
