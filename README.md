@@ -20,6 +20,24 @@ docker compose up --build
 
 `database/init.sh` only runs on an empty database. The `migrate` service then applies the migrations before auth and core start. To start over, run `docker compose down -v`.
 
+## Demo data
+
+```sh
+docker compose run --rm seed                      # fake hospital: departments, staff, 200 patients, slots, 3,000 past visits
+docker compose run --rm seed --past-visits 10000  # more history (also --patients, --past-days, --future-days)
+```
+
+It only fills an empty database (start over with `docker compose down -v`). Every name and number is made up. Demo logins, all with the password `demo-password`:
+
+| Role | Phone |
+|---|---|
+| Admin | +201000000001 |
+| Receptionist (Internal Medicine clinics) | +201000000002 |
+| Doctor (Internal Medicine Clinic 1) | +201000000003 |
+| Lab | +201000000004 |
+| Radiology | +201000000005 |
+| Patient | +201000000006 |
+
 ## Work on one part
 
 ```sh

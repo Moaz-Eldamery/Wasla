@@ -1,3 +1,13 @@
+## 2026-11-05 19:38 +0200 · NourElghaly
+Changes: 2026-11-05 21:08, 2026-11-05 21:09
+
+> lets do kan 13
+
+## 2026-11-05 19:38 +0200 · NourElghaly
+Changes: none
+
+> whats a good next option
+
 ## 2026-11-05 19:18 +0200 · NourElghaly
 Changes: 2026-11-05 19:34, 2026-11-05 19:35
 

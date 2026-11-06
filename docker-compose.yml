@@ -154,6 +154,23 @@ services:
     networks: [data]
     restart: "no"
 
+  # Fake demo data (KAN-13), on request only: docker compose run --rm seed
+  # Extra arguments go to the script, e.g. `--past-visits 10000`. It refuses a
+  # database that already has data; start over with docker compose down -v.
+  seed:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    entrypoint: ["node", "database/clinical/seed.mts"]
+    environment:
+      MIGRATOR_DATABASE_URL: postgresql://wasla_migrator:${MIGRATOR_DB_PASSWORD:?}@postgres:5432/wasla_clinical
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [data]
+    profiles: [demo]
+    restart: "no"
+
   # MinIO stopped publishing free images in 2025. pgsty/minio is a community
   # build of the same server, and it includes the mc client.
   minio:

@@ -1,3 +1,13 @@
+## 2026-11-05 21:09 +0200 · NourElghaly
+Prompt: 2026-11-05 19:38 · NourElghaly
+What: CI's database job now loads the demo data before the e2e tests, so every pull request checks that the seed still works with the schema and that the tests run alongside real-looking data.
+Files: .github/workflows/ci.yml, .github/workflows/README.md
+
+## 2026-11-05 21:08 +0200 · NourElghaly
+Prompt: 2026-11-05 19:38 · NourElghaly
+What: KAN-13 fake demo data. One command, `docker compose run --rm seed` (or `pnpm db:seed`), fills an empty database with a made-up hospital: 8 departments and 10 clinics with Arabic and English directions, 14 doctors, receptionists, lab and radiology staff, 200 patients with Arabic and English names, 14 working days of free 15-minute slots (some booked), and 3,000 past visits simulated so waits and visit lengths look real (more with --past-visits). Each staff role and a patient get a fixed demo login, all with the password demo-password, listed in the README. It runs as wasla_migrator in one transaction, never on a normal start, and refuses a database that already has data.
+Files: database/clinical/seed.mts, docker-compose.yml, package.json, pnpm-lock.yaml, README.md, business.md, structure.md, database/README.md, database/clinical/README.md
+
 ## 2026-11-05 19:35 +0200 · NourElghaly
 Prompt: 2026-11-05 19:18 · NourElghaly
 What: CI now covers login. The database job also runs the auth e2e tests as wasla_auth, and the stack job signs a patient up, logs in and calls a core endpoint through the gateway with that session.

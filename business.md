@@ -79,6 +79,7 @@ The AI is a helper, never a decision-maker, and the rest of the system must work
 - Arabic and English everywhere, right-to-left layout for Arabic.
 - Times are stored in UTC and shown in Africa/Cairo time.
 - Only fake data. Never real patient data: not in seeds, tests, prompts or logs.
+- Demo databases have fixed demo logins (one per staff role, plus a patient) that share one password; they're listed in the README. They exist only where the demo data was loaded on purpose, never on a normal start.
 - The core system keeps working when the AI service is down.
 - Every new endpoint checks both the role and the record owner.
 
