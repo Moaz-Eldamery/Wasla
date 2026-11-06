@@ -1,3 +1,15 @@
+## 2026-11-06 13:55 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 13:47 · Moaz Mohamed
+What: KAN-20, the admin's hospital-information assistant at `/admin`:
+- **Asking:** ask in English or Arabic. Enter sends and Shift+Enter adds a line. Questions are limited to 1,000 characters.
+- **Answers:** each answer is shown in its own language and direction, with source chips.
+- **When it can't answer:** "No information" and "assistant unavailable" each get a clear message, with Ask again.
+- **First visit:** four example questions in an empty chat, as the user chose.
+- **History:** the thread is kept for this tab only (sessionStorage), the default the user left to me. It's cleared by New conversation, by closing the tab or by logging out.
+
+The endpoint has no backend yet (KAN-22), so the screen follows the contract and was checked through the local stand-in. 7 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (ChatPage.tsx, ChatPage.test.tsx, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts, session.tsx), apps/hospital-dashboard/README.md
+
 ## 2026-11-06 13:29 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 13:19 · Moaz Mohamed
 What: KAN-19, the lab and radiology worklist at `/lab`:
