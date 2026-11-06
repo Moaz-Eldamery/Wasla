@@ -40,6 +40,33 @@ function setup(row: typeof test | null = test) {
 }
 
 describe('clinical record access', () => {
+  it('allows only the owning patient to access the visit summary', async () => {
+    const { access, prisma, audit } = setup();
+    prisma.appointment.findUnique.mockResolvedValue({
+      id: 'visit',
+      patientId: patient.id,
+      status: 'COMPLETED',
+      completedAt: new Date(),
+      slot: { doctor: { name: 'Synthetic doctor' } },
+    });
+    await expect(
+      access.patientVisit(patient, 'visit', 'notes.summary'),
+    ).resolves.toMatchObject({ id: 'visit' });
+    await expect(
+      access.patientVisit(
+        { ...patient, id: 'other' },
+        'visit',
+        'notes.summary',
+      ),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(
+      access.patientVisit(doctor, 'visit', 'notes.summary'),
+    ).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'notes.summary', outcome: 'DENIED' }),
+    );
+  });
+
   it('allows only the ordering doctor assigned to the visit clinic', async () => {
     const { access, prisma } = setup();
     await expect(
