@@ -1,3 +1,14 @@
+## 2026-11-06 18:05 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 6, the audit log at `/admin/audit`, which completes the rewritten card:
+- **Search:** by who (name or phone), what action (grouped) and a day range.
+- **Rows:** each shows when, who, the action, the record (type and a short ID), the outcome and the IP. Refused and failed actions stand out.
+- **Paging:** older entries load 50 at a time.
+- **Read-only:** no medical content or passwords.
+
+Also adds the access and navigation tests and rewrites the admin README. 5 + 4 new tests; 81 in the dashboard. Every screen was checked against `pnpm mock` in English and Arabic, on desktop, tablet and phone.
+Files: apps/hospital-dashboard/src/pages/admin/ (AuditPage.tsx, AuditPage.test.tsx, audit.ts, AdminLayout.test.tsx, README.md), apps/hospital-dashboard/src/App.tsx, apps/hospital-dashboard/README.md
+
 ## 2026-11-06 18:04 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: KAN-20 section 5, statistics at `/admin/statistics`, where `/admin` now opens (the user's choice):

@@ -9,6 +9,7 @@ import { NotAllowed } from './components/NotAllowed.tsx'
 import type { StaffRole } from './lib/api.ts'
 import { LoginPage } from './LoginPage.tsx'
 import { AdminLayout } from './pages/admin/AdminLayout.tsx'
+import { AuditPage } from './pages/admin/AuditPage.tsx'
 import { ChatPage } from './pages/admin/ChatPage.tsx'
 import { HospitalPage } from './pages/admin/HospitalPage.tsx'
 import { StaffPage } from './pages/admin/StaffPage.tsx'
@@ -103,6 +104,7 @@ export default function App() {
         <Route path="assistant" element={<ChatPage />} />
         <Route path="staff" element={<StaffPage />} />
         <Route path="hospital" element={<HospitalPage />} />
+        <Route path="audit" element={<AuditPage />} />
         <Route path="*" element={<Navigate to="statistics" replace />} />
       </Route>
       <Route

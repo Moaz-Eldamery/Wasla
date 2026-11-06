@@ -1,3 +1,13 @@
+## 2026-11-06 17:18 +0200 · Moaz Mohamed
+Changes: 2026-11-06 18:00, 2026-11-06 18:01, 2026-11-06 18:03, 2026-11-06 18:04, 2026-11-06 18:05
+
+> /grill-me /impeccable  can you now redo KAN-20. it is totally changed now
+
+## 2026-11-06 14:14 +0200 · Moaz Mohamed
+Changes: none
+
+> what are the 2 ai features that are covered in the sprint backlog?
+
 ## 2026-11-06 15:04 +0200 · NourElghaly
 Changes: 2026-11-06 15:06
 
