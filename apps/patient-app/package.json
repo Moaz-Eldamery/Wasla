@@ -8,6 +8,7 @@
     "expo-linking": "~58.0.16",
     "expo-router": "~58.0.30",
     "expo-status-bar": "~58.0.4",
+    "i18next": "^26.7.1",
     "react": "19.3.0",
     "react-native": "0.88.1",
     "react-native-safe-area-context": "~5.11.1",
@@ -19,6 +20,7 @@
     "@types/react": "~19.3.0",
     "jest": "^30.5.2",
     "jest-expo": "^58.0.14",
+    "openapi-typescript": "^7.13.0",
     "oxlint": "^1.91.0",
     "typescript": "~6.0.3"
   },
@@ -27,7 +29,8 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "oxlint && tsc --noEmit",
+    "generate:api-types": "openapi-typescript ../../contracts/openapi.yaml -o lib/api-types.ts",
+    "lint": "openapi-typescript ../../contracts/openapi.yaml --check -o lib/api-types.ts && oxlint && tsc --noEmit",
     "test": "jest"
   },
   "private": true,
