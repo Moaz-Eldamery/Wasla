@@ -12,6 +12,8 @@ export type ErrorCode =
   | 'INVALID_TRANSITION'
   | 'QUEUE_EMPTY'
   | 'ALREADY_IN_CONSULTATION'
+  | 'FILE_TYPE_NOT_ALLOWED'
+  | 'FILE_TOO_LARGE'
   | 'INTERNAL';
 
 export interface ErrorDetail {

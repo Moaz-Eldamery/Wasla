@@ -64,10 +64,20 @@ jobs:
         run: pnpm --filter @wasla/auth test:e2e
         env:
           DATABASE_URL: postgresql://wasla_auth:fake-auth-password@127.0.0.1:5432/wasla_clinical
+      - name: Start private result storage
+        run: |
+          docker run --detach --name minio --publish 127.0.0.1:9000:9000 \
+            --env MINIO_ROOT_USER=wasla-minio --env MINIO_ROOT_PASSWORD=fake-minio-password \
+            pgsty/minio:RELEASE.2026-08-04T00-00-00Z server /data
+          timeout 120 bash -c 'until curl --fail --silent http://127.0.0.1:9000/minio/health/live; do sleep 2; done'
       - name: Core e2e tests as wasla_core
         run: pnpm --filter @wasla/core test:e2e
         env:
           DATABASE_URL: postgresql://wasla_core:fake-core-password@127.0.0.1:5432/wasla_clinical
+          MINIO_ENDPOINT: http://127.0.0.1:9000
+          MINIO_ACCESS_KEY: wasla-minio
+          MINIO_SECRET_KEY: fake-minio-password
+          MINIO_RESULTS_BUCKET: wasla-results
       - name: Postgres logs
         if: failure()
         run: docker logs postgres
