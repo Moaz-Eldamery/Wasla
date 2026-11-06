@@ -1,6 +1,6 @@
 # Wasla
 
-Hospital visit app: a patient mobile app, a staff website and the backend behind them. How the repo works: `CLAUDE.md`. Layout and stack: `structure.md`.
+Hospital visit app: a patient mobile app, a staff website and the backend behind them. How the repo works: `CLAUDE.md` (Claude) and `AGENTS.md` (Codex). Layout and stack: `structure.md`.
 
 ## What you need
 

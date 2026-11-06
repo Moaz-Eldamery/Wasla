@@ -1,3 +1,8 @@
+## 2026-11-06 20:02 +0200 · NourElghaly
+Prompt: 2026-11-06 20:01 · NourElghaly
+What: Merged feat/kan-10-lab-results (private lab results workflow) and feat/kan-11-visit-notes (versioned visit notes and patient summaries, built on KAN-10) into main. Both merged cleanly on top of KAN-17 to KAN-20; lint, unit tests and build pass on the merged tree.
+Files: none beyond the two merged branches (their own files and log entries come with them)
+
 ## 2026-11-06 16:31 +0000 · copilot-swe-agent[bot]
 Prompt: 2026-11-06 16:29 · copilot-swe-agent[bot]
 What: Fixed the patient app CI failure by increasing the timeout for the sign-up + verify flow test that exceeded Jest’s default 5-second limit on GitHub runners.
@@ -73,6 +78,30 @@ What: KAN-20 was rewritten into the whole admin dashboard, whose staff, hospital
 
 No backend code.
 Files: contracts/drafts/admin.yaml, contracts/drafts/README.md, contracts/mock.mjs, contracts/README.md, package.json, pnpm-lock.yaml, README.md, structure.md, apps/hospital-dashboard/package.json, apps/hospital-dashboard/src/lib/ (admin-api-types.ts, api.ts, README.md)
+## 2026-11-06 18:17 +0200 · reemeldeib
+Prompt: 2026-11-06 18:17 · reemeldeib
+What: Prepared the verified KAN-11 visit-notes implementation for publication on feat/kan-11-visit-notes. Recorded the push request; no application code changed during publication preparation.
+Files: prompt_log.md, changelog.md
+
+## 2026-11-06 18:15 +0200 · reemeldeib
+Prompt: 2026-11-06 18:08 · reemeldeib
+What: Implemented KAN-11 visit notes using the existing database schema and API contract. Doctors can save complete snapshots, read the latest notes and browse preserved versions; appointment row locks and baseVersion prevent concurrent edits from overwriting each other. Added shared patient-visit ownership checks and a summary endpoint that selects no clinical notes and exposes only the latest patient summary after completion. Reads and edits are audited transactionally; audit failures block access or roll back saves, and database errors are redacted before logging. Verified all 89 core unit tests and 59 real Postgres/MinIO integration tests, lint and production build; local tests used thread workers.
+Files: services/core/src/modules/clinical-care/clinical.module.ts, services/core/src/modules/clinical-care/visit-notes.controller.ts, services/core/src/modules/clinical-care/visit-notes.dto.ts, services/core/src/modules/clinical-care/visit-notes.service.ts, services/core/src/modules/clinical-care/visit-notes.views.ts, services/core/src/modules/clinical-care/visit-notes.service.spec.ts, services/core/src/modules/clinical-care/README.md, services/core/src/shared/api-error.ts, services/core/src/shared/record-access.service.ts, services/core/src/shared/record-access.service.spec.ts, services/core/src/shared/README.md, services/core/test/visit-notes.e2e-spec.ts, services/core/README.md, structure.md, prompt_log.md, changelog.md
+
+## 2026-11-06 18:03 +0200 · reemeldeib
+Prompt: 2026-11-06 18:03 · reemeldeib
+What: Prepared the verified KAN-10 implementation and Codex instructions for publication on feat/kan-10-lab-results for team review. Recorded the push request; no application code changed during publication preparation.
+Files: prompt_log.md, changelog.md
+
+## 2026-11-06 18:01 +0200 · reemeldeib
+Prompt: 2026-11-06 16:59 · reemeldeib
+What: Implemented KAN-10 against the existing schema and API contract: doctors order lab/radiology tests, assigned lab staff start tests and upload or replace PDF/JPEG/PNG results up to 10 MB, and only the doctor can release results to the owning patient. Added shared clinical ownership checks, private MinIO streaming, file validation, transactional audit logging and row locks for concurrent upload/release; patients receive no file metadata before release. Added unit and real Postgres/MinIO integration tests and wired private result storage into CI. Verified 77 core unit tests, all 34 core integration tests, lint, production build and frozen-lockfile installation; local tests used thread workers after Windows fork startup timeouts.
+Files: services/core/package.json, pnpm-lock.yaml, services/core/src/app.module.ts, services/core/src/modules/clinical-care/clinical.module.ts, services/core/src/modules/clinical-care/clinical.controller.ts, services/core/src/modules/clinical-care/clinical.service.ts, services/core/src/modules/clinical-care/clinical.dto.ts, services/core/src/modules/clinical-care/clinical.views.ts, services/core/src/modules/clinical-care/result-upload.ts, services/core/src/modules/clinical-care/result-upload.spec.ts, services/core/src/modules/clinical-care/clinical.service.spec.ts, services/core/src/modules/clinical-care/README.md, services/core/src/shared/shared.module.ts, services/core/src/shared/record-access.service.ts, services/core/src/shared/record-access.service.spec.ts, services/core/src/shared/file-storage.service.ts, services/core/src/shared/api-error.ts, services/core/src/shared/api-exception.filter.ts, services/core/src/shared/README.md, services/core/test/clinical.e2e-spec.ts, services/core/README.md, .github/workflows/ci.yml, .github/workflows/README.md, structure.md, prompt_log.md, changelog.md
+
+## 2026-11-06 16:57 +0200 · reemeldeib
+Prompt: 2026-11-06 16:57 · reemeldeib
+What: Copied CLAUDE.md verbatim to AGENTS.md so Codex reads the repository process. Documented the new instruction file in the root README and structure.
+Files: AGENTS.md, README.md, structure.md, prompt_log.md, changelog.md
 
 ## 2026-11-06 15:06 +0200 · NourElghaly
 Prompt: 2026-11-06 15:04 · NourElghaly
