@@ -77,6 +77,20 @@ Changes: none
 Changes: 2026-11-05 13:42, 2026-11-05 13:43
 
 > remove redis, you see what should be done and do them
+## 2026-11-06 11:27 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:17
+
+> /impeccable /grill-me  now we gotta start with the high priority ones (17,18,19,20,16). when you start move them to in progress section and after done move them to review and do some test.
+
+## 2026-11-06 11:26 +0200 · Moaz Mohamed
+Changes: none
+
+> what about the sprint backlog, what are thr frontend tasks init
+
+## 2026-11-06 11:20 +0200 · Moaz Mohamed
+Changes: none
+
+> as we separated the work i was assigneed to all front end tasks. which backlog tasks are the front end? from the jira board
 
 ## 2026-11-05 13:20 +0200 · Moaz Mohamed
 Changes: 2026-11-05 13:20

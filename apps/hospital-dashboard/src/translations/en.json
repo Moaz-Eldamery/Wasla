@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "Wasla",
+    "staffSite": "Hospital staff"
+  },
+  "language": {
+    "switchTo": "العربية",
+    "switchLabel": "Switch to Arabic"
+  },
+  "login": {
+    "title": "Log in",
+    "subtitle": "Use the phone number and password your hospital admin gave you.",
+    "phone": "Phone number",
+    "phoneHint": "For example +201000000001",
+    "password": "Password",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "patientAccount": "This website is for hospital staff. Patients use the Wasla app.",
+    "sideTitle": "Every visit, from the front desk to the result.",
+    "sideBody": "Check patients in, run the queue, and follow each visit as it moves through the clinic."
+  },
+  "shell": {
+    "account": "Account",
+    "signedInAs": "Signed in as",
+    "logout": "Log out",
+    "loggingOut": "Logging out…",
+    "role": "Screen",
+    "clinic": "Clinic",
+    "noRoleScreens": "There are no screens for your role on this website yet.",
+    "loading": "Loading…"
+  },
+  "roles": {
+    "RECEPTIONIST": "Reception",
+    "DOCTOR": "Doctor",
+    "LAB": "Lab",
+    "ADMIN": "Admin"
+  },
+  "status": {
+    "BOOKED": "Booked",
+    "CHECKED_IN": "Waiting",
+    "IN_CONSULTATION": "With doctor",
+    "COMPLETED": "Done",
+    "CANCELLED": "Cancelled",
+    "NO_SHOW": "No-show",
+    "LATE": "Late"
+  },
+  "reception": {
+    "title": "Today's appointments",
+    "summary": "{{booked}} to arrive · {{waiting}} waiting · {{withDoctor}} with doctor · {{done}} done",
+    "checkIn": "Check in",
+    "checkingIn": "Checking in…",
+    "checkInFor": "Check in {{name}}",
+    "checkedIn": "{{name}} is checked in.",
+    "noClinics": "You aren't assigned to a clinic yet. Ask your hospital admin to add you to one.",
+    "noAppointments": "No appointments in this clinic today.",
+    "loadFailed": "Today's appointments couldn't be loaded.",
+    "withDoctorSince": "since {{time}}"
+  },
+  "daybook": {
+    "now": "Now",
+    "nowAt": "Now, {{time}}",
+    "jumpToNow": "Jump to now",
+    "emptyHour": "No appointments",
+    "label": "Appointments by hour"
+  },
+  "queue": {
+    "title": "Queue",
+    "withDoctor": "With the doctor",
+    "waiting": "Waiting",
+    "nobodyWithDoctor": "Nobody is with the doctor right now.",
+    "nobodyWaiting": "Nobody is waiting.",
+    "checkedInAt": "checked in {{time}}",
+    "next": "Next",
+    "loadFailed": "The queue couldn't be loaded.",
+    "location": "Building {{building}} · Floor {{floor}}"
+  },
+  "refresh": {
+    "updatedAt": "Updated {{time}}",
+    "refresh": "Refresh"
+  },
+  "common": {
+    "retry": "Try again",
+    "dismiss": "Dismiss"
+  },
+  "errors": {
+    "VALIDATION_FAILED": "Some fields are invalid. Check them and try again.",
+    "UNAUTHENTICATED": "Your session has ended. Log in again.",
+    "FORBIDDEN": "Your account can't do that.",
+    "NOT_FOUND": "That record wasn't found. It may have been removed.",
+    "RATE_LIMITED": "Too many attempts. Wait a minute, then try again.",
+    "INVALID_CREDENTIALS": "That phone number and password don't match an active account.",
+    "PHONE_NOT_VERIFIED": "This phone number hasn't been verified yet.",
+    "INVALID_TRANSITION": "That step isn't possible any more. The list has been refreshed.",
+    "INTERNAL": "Something went wrong on our side. Try again in a moment.",
+    "NETWORK": "The server can't be reached. Check the connection and try again."
+  }
+}

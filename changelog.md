@@ -1,3 +1,14 @@
+## 2026-11-06 12:17 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 11:27 · Moaz Mohamed
+What: KAN-17, the staff website's first version, for receptionists:
+- **Login:** staff log in with phone and password. Patient accounts are turned away. A 401 from the gateway goes back to login.
+- **Shell:** a blue top bar with the clinic picker, today's date, the English/Arabic switch (Arabic flips the whole layout right-to-left) and the account menu with log out.
+- **Day book:** `/reception` sets today's appointments on a timetable, hour by hour, with a red line at the current Cairo time, a late mark and one-click Check in. The clinic's queue sits beside it.
+- **Refresh:** both panels refresh every 15 seconds until live updates (KAN-27) exist.
+
+The design follows the "day book" layout the user chose and the patient app's palette, recorded in the new PRODUCT.md. Added the src/components/ folder with the user's approval. The dashboard moved from TypeScript 7 to 6 so openapi-typescript can generate the API types, like the patient app. 26 Vitest tests. Also checked against the real stack: login, the receptionist's clinics and day, and a live check-in.
+Files: PRODUCT.md, .gitignore, structure.md, pnpm-lock.yaml, apps/hospital-dashboard/package.json, apps/hospital-dashboard/vite.config.ts, apps/hospital-dashboard/README.md, apps/hospital-dashboard/src/ (App, main, Providers, LoginPage + test, session, roles, theme, time, useNow, index.css, test-setup, test-fixtures; App.test.tsx removed), apps/hospital-dashboard/src/components/ (new: AppShell, DayBook, dayLayout + test, QueuePanel, StatusChip, UpdatedAt, README.md), apps/hospital-dashboard/src/lib/ (api.ts, api-types.ts, api.test.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json, i18n.ts, translations.test.ts, README.md), apps/hospital-dashboard/src/pages/receptionist/ (TodayPage + test, README.md)
+
 ## 2026-11-06 08:52 +0200 · Youssef Salem
 Prompt: 2026-11-06 08:48 · Youssef Salem
 What: KAN-15 patient mobile app queue position and visit journey screens. Added getQueuePosition and getAppointmentJourney to apps/patient-app/lib/api.ts, added the queue and journey tabs in apps/patient-app/app/(tabs)/ with pull-to-refresh and manual refresh, added Arabic (RTL) and English strings in translations/ar.json and translations/en.json, and added tests in apps/patient-app/app.test.tsx.
