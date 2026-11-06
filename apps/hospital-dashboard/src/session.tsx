@@ -32,6 +32,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signOutLocally = useCallback(() => {
     session.token = null
+    // Nothing from this session stays in the tab: the assistant thread goes too.
+    try {
+      sessionStorage.removeItem('wasla.chat')
+    } catch {
+      // Storage blocked: nothing was kept.
+    }
     queryClient.clear()
     setState({ status: 'signed-out' })
   }, [queryClient])

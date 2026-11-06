@@ -94,7 +94,8 @@
     "INTERNAL": "Something went wrong on our side. Try again in a moment.",
     "NETWORK": "The server can't be reached. Check the connection and try again.",
     "FILE_TOO_LARGE": "The file is over 10 MB. Choose a smaller file.",
-    "FILE_TYPE_NOT_ALLOWED": "Only PDF, JPEG or PNG files can be sent."
+    "FILE_TYPE_NOT_ALLOWED": "Only PDF, JPEG or PNG files can be sent.",
+    "AI_UNAVAILABLE": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes."
   },
   "doctor": {
     "title": "My patients today",
@@ -211,5 +212,32 @@
     "viewFile": "View file",
     "loadFailed": "The worklist couldn't be loaded.",
     "noClinics": "You aren't assigned to a lab or radiology clinic yet. Ask your hospital admin."
+  },
+  "chat": {
+    "title": "Hospital information assistant",
+    "intro": "Ask about opening hours, departments, locations, booking rules and other hospital information. Answers come only from the approved hospital information, with their sources. It doesn't answer medical questions or share patient data.",
+    "newConversation": "New conversation",
+    "tryAsking": "Try asking",
+    "suggestions": [
+      "What are the visiting hours?",
+      "Where is the radiology department?",
+      "What should patients bring to their first appointment?",
+      "How far ahead can patients book an appointment?"
+    ],
+    "label": "Your question",
+    "placeholder": "Ask in English or Arabic",
+    "hint": "Enter to send · Shift+Enter for a new line",
+    "count": "{{count}} / {{max}}",
+    "tooLong": "Questions can be at most {{max}} characters.",
+    "send": "Send",
+    "you": "You",
+    "assistant": "Assistant",
+    "thinking": "Looking it up…",
+    "sources": "Sources",
+    "noInformation": "The assistant doesn't have that information. It only answers from the approved hospital information, so it won't guess.",
+    "unavailable": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes.",
+    "failed": "That question couldn't be answered.",
+    "retry": "Ask again",
+    "thread": "Conversation"
   }
 }

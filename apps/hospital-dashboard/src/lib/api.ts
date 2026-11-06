@@ -19,6 +19,7 @@ export type SaveVisitNotesRequest = Schemas['SaveVisitNotesRequest']
 export type TestOrder = Schemas['TestOrder']
 export type TestStatus = Schemas['TestStatus']
 export type OrderTestRequest = Schemas['OrderTestRequest']
+export type ChatbotAnswer = Schemas['ChatbotAnswer']
 
 /** A non-2xx answer from the gateway, or a network failure (`status` 0). */
 export class ApiError extends Error {
@@ -277,4 +278,14 @@ export async function uploadTestResult(testId: string, file: File): Promise<Test
     onUnauthenticated?.()
   }
   throw new ApiError(response.status, payload?.error?.code ?? fallback, payload?.error?.message ?? response.statusText)
+}
+
+// ------------------------------------------------------------------ admin assistant
+
+/** The longest question the assistant accepts. */
+export const CHAT_QUESTION_MAX = 1000
+
+/** Asks the hospital-information assistant one question; 503 AI_UNAVAILABLE when the AI service is down. */
+export function askChatbot(question: string): Promise<ChatbotAnswer> {
+  return request('/admin/chatbot/messages', { method: 'POST', body: { question } })
 }

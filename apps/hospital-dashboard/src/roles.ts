@@ -5,6 +5,7 @@ export const ROLE_PATHS: Partial<Record<StaffRole, string>> = {
   RECEPTIONIST: '/reception',
   DOCTOR: '/doctor',
   LAB: '/lab',
+  ADMIN: '/admin',
 }
 
 /** Where a staff member lands after logging in: their first role that has a screen. */
