@@ -5,6 +5,7 @@
 // Use a throwaway database: the audit log is append-only, so test rows stay.
 import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { PrismaPg } from '@prisma/adapter-pg';
 import request from 'supertest';
 import type { App } from 'supertest/types.js';
@@ -74,7 +75,7 @@ describe.skipIf(!enabled)('Auth (e2e, real database)', () => {
       .send({ phone, password: 'a long password' })
       .expect(200);
     const { token, user } = login.body;
-    expect(user).toMatchObject({ type: 'PATIENT', phone, roles: [] });
+    expect(user).toMatchObject({ type: 'PATIENT', phone, email: null, roles: [] });
     expect(user).not.toHaveProperty('passwordHash');
 
     const me = await http().get('/auth/me').set(bearer(token)).expect(200);
@@ -137,29 +138,72 @@ describe.skipIf(!enabled)('Auth (e2e, real database)', () => {
     expect(res.body).not.toHaveProperty('simulatedCode');
   });
 
-  it('logs staff in with their roles, and out at once when deactivated', async () => {
-    const phone = fakePhone();
+  it('logs staff in by work email with their roles, and out at once when deactivated', async () => {
+    const email = `dr.test.${randomUUID().slice(0, 8)}@hospital.test`;
     const staff = await seed.account.create({
       data: {
         type: 'STAFF',
         name: 'Dr. Test',
-        phone,
+        email,
         passwordHash: await hashPassword('staff password'),
         roles: ['DOCTOR', 'RECEPTIONIST'],
       },
     });
 
     const login = await http()
-      .post('/auth/login')
-      .send({ phone, password: 'staff password' })
+      .post('/auth/staff/login')
+      .send({ email: email.toUpperCase(), password: 'staff password' })
       .expect(200);
+    expect(login.body.user).toMatchObject({ type: 'STAFF', email, phone: null });
     const check = await http().get('/auth/check').set(bearer(login.body.token)).expect(200);
     expect(check.headers['x-user-type']).toBe('STAFF');
     expect(check.headers['x-user-roles']).toBe('DOCTOR,RECEPTIONIST');
 
     await seed.account.update({ where: { id: staff.id }, data: { active: false } });
     await http().get('/auth/check').set(bearer(login.body.token)).expect(401);
-    await http().post('/auth/login').send({ phone, password: 'staff password' }).expect(401);
+    await http().post('/auth/staff/login').send({ email, password: 'staff password' }).expect(401);
+  });
+
+  it("keeps the two logins apart: a staff member's phone doesn't log in to the app", async () => {
+    const phone = fakePhone();
+    const staff = await seed.account.create({
+      data: {
+        type: 'STAFF',
+        name: 'Reception Test',
+        phone,
+        email: `reception.${randomUUID().slice(0, 8)}@hospital.test`,
+        passwordHash: await hashPassword('staff password'),
+        roles: ['RECEPTIONIST'],
+      },
+    });
+
+    const res = await http()
+      .post('/auth/login')
+      .send({ phone, password: 'staff password' })
+      .expect(401);
+    expect(res.body.error.code).toBe('INVALID_CREDENTIALS');
+    const denied = await seed.auditLog.findFirstOrThrow({
+      where: { actorId: staff.id, action: 'auth.login' },
+      select: { outcome: true, details: true },
+    });
+    expect(denied).toEqual({ outcome: 'DENIED', details: { reason: 'wrong_app' } });
+  });
+
+  it('requires a phone for patients and an email for staff, in the database itself', async () => {
+    const passwordHash = 'fake';
+    await expect(
+      seed.account.create({ data: { type: 'STAFF', name: 'No Email', phone: fakePhone(), passwordHash } }),
+    ).rejects.toThrow(/accounts_login_identifier/);
+    await expect(
+      seed.account.create({
+        data: { type: 'PATIENT', name: 'Has Email', phone: fakePhone(), email: `p.${randomUUID()}@x.test`, passwordHash },
+      }),
+    ).rejects.toThrow(/accounts_login_identifier/);
+    await expect(
+      seed.account.create({
+        data: { type: 'STAFF', name: 'Caps', email: `Caps.${randomUUID()}@x.test`, passwordHash },
+      }),
+    ).rejects.toThrow(/accounts_email_lowercase/);
   });
 
   it('rejects bad input in the contract error format', async () => {

@@ -9,7 +9,7 @@ import { Providers } from '../../Providers.tsx'
 import { clinic, fakeGateway, NOW } from '../../test-fixtures.ts'
 import { checkResultFile, formatBytes } from './resultFile.ts'
 
-const labUser: User = { id: 'lab-1', type: 'STAFF', name: 'Salma Lab', phone: '+201000000004', roles: ['LAB'] }
+const labUser: User = { id: 'lab-1', type: 'STAFF', name: 'Salma Lab', phone: null, email: 'lab@hospital.test', roles: ['LAB'] }
 const labClinic = { ...clinic, id: 'lab-c1', name: { en: 'Main Lab', ar: 'المختبر الرئيسي' } }
 
 let n = 0

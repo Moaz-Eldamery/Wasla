@@ -18,9 +18,9 @@ function renderLogin() {
   )
 }
 
-async function fillAndSubmit(phone: string, password: string) {
+async function fillAndSubmit(email: string, password: string) {
   const user = userEvent.setup()
-  await user.type(screen.getByLabelText(/Phone number/), phone)
+  await user.type(screen.getByLabelText(/Work email/), email)
   await user.type(screen.getByLabelText(/Password/), password)
   await user.click(screen.getByRole('button', { name: 'Log in' }))
 }
@@ -35,44 +35,39 @@ afterEach(() => {
 
 describe('Login', () => {
   it('takes a receptionist to the reception screen', async () => {
-    fakeGateway({
-      'POST /auth/login': () => ({ body: { token: 'tok', expiresAt: '2026-11-07T00:00:00Z', user: receptionist } }),
+    const calls = fakeGateway({
+      'POST /auth/staff/login': () => ({ body: { token: 'tok', expiresAt: '2026-11-07T00:00:00Z', user: receptionist } }),
       'GET /me/clinics': () => ({ body: [clinic] }),
       'GET /clinics/clinic-3/appointments': () => ({ body: [] }),
       'GET /clinics/clinic-3/queue': () => ({ body: { clinicId: clinic.id, waiting: [], inConsultation: [] } }),
     })
     renderLogin()
 
-    await fillAndSubmit('+201000000010', 'Passw0rd!')
+    await fillAndSubmit(' Nadia.Hassan@hospital.test ', 'Passw0rd!')
 
     expect(await screen.findByRole('heading', { name: "Today's appointments" })).toBeInTheDocument()
     expect(session.token).toBe('tok')
+    expect(JSON.parse(String(calls[0].init.body))).toEqual({
+      email: 'Nadia.Hassan@hospital.test',
+      password: 'Passw0rd!',
+    })
   })
 
-  it('says when the phone and password do not match', async () => {
+  it('says when the email and password do not match', async () => {
     fakeGateway({
-      'POST /auth/login': () => ({ status: 401, body: { error: { code: 'INVALID_CREDENTIALS', message: 'Wrong' } } }),
+      'POST /auth/staff/login': () => ({ status: 401, body: { error: { code: 'INVALID_CREDENTIALS', message: 'Wrong' } } }),
     })
     renderLogin()
 
-    await fillAndSubmit('+201000000010', 'wrong-password')
+    await fillAndSubmit('nadia.hassan@hospital.test', 'wrong-password')
 
-    expect(await screen.findByText(/don't match an active account/)).toBeInTheDocument()
+    expect(await screen.findByText(/don't match an active staff account/)).toBeInTheDocument()
     expect(session.token).toBeNull()
   })
 
-  it('turns patients away to the app', async () => {
-    fakeGateway({
-      'POST /auth/login': () => ({
-        body: { token: 'patient-tok', expiresAt: '2026-11-07T00:00:00Z', user: { ...receptionist, type: 'PATIENT', roles: [] } },
-      }),
-      'POST /auth/logout': () => ({ status: 204 }),
-    })
+  it('tells patients to use the app', () => {
     renderLogin()
 
-    await fillAndSubmit('+201000000006', 'Passw0rd!')
-
-    expect(await screen.findByText(/Patients use the Wasla app/)).toBeInTheDocument()
-    expect(session.token).toBeNull()
+    expect(screen.getByText(/Patients use the Wasla app/)).toBeInTheDocument()
   })
 })

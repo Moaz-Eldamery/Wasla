@@ -8,7 +8,7 @@ import { session, type ChatbotAnswer, type User } from '../../lib/api.ts'
 import { Providers } from '../../Providers.tsx'
 import { fakeGateway } from '../../test-fixtures.ts'
 
-const admin: User = { id: 'admin-1', type: 'STAFF', name: 'Demo Admin', phone: '+201000000001', roles: ['ADMIN'] }
+const admin: User = { id: 'admin-1', type: 'STAFF', name: 'Demo Admin', phone: null, email: 'admin@hospital.test', roles: ['ADMIN'] }
 
 const visiting: ChatbotAnswer = {
   status: 'ANSWERED',

@@ -20,7 +20,8 @@ describe('AuthorizationController (forward-auth)', () => {
       id: 'u1',
       type: 'STAFF',
       name: 'Dr. Test',
-      phone: '+201000000001',
+      phone: null,
+      email: 'doctor@hospital.test',
       roles: ['DOCTOR', 'RECEPTIONIST'],
     });
 

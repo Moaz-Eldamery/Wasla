@@ -13,6 +13,7 @@ async function account(change: object = {}) {
     type: 'PATIENT',
     name: 'Test Patient',
     phone: '+201000000001',
+    email: null,
     roles: [],
     active: true,
     passwordHash: await hashPassword(PASSWORD),
@@ -55,6 +56,7 @@ describe('AuthenticationService.login', () => {
       type: 'PATIENT',
       name: 'Test Patient',
       phone: '+201000000001',
+      email: null,
       roles: [],
     });
     expect(sessions.create).toHaveBeenCalledWith('acc-1');
@@ -88,11 +90,67 @@ describe('AuthenticationService.login', () => {
     expect(sessions.create).not.toHaveBeenCalled();
   });
 
-  it('lets staff log in without a verified phone', async () => {
-    const { service } = setup(
-      await account({ type: 'STAFF', roles: ['DOCTOR'], phoneVerifiedAt: null }),
+  it("doesn't let staff log in with a phone number (that's the patient app)", async () => {
+    const { service, sessions, audit } = setup(
+      await account({ type: 'STAFF', roles: ['DOCTOR'], email: 'dr@hospital.test' }),
     );
-    expect((await service.login('+201000000001', PASSWORD)).user.roles).toEqual(['DOCTOR']);
+
+    await expect(service.login('+201000000001', PASSWORD)).rejects.toMatchObject({
+      code: 'INVALID_CREDENTIALS',
+    });
+    expect(sessions.create).not.toHaveBeenCalled();
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ outcome: 'DENIED', details: { reason: 'wrong_app' } }),
+    );
+  });
+});
+
+describe('AuthenticationService.staffLogin', () => {
+  const staff = (change: object = {}) =>
+    account({
+      type: 'STAFF',
+      name: 'Dr. Test',
+      phone: null,
+      email: 'dr.test@hospital.test',
+      roles: ['DOCTOR'],
+      phoneVerifiedAt: null,
+      ...change,
+    });
+
+  it('logs staff in with their work email, whatever its case, without a phone', async () => {
+    const { service, prisma, sessions } = setup(await staff());
+
+    const result = await service.staffLogin('  Dr.Test@Hospital.TEST ', PASSWORD);
+
+    expect(prisma.account.findUnique).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { email: 'dr.test@hospital.test' } }),
+    );
+    expect(result.user).toEqual({
+      id: 'acc-1',
+      type: 'STAFF',
+      name: 'Dr. Test',
+      phone: null,
+      email: 'dr.test@hospital.test',
+      roles: ['DOCTOR'],
+    });
+    expect(sessions.create).toHaveBeenCalledWith('acc-1');
+  });
+
+  it.each([
+    ['an unknown email', null, PASSWORD, 'unknown_email'],
+    ['a wrong password', {}, 'wrong password', 'wrong_password'],
+    ['an inactive account', { active: false }, PASSWORD, 'inactive'],
+  ])('gives the same answer for %s, and audits why', async (_name, change, password, reason) => {
+    const { service, sessions, audit } = setup(change === null ? null : await staff(change));
+
+    const error = await service.staffLogin('dr.test@hospital.test', password).catch((e) => e);
+    expect(error.getResponse()).toEqual({
+      error: { code: 'INVALID_CREDENTIALS', message: 'Wrong email or password.' },
+    });
+    expect(sessions.create).not.toHaveBeenCalled();
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'auth.login', details: { reason } }),
+    );
   });
 });
 

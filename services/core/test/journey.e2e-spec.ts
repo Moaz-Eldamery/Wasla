@@ -73,7 +73,7 @@ describe.skipIf(!enabled)('Patient journey (e2e, real database)', () => {
       data: {
         type: 'STAFF',
         name: `Dr. Journey ${tag}`,
-        phone: fakePhone(),
+        email: `${randomUUID()}@e2e.test`,
         passwordHash: 'fake',
         roles: ['DOCTOR'],
       },
@@ -82,7 +82,7 @@ describe.skipIf(!enabled)('Patient journey (e2e, real database)', () => {
       data: {
         type: 'STAFF',
         name: `Reception Journey ${tag}`,
-        phone: fakePhone(),
+        email: `${randomUUID()}@e2e.test`,
         passwordHash: 'fake',
         roles: ['RECEPTIONIST'],
       },
