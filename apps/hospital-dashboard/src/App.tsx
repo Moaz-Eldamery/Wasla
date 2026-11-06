@@ -5,21 +5,30 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from './components/AppShell.tsx'
+import { NotAllowed } from './components/NotAllowed.tsx'
 import type { StaffRole } from './lib/api.ts'
 import { LoginPage } from './LoginPage.tsx'
+import { AdminLayout } from './pages/admin/AdminLayout.tsx'
+import { AuditPage } from './pages/admin/AuditPage.tsx'
 import { ChatPage } from './pages/admin/ChatPage.tsx'
+import { HospitalPage } from './pages/admin/HospitalPage.tsx'
+import { StaffPage } from './pages/admin/StaffPage.tsx'
+import { StatisticsPage } from './pages/admin/StatisticsPage.tsx'
 import { LabPage } from './pages/lab/LabPage.tsx'
 import { DoctorPage } from './pages/physician/DoctorPage.tsx'
 import { TodayPage } from './pages/receptionist/TodayPage.tsx'
 import { homePathFor } from './roles.ts'
 import { useSession } from './session.tsx'
 
-/** Shows `children` only to a signed-in staff member with `role`; everyone else goes to login. */
+/**
+ * Shows `children` only to a signed-in staff member with `role`. Signed-out
+ * visitors go to login; staff without the role see "not allowed".
+ */
 function RequireRole({ role, children }: { role?: StaffRole; children: ReactNode }) {
   const { state } = useSession()
   if (state.status === 'loading') return <FullPageSpinner />
   if (state.status === 'signed-out' || state.user.type !== 'STAFF') return <Navigate to="/login" replace />
-  if (role && !state.user.roles.includes(role)) return <Navigate to="/" replace />
+  if (role && !state.user.roles.includes(role)) return <NotAllowed role={role} />
   return <>{children}</>
 }
 
@@ -86,10 +95,18 @@ export default function App() {
         path="/admin"
         element={
           <RequireRole role="ADMIN">
-            <ChatPage />
+            <AdminLayout />
           </RequireRole>
         }
-      />
+      >
+        <Route index element={<Navigate to="statistics" replace />} />
+        <Route path="statistics" element={<StatisticsPage />} />
+        <Route path="assistant" element={<ChatPage />} />
+        <Route path="staff" element={<StaffPage />} />
+        <Route path="hospital" element={<HospitalPage />} />
+        <Route path="audit" element={<AuditPage />} />
+        <Route path="*" element={<Navigate to="statistics" replace />} />
+      </Route>
       <Route
         path="/"
         element={

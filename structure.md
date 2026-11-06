@@ -30,7 +30,7 @@ patient-app / hospital-dashboard
 - **Database:** PostgreSQL 16 + pgvector, Prisma. One clinical database with `auth` and `core` schemas, plus a separate `wasla_ai` database. Each service has its own DB user (see `schema.md`).
 - **Mobile app:** React Native + Expo (expo-router), i18next.
 - **Website:** React + Vite, MUI, TanStack Query, i18next.
-- **Tooling:** Node 24 LTS (at least 24.18, pinned in `.nvmrc`), pnpm monorepo, Docker Compose, GitHub Actions. Prism 5.16 serves the mock API from `contracts/openapi.yaml` (`pnpm mock`); it needs Node 24.18 or newer.
+- **Tooling:** Node 24 LTS (at least 24.18, pinned in `.nvmrc`), pnpm monorepo, Docker Compose, GitHub Actions. Prism 5.16 serves the mock API from `contracts/openapi.yaml` plus the drafts in `contracts/drafts/` (`pnpm mock`, through `contracts/mock.mjs`); it needs Node 24.18 or newer.
 - **Lint and tests:**
   - auth, core and the dashboard: oxlint and Vitest.
   - patient app: oxlint and Jest (jest-expo).
@@ -67,6 +67,9 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 │
 ├── contracts/                   the agreed API, read by every app + service
 │   ├── openapi.yaml             every endpoint: request, response, errors, and the forward-auth contract
+│   ├── mock.mjs                 `pnpm mock`: joins openapi.yaml and the drafts, then runs Prism on :4010
+│   ├── drafts/                  endpoints a frontend is built against before they are agreed (admin.yaml, KAN-20);
+│   │                            each moves into openapi.yaml when its backend card takes it
 │   └── events.md                live-update messages and internal events   planned (KAN-27)
 │
 ├── database/                    everything about the database
@@ -87,8 +90,8 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 │   └── hospital-dashboard/      Vite + React, MUI, TanStack Query, i18next
 │       └── src/                 App.tsx (routes), LoginPage, session, theme, time helpers
 │           ├── pages/           one folder per role: receptionist/ physician/ lab/ admin/
-│           ├── components/      UI pieces several roles share: AppShell, DayBook, QueuePanel, StatusChip
-│           ├── lib/             api.ts, socket.ts, api-types.ts: the ONLY backend calls
+│           ├── components/      UI pieces several roles share: AppShell, DayBook, QueuePanel, StatusChip, NotAllowed
+│           ├── lib/             api.ts, socket.ts, api-types.ts, admin-api-types.ts: the ONLY backend calls
 │           └── translations/    ar.json, en.json, i18n.ts
 │
 └── services/                    the backend: each one runs as its own program, with its own Dockerfile
@@ -179,6 +182,7 @@ Only the folders above are ours. Everything else follows the framework's standar
 - Code the auth service's areas share (database client, audit writer, error format) sits at the root of `services/auth/src/`, next to `main.ts`.
 - Only `services/ai` talks to the LLM, and only the AI client in `core/src/shared/` talks to `services/ai`.
 - `contracts/openapi.yaml` is the source of truth for the API. Each frontend generates its `lib/api-types.ts` from it; CI fails if they're out of date.
+- A draft in `contracts/drafts/` is not agreed yet: only a frontend builds against it (the dashboard generates `lib/admin-api-types.ts` from `drafts/admin.yaml`). A backend card that implements a draft endpoint first moves it into `openapi.yaml` and deletes it from the draft.
 - One Prisma schema (`database/clinical/schema.prisma`) covers both clinical schemas. Each service connects with its own DB user, so access is limited by the database, not by convention. See `schema.md`.
 - Each service that uses the clinical database gets its own generator in `schema.prisma`, writing to its own `src/generated/`. Services import the client from there, never from `@prisma/client` directly.
 - Migrations run only as `wasla_migrator`: the `migrate` service on `docker compose up`, or `pnpm db:migrate` by hand. Services never migrate.

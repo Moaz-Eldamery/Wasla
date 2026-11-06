@@ -13,7 +13,7 @@ The staff website (`apps/hospital-dashboard`) is the web surface this file mainl
 - **Receptionists** at a clinic's front desk. They check patients in and watch the queue board, one patient after another, all day. They must never see medical details.
 - **Doctors** in the consultation room, between and during visits. They call the next patient, write visit notes, order tests and release results.
 - **Lab and radiology staff** at their bench. They work through the tests ordered for their department and upload result files.
-- **Hospital admins** in an office. They ask the AI assistant about hospital information and must never see medical records.
+- **Hospital admins** in an office. They manage staff and their roles, set up departments and clinics, read the statistics and the audit log, and ask the AI assistant about hospital information. They must never see medical records.
 - **Patients** (mobile app). They book visits, follow their place in the queue and their journey, and read results their doctor has released.
 
 Staff use **desktop PCs and tablets**. Doctors may move around with a tablet, so every staff screen has to work with touch at about 768px wide as well as with a mouse and keyboard.
@@ -43,6 +43,7 @@ One system follows the visit from start to finish. The patient's app and the sta
 - **Backend status (2026-11-06):**
   - Auth, booking, check-in and queue have a real backend.
   - Visit notes, lab tests and results, and the chatbot (KAN-10, KAN-11, KAN-22) don't yet. Their screens are built against the contract and tested with `pnpm mock`, so they work unchanged once the backend lands.
+  - The admin's staff, hospital setup, statistics and audit log screens (KAN-20) are built against a draft (`contracts/drafts/admin.yaml`) until KAN-36, KAN-39 and KAN-62 agree the endpoints.
 
 ## Brand Commitments
 

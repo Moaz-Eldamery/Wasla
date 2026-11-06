@@ -18,4 +18,5 @@ UI pieces shared by more than one role's screens.
   - Test: `dayLayout.test.ts`.
 - `QueuePanel.tsx`: who is with the doctor, then the numbered waiting list, with loading, error and empty states.
 - `StatusChip.tsx`: `StatusChip` shows an appointment's status, with "Late" in red. `TestStatusChip` shows a test's status, with "Ready to review" in amber.
+- `NotAllowed.tsx`: what staff see when they open another role's page by URL, with a link to their own screen. The server still refuses the data (403).
 - `UpdatedAt.tsx`: when a panel last heard from the server, plus a refresh button.

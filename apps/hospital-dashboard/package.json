@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "openapi-typescript ../../contracts/openapi.yaml --check -o src/lib/api-types.ts && oxlint && tsc -b",
+    "lint": "openapi-typescript ../../contracts/openapi.yaml --check -o src/lib/api-types.ts && openapi-typescript ../../contracts/drafts/admin.yaml --check -o src/lib/admin-api-types.ts && oxlint && tsc -b",
     "preview": "vite preview",
     "test": "vitest run",
-    "generate:api-types": "openapi-typescript ../../contracts/openapi.yaml -o src/lib/api-types.ts"
+    "generate:api-types": "openapi-typescript ../../contracts/openapi.yaml -o src/lib/api-types.ts && openapi-typescript ../../contracts/drafts/admin.yaml -o src/lib/admin-api-types.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

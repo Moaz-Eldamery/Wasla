@@ -19,7 +19,7 @@ const visiting: ChatbotAnswer = {
 
 function renderChat() {
   return render(
-    <MemoryRouter initialEntries={['/admin']}>
+    <MemoryRouter initialEntries={['/admin/assistant']}>
       <Providers queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
         <App />
       </Providers>

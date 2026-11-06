@@ -1,3 +1,4 @@
+import type { components as AdminComponents } from './admin-api-types.ts'
 import type { components } from './api-types.ts'
 
 type Schemas = components['schemas']
@@ -20,6 +21,23 @@ export type TestOrder = Schemas['TestOrder']
 export type TestStatus = Schemas['TestStatus']
 export type OrderTestRequest = Schemas['OrderTestRequest']
 export type ChatbotAnswer = Schemas['ChatbotAnswer']
+
+// Admin screens: shapes from the draft in contracts/drafts/admin.yaml until the backend cards move them into the contract.
+type AdminSchemas = AdminComponents['schemas']
+export type StaffMember = AdminSchemas['StaffMember']
+export type NewStaffRequest = AdminSchemas['NewStaffRequest']
+export type NewStaffResponse = AdminSchemas['NewStaffResponse']
+export type AdminDepartment = AdminSchemas['AdminDepartment']
+export type AdminClinic = AdminSchemas['AdminClinic']
+export type AssignedStaff = AdminSchemas['AssignedStaff']
+export type DepartmentKind = Schemas['DepartmentKind']
+export type ClinicRequest = AdminSchemas['ClinicRequest']
+export type Statistics = AdminSchemas['Statistics']
+export type StatisticsDay = AdminSchemas['StatisticsDay']
+export type AuditAction = AdminSchemas['AuditAction']
+export type AuditEntityType = AdminSchemas['AuditEntityType']
+export type AuditEntry = AdminSchemas['AuditEntry']
+export type AuditPage = AdminSchemas['AuditPage']
 
 /** A non-2xx answer from the gateway, or a network failure (`status` 0). */
 export class ApiError extends Error {
@@ -74,7 +92,7 @@ export function setUnauthenticatedHandler(handler: (() => void) | null): void {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'PUT'
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | undefined>
   /** Public auth endpoints don't send the token. */
@@ -288,4 +306,85 @@ export const CHAT_QUESTION_MAX = 1000
 /** Asks the hospital-information assistant one question; 503 AI_UNAVAILABLE when the AI service is down. */
 export function askChatbot(question: string): Promise<ChatbotAnswer> {
   return request('/admin/chatbot/messages', { method: 'POST', body: { question } })
+}
+
+// ------------------------------------------------------------------ admin: staff (auth service)
+
+const id = encodeURIComponent
+
+/** Staff accounts, active and inactive, by name. `q` matches part of a name or phone number. */
+export function listStaff(filter: { q?: string; status?: 'active' | 'inactive' } = {}): Promise<StaffMember[]> {
+  return request('/auth/staff', { query: { q: filter.q || undefined, status: filter.status } })
+}
+
+/** Creates the account; the temporary password in the answer is shown once and never again. */
+export function createStaff(body: NewStaffRequest): Promise<NewStaffResponse> {
+  return request('/auth/staff', { method: 'POST', body })
+}
+
+export function setStaffRoles(staffId: string, roles: StaffRole[]): Promise<StaffMember> {
+  return request(`/auth/staff/${id(staffId)}/roles`, { method: 'PUT', body: { roles } })
+}
+
+/** Deactivating also ends every session the person has, at once. */
+export function setStaffActive(staffId: string, active: boolean): Promise<StaffMember> {
+  return request(`/auth/staff/${id(staffId)}/${active ? 'reactivate' : 'deactivate'}`, { method: 'POST' })
+}
+
+// ------------------------------------------------------------------ admin: departments and clinics
+
+/** Every department with its clinics and assigned staff, inactive ones included. */
+export function listAdminDepartments(): Promise<AdminDepartment[]> {
+  return request('/admin/departments')
+}
+
+export function createDepartment(body: { kind: DepartmentKind; name: LocalizedText }): Promise<AdminDepartment> {
+  return request('/admin/departments', { method: 'POST', body })
+}
+
+export function renameDepartment(departmentId: string, name: LocalizedText): Promise<AdminDepartment> {
+  return request(`/admin/departments/${id(departmentId)}`, { method: 'PUT', body: { name } })
+}
+
+export function setDepartmentActive(departmentId: string, active: boolean): Promise<AdminDepartment> {
+  return request(`/admin/departments/${id(departmentId)}/${active ? 'reactivate' : 'deactivate'}`, { method: 'POST' })
+}
+
+export function createClinic(departmentId: string, body: ClinicRequest): Promise<AdminClinic> {
+  return request(`/admin/departments/${id(departmentId)}/clinics`, { method: 'POST', body })
+}
+
+export function updateClinic(clinicId: string, body: ClinicRequest): Promise<AdminClinic> {
+  return request(`/admin/clinics/${id(clinicId)}`, { method: 'PUT', body })
+}
+
+export function setClinicActive(clinicId: string, active: boolean): Promise<AdminClinic> {
+  return request(`/admin/clinics/${id(clinicId)}/${active ? 'reactivate' : 'deactivate'}`, { method: 'POST' })
+}
+
+export function assignClinicStaff(clinicId: string, staffId: string): Promise<AdminClinic> {
+  return request(`/admin/clinics/${id(clinicId)}/staff/${id(staffId)}`, { method: 'PUT' })
+}
+
+export function unassignClinicStaff(clinicId: string, staffId: string): Promise<AdminClinic> {
+  return request(`/admin/clinics/${id(clinicId)}/staff/${id(staffId)}`, { method: 'DELETE' })
+}
+
+// ------------------------------------------------------------------ admin: statistics and audit log
+
+/** Visits, wait and no-show rate per Cairo day from `from` to `to` (YYYY-MM-DD, at most 92 days apart). */
+export function getStatistics(filter: { from: string; to: string; departmentId?: string }): Promise<Statistics> {
+  return request('/admin/statistics', { query: filter })
+}
+
+export interface AuditFilter {
+  who?: string
+  action?: AuditAction
+  from?: string
+  to?: string
+}
+
+/** One page of the audit log, newest first; pass the previous page's `nextCursor` for the next. */
+export function searchAuditLog(filter: AuditFilter, cursor?: string): Promise<AuditPage> {
+  return request('/admin/audit-log', { query: { who: filter.who || undefined, action: filter.action, from: filter.from, to: filter.to, cursor } })
 }

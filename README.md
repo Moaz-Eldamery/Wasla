@@ -52,7 +52,7 @@ cd services/ai && uv sync && uv run uvicorn app.main:app --reload   # AI service
 ## Mock API
 
 ```sh
-pnpm mock    # fake API from contracts/openapi.yaml on http://localhost:4010
+pnpm mock    # fake API from contracts/openapi.yaml + contracts/drafts/ on http://localhost:4010
 ```
 
 ## Lint and test (what CI runs)

@@ -1,3 +1,79 @@
+## 2026-11-06 16:31 +0000 · copilot-swe-agent[bot]
+Prompt: 2026-11-06 16:29 · copilot-swe-agent[bot]
+What: Fixed the patient app CI failure by increasing the timeout for the sign-up + verify flow test that exceeded Jest’s default 5-second limit on GitHub runners.
+Files: apps/patient-app/app.test.tsx, prompt_log.md
+
+## 2026-11-06 18:05 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 6, the audit log at `/admin/audit`, which completes the rewritten card:
+- **Search:** by who (name or phone), what action (grouped) and a day range.
+- **Rows:** each shows when, who, the action, the record (type and a short ID), the outcome and the IP. Refused and failed actions stand out.
+- **Paging:** older entries load 50 at a time.
+- **Read-only:** no medical content or passwords.
+
+Also adds the access and navigation tests and rewrites the admin README. 5 + 4 new tests; 81 in the dashboard. Every screen was checked against `pnpm mock` in English and Arabic, on desktop, tablet and phone.
+Files: apps/hospital-dashboard/src/pages/admin/ (AuditPage.tsx, AuditPage.test.tsx, audit.ts, AdminLayout.test.tsx, README.md), apps/hospital-dashboard/src/App.tsx, apps/hospital-dashboard/README.md
+
+## 2026-11-06 18:04 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 5, statistics at `/admin/statistics`, where `/admin` now opens (the user's choice):
+- **Measures:** visits per day by department (stacked columns), average wait from check-in to the consultation starting, and the no-show rate (lines), each headed by its figure for the range.
+- **Filters:** last 7, 30 or 90 days or a custom range (at most 92 days), and one department or all.
+- **Missing data:** a day or range with nothing to measure says "Not available", never 0.
+- **Charts:** hand-built SVG.
+  - **Reading values:** a hover and keyboard readout, plus a table view.
+  - **Direction:** time runs right to left in Arabic.
+  - **Colours:** each department keeps the same colour whatever the filter. The six colours were checked for colour-blind separation, and a seventh department onwards goes into "Other".
+- **Business rules:** added the draft definitions to business.md.
+
+9 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (StatisticsPage.tsx, StatisticsPage.test.tsx, charts.tsx, statistics.ts), apps/hospital-dashboard/src/App.tsx, business.md
+
+## 2026-11-06 18:03 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 4, departments, clinics and assignments at `/admin/hospital`:
+- **Layout:** departments on the start side; the chosen one's clinics beside it, each with its location and staff.
+- **Departments:** add (type, plus the name in English and Arabic) and rename.
+- **Clinics:** add and edit name, building, floor and directions.
+- **Staff:** assign doctors, receptionists and lab staff to a clinic, and remove them.
+- **Deactivating:** a department or clinic, after a confirmation that says it won't be bookable but booked and past appointments keep it.
+- **Warnings:** an active clinic with no active doctor is flagged.
+
+8 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (HospitalPage.tsx, HospitalPage.test.tsx), apps/hospital-dashboard/src/App.tsx
+
+## 2026-11-06 18:03 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 3, staff and roles at `/admin/staff`:
+- **List:** every staff account with roles and active or inactive status. Search by name or phone, and filter all, active or inactive.
+- **Add:** name, mobile number (accepted as staff type it, e.g. `010 1234 5678`) and roles.
+- **Roles:** a person can hold several, as the user chose.
+- **Temporary password:** the server makes it and it's shown once, with Copy, as the user chose.
+- **Deactivate and reactivate:** both ask first. Deactivating says the person is logged out immediately.
+- **Self-protection:** an admin can't deactivate themselves or drop their own admin role.
+
+`ConfirmDialog` is shared with the hospital screen. 9 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (StaffPage.tsx, StaffPage.test.tsx, staff.ts, ConfirmDialog.tsx), apps/hospital-dashboard/src/App.tsx
+
+## 2026-11-06 18:01 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: The admin frame for the rewritten KAN-20 (card section 1):
+- **Navigation:** `/admin/...` now has a rail of five sections (Statistics, Assistant, Staff, Departments & clinics, Audit log). The user chose a side rail. It shows icons with short labels on a tablet and becomes a strip of tabs on a phone.
+- **Not allowed:** staff without a role who open its page by URL now see a "not allowed" screen with a link to their own screen, instead of being sent away silently. The server still refuses the data.
+- **Assistant:** moved to `/admin/assistant`, unchanged.
+- **Strings and tests:** the Arabic and English strings for every admin section are added here. Tests wait up to 5 s for a file's first render, because the full suite runs every file at once and a cold render could take over a second.
+Files: apps/hospital-dashboard/src/pages/admin/ (AdminLayout.tsx, ChatPage.tsx, ChatPage.test.tsx), apps/hospital-dashboard/src/components/ (NotAllowed.tsx, README.md), apps/hospital-dashboard/src/App.tsx, apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (test-fixtures.ts, test-setup.ts), apps/hospital-dashboard/vite.config.ts, PRODUCT.md
+
+## 2026-11-06 18:00 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 was rewritten into the whole admin dashboard, whose staff, hospital setup, statistics and audit endpoints aren't in the contract. The user chose to leave `openapi.yaml` alone and serve a draft beside it, so:
+- **Draft:** `contracts/drafts/admin.yaml` (a new folder, agreed with the user) describes them with example data: staff and roles on the auth service (deactivating revokes sessions), and departments, clinics, assignments, statistics and the audit log on the core, all `ADMIN` only.
+- **Mock:** `pnpm mock` now runs `contracts/mock.mjs`, which joins the contract and the drafts for Prism and signs the mock user in with every staff role. Prism runs straight from node, so stopping the script stops the server. Added `yaml` as a root dev dependency.
+- **Client:** the dashboard generates `lib/admin-api-types.ts` from the draft (checked in `lint`), and `api.ts` gains one function per admin endpoint.
+
+No backend code.
+Files: contracts/drafts/admin.yaml, contracts/drafts/README.md, contracts/mock.mjs, contracts/README.md, package.json, pnpm-lock.yaml, README.md, structure.md, apps/hospital-dashboard/package.json, apps/hospital-dashboard/src/lib/ (admin-api-types.ts, api.ts, README.md)
+
 ## 2026-11-06 15:06 +0200 · NourElghaly
 Prompt: 2026-11-06 15:04 · NourElghaly
 What: Review fixes for KAN-12 (PR #3). The journey module imported the appointments module's internals, which structure.md forbids, so the clinic shape, select and mapper moved to services/core/src/shared/clinic.views.ts and both modules use it from there. A test AWAITING_REVIEW no longer sends the patient back to the lab: only REQUESTED and IN_PROGRESS tests give TEST_ORDERED; otherwise the patient is WITH_DOCTOR during the visit or DONE after it. Added a unit test for this and updated the journey rule in business.md.

@@ -18,12 +18,24 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 ## Hospital setup
 - A department has one or more clinics. A clinic is a place patients go (a clinic room, the lab, a radiology room) with a building, floor and directions in Arabic and English.
 - Departments are clinical (patients book them), lab or radiology (they receive tests).
-- An admin assigns each doctor, receptionist and lab staff member to one or more clinics. Staff work only with their assigned clinics.
+- An admin assigns each doctor, receptionist and lab staff member to one or more clinics. Staff work only with their assigned clinics. Admin-only and deactivated accounts can't be assigned.
+- Departments and clinics are deactivated, never deleted. A clinic can be booked only while it **and** its department are active. Booked and past appointments keep their clinic, so patients and staff still see where they were.
+- A department's type (clinical, lab, radiology) is fixed once it is created. Names and directions are kept in Arabic and English, and both are required.
+
+## Admin statistics
+*Draft definitions from the admin screens (KAN-20); KAN-39 confirms them when it builds the numbers.*
+- Counts and averages only, never a patient's name. Days are Cairo calendar days, and a range is at most 92 days.
+- **Visits:** appointments that reached `COMPLETED`, per clinical department.
+- **Average wait:** minutes from check-in to the consultation starting.
+- **No-show rate:** no-shows divided by the appointments due that day, leaving out cancelled ones.
+- When there is nothing to measure (no appointments, a closed day, a day still to come), the value is "Not available", never 0.
 
 ## Accounts
 - Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.
 - Patients are identified by an internal ID, **not** a National ID.
-- Staff accounts are created by an admin. Deactivating a staff member logs them out immediately.
+- Staff accounts are created by an admin, with a name, a phone number and one or more roles. Wasla makes a temporary password that the admin sees once, to hand over in person; it is never shown or sent again.
+- Deactivating a staff member logs them out immediately. Reactivating them lets them log in again with the password they had.
+- An admin can't deactivate their own account or remove their own admin role, so there is always someone who can undo a change.
 - Everyone logs in with phone number and password. Staff don't get a phone code: the admin created their account.
 - A session lasts 7 days from login; then the user logs in again. Logging out ends that session at once. A deactivated account can't log in, and its open sessions stop working at once.
 - A phone code is valid for 10 minutes and allows 5 wrong guesses; after that the patient asks for a new one. At most 3 codes per phone number per hour.

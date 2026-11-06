@@ -1,12 +1,35 @@
 # Admin pages
 
-Screens for hospital admins: the AI chatbot; later staff, clinics and statistics.
+The hospital admin's section of the staff website (KAN-20): statistics, the AI assistant, staff and roles, departments and clinics, and the audit log, under `/admin/...`.
 
-**Rule:** No medical records on any admin screen.
+**Rule:** No medical records on any admin screen: no visit notes, results or patient names (the audit log names who did something, never what a record says). Staff, setup, statistics and audit calls follow the draft `contracts/drafts/admin.yaml` until their backend cards agree them.
 
 ## Files
 
-- `ChatPage.tsx`: `/admin` (KAN-20), the hospital-information assistant.
+- `AdminLayout.tsx`: the frame around every admin section. The shared top bar, then a rail of the five sections on the start side (icons with short labels on a tablet, a strip of tabs on a phone). Also `PageHeader` (title, intro, actions) and `PageBody` (the content column) that every section uses.
+- `AdminLayout.test.tsx`: landing on Statistics with the five sections, moving between them, "not allowed" for other roles (with no admin data requested), and the Arabic menu.
+- `StatisticsPage.tsx`: `/admin/statistics`, where `/admin` opens.
+  - **Filters:** last 7, 30 or 90 days, or a custom range of at most 92 days, and one clinical department or all. They scope every chart.
+  - **Measures:** visits per day by department (stacked columns), average wait from check-in to the consultation starting, and the no-show rate (lines). Each shows its figure for the whole range.
+  - **Not available:** a day or a range with nothing to measure says "Not available", never 0.
+  - **Privacy:** counts and averages only.
+- `charts.tsx`: `DayChart`, the day-by-day chart.
+  - **Marks:** columns or a line, with round axis steps, a hover and keyboard readout (arrow keys, Home, End) and a "Show as a table" view.
+  - **Direction:** time runs right to left in Arabic.
+- `statistics.ts`: the statistics screen's pure helpers.
+  - **Ranges:** day ranges in Cairo calendar days.
+  - **Axis:** round axis ticks.
+  - **Formats:** counts, minutes and rates in the current language.
+  - **Colours:** `visitSeries` keeps each department's colour from the fixed department order whatever the filter, and folds a seventh department onwards into "Other". The six colours were checked for colour-blind separation on the white panel.
+- `StatisticsPage.test.tsx`:
+  - the figures and request
+  - the table view with "Not available"
+  - the keyboard readout
+  - department and range filters
+  - the 92-day limit
+  - a range with no data
+  - the helpers
+- `ChatPage.tsx`: `/admin/assistant`, the hospital-information assistant.
   - **Asking:** ask in English or Arabic. Enter sends and Shift+Enter adds a line. Questions are limited to 1,000 characters.
   - **Answers:** each answer is written in the question's language and direction, with its sources underneath.
   - **When it can't answer:** "No information" and "assistant unavailable" (`503 AI_UNAVAILABLE`) each get a clear message, with **Ask again**.
@@ -20,3 +43,44 @@ Screens for hospital admins: the AI chatbot; later staff, clinics and statistics
   - keeping the conversation through a reload and clearing it
   - the 1,000-character limit
   - Shift+Enter
+- `StaffPage.tsx`: `/admin/staff`.
+  - **List:** every staff account with its roles and active or inactive status. Search by name or phone, and show all, active or inactive.
+  - **Add:** name, mobile number (typed the way staff write it, e.g. `010 1234 5678`) and one or more roles. The temporary password the server makes is shown once, with Copy.
+  - **Change roles:** one or more roles per person.
+  - **Deactivate or reactivate:** each asks first. Deactivating says the person is logged out immediately.
+  - **Self-protection:** admins can't deactivate themselves or drop their own admin role. `RoleTags` lists roles in a fixed order; the hospital screen uses it too.
+- `staff.ts`: the role order, which roles can work in a clinic, the staff list's query keys, and `normalizePhone` (Egyptian mobile numbers to E.164).
+- `StaffPage.test.tsx`:
+  - the list and search
+  - adding someone and the one-time password
+  - a phone number that's already taken
+  - changing roles
+  - deactivating and reactivating with confirmation
+  - not deactivating yourself
+  - `normalizePhone`
+- `HospitalPage.tsx`: `/admin/hospital`. Departments on the start side; the chosen one's clinics, their location and their staff beside it.
+  - **Departments:** add (type and name in English and Arabic) and rename.
+  - **Clinics:** add and edit name, building, floor and directions.
+  - **Staff:** assign doctors, receptionists and lab staff to a clinic, and remove them.
+  - **Deactivating:** a department or clinic, after a confirmation that says it won't be bookable but booked and past appointments keep it.
+- `HospitalPage.test.tsx`:
+  - the clinic list
+  - an inactive department
+  - adding a department
+  - editing a clinic
+  - assigning and removing staff
+  - deactivating a clinic
+  - a refused change keeping its dialog open
+- `AuditPage.tsx`: `/admin/audit`, the audit log, newest first.
+  - **Search:** by who (name or phone), what action (grouped) and a day range.
+  - **Rows:** each shows when, who, the action, the record (type and a short ID), the outcome and the IP address. Refused and failed actions stand out in red.
+  - **Paging:** older entries load 50 at a time.
+  - **Read-only:** nothing can be edited or deleted.
+- `audit.ts`: the action filter's groups.
+- `AuditPage.test.tsx`:
+  - the rows
+  - nothing to edit or delete
+  - each filter, and clearing them
+  - a backwards range
+  - loading older entries
+- `ConfirmDialog.tsx`: the "are you sure" dialog for deactivating, reactivating and removing. It stays open with the server's reason if the change is refused.

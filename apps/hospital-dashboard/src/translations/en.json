@@ -80,7 +80,10 @@
   },
   "common": {
     "retry": "Try again",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…"
   },
   "errors": {
     "VALIDATION_FAILED": "Some fields are invalid. Check them and try again.",
@@ -95,7 +98,8 @@
     "NETWORK": "The server can't be reached. Check the connection and try again.",
     "FILE_TOO_LARGE": "The file is over 10 MB. Choose a smaller file.",
     "FILE_TYPE_NOT_ALLOWED": "Only PDF, JPEG or PNG files can be sent.",
-    "AI_UNAVAILABLE": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes."
+    "AI_UNAVAILABLE": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes.",
+    "PHONE_TAKEN": "This phone number already has an account."
   },
   "doctor": {
     "title": "My patients today",
@@ -239,5 +243,300 @@
     "failed": "That question couldn't be answered.",
     "retry": "Ask again",
     "thread": "Conversation"
+  },
+  "notAllowed": {
+    "title": "You can't open this page",
+    "body": "It's for staff with the {{role}} role, and your account doesn't have it. If you need it, ask your hospital admin.",
+    "goHome": "Go to my screen"
+  },
+  "admin": {
+    "nav": "Admin sections",
+    "sections": {
+      "statistics": "Statistics",
+      "assistant": "Assistant",
+      "staff": "Staff",
+      "hospital": "Departments & clinics",
+      "audit": "Audit log"
+    }
+  },
+  "staffRoles": {
+    "RECEPTIONIST": "Receptionist",
+    "DOCTOR": "Doctor",
+    "LAB": "Lab / radiology",
+    "ADMIN": "Admin"
+  },
+  "staffRoleHints": {
+    "RECEPTIONIST": "Checks patients in and watches the queue in their clinics.",
+    "DOCTOR": "Sees patients, writes visit notes, orders tests and releases results.",
+    "LAB": "Processes tests and uploads result files in their clinics.",
+    "ADMIN": "Manages staff, hospital setup and statistics. Never sees medical records."
+  },
+  "departmentKind": {
+    "CLINICAL": "Clinical",
+    "LAB": "Laboratory",
+    "RADIOLOGY": "Radiology"
+  },
+  "staff": {
+    "title": "Staff",
+    "intro": "Everyone who logs in to the staff website. Add people, set what they can do, and turn accounts off when someone leaves.",
+    "add": "Add staff member",
+    "search": "Search staff",
+    "searchPlaceholder": "Name or phone number",
+    "statusFilter": "Show",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "loadFailed": "The staff list couldn't be loaded.",
+    "noMatch": "Nobody matches \"{{q}}\".",
+    "empty": "No staff accounts yet.",
+    "col": {
+      "name": "Name",
+      "phone": "Phone",
+      "roles": "Roles",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "you": "You",
+    "active": "Active",
+    "inactive": "Inactive",
+    "changeRoles": "Change roles",
+    "rolesFor": "Change roles for {{name}}",
+    "deactivateFor": "Deactivate {{name}}",
+    "reactivateFor": "Reactivate {{name}}",
+    "cantDeactivateSelf": "You can't deactivate your own account.",
+    "deactivate": {
+      "title": "Deactivate {{name}}?",
+      "loggedOut": "They will be logged out immediately, on every device.",
+      "body": "They can't log in again until an admin reactivates them. Their past work keeps their name.",
+      "confirm": "Deactivate"
+    },
+    "reactivate": {
+      "title": "Reactivate {{name}}?",
+      "body": "They can log in again straight away, with the password they had.",
+      "confirm": "Reactivate"
+    },
+    "form": {
+      "addTitle": "Add a staff member",
+      "name": "Full name",
+      "nameRequired": "Enter their full name.",
+      "phone": "Mobile number",
+      "phoneHint": "They log in with this number, e.g. 010 1234 5678",
+      "phoneInvalid": "Enter an Egyptian mobile number, e.g. 010 1234 5678.",
+      "roles": "Roles",
+      "rolesRequired": "Choose at least one role.",
+      "cantDropOwnAdmin": "You can't remove your own admin role.",
+      "passwordNote": "Wasla makes a temporary password for them. You'll see it once, on the next screen.",
+      "create": "Add and get password",
+      "rolesTitle": "Roles for {{name}}",
+      "rolesNote": "The change applies from their next click; they stay logged in.",
+      "saveRoles": "Save roles"
+    },
+    "created": {
+      "title": "{{name}} can now log in",
+      "body": "Give them this temporary password in person. They log in with their mobile number and this password.",
+      "password": "Temporary password",
+      "copy": "Copy",
+      "copied": "Copied",
+      "once": "This is the only time the password is shown. Copy it or write it down before you close this.",
+      "done": "Done"
+    }
+  },
+  "hospital": {
+    "title": "Departments & clinics",
+    "intro": "Where patients can book and who works where. Changes here show in the patient app and on every staff screen.",
+    "departments": "Departments",
+    "addDepartment": "Add department",
+    "loadFailed": "The departments couldn't be loaded.",
+    "noDepartments": "No departments yet. Add the first one to start setting up clinics.",
+    "clinicCount": "Clinics: {{count}}",
+    "inactive": "Inactive",
+    "rename": "Rename",
+    "edit": "Edit",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "editClinicNamed": "Edit {{name}}",
+    "deactivateNamed": "Deactivate {{name}}",
+    "reactivateNamed": "Reactivate {{name}}",
+    "departmentInactiveNote": "This department is inactive: patients can't book it or any of its clinics. Booked and past appointments still show it.",
+    "clinics": "Clinics",
+    "addClinic": "Add clinic",
+    "noClinics": "No clinics in this department yet.",
+    "notBookableDepartment": "Not bookable while the department is inactive",
+    "staffInClinic": "Staff",
+    "staffOf": "Staff in {{name}}",
+    "assign": "Assign",
+    "assignTo": "Assign staff to {{name}}",
+    "assignTitle": "Assign staff to {{name}}",
+    "pickStaff": "Staff member",
+    "noOneToAssign": "No active doctors, receptionists or lab staff left to assign.",
+    "assignNote": "They will see this clinic’s appointments, queue and tests from their next refresh.",
+    "noDoctors": "No active doctor is assigned, so patients have no one to book with here.",
+    "keepsPast": "Booked and past appointments keep it, so patients and staff still see where they were.",
+    "deactivateDepartment": {
+      "title": "Deactivate {{name}}?",
+      "body": "It and all its clinics will no longer be bookable."
+    },
+    "reactivateDepartment": {
+      "title": "Reactivate {{name}}?",
+      "body": "Its active clinics become bookable again. Clinics you deactivated one by one stay inactive."
+    },
+    "deactivateClinic": {
+      "title": "Deactivate {{name}}?",
+      "body": "It will no longer be bookable."
+    },
+    "reactivateClinic": {
+      "title": "Reactivate {{name}}?",
+      "body": "Patients can book it again.",
+      "departmentInactive": "It stays unbookable until its department is reactivated too."
+    },
+    "unassign": {
+      "label": "Remove {{name}}",
+      "title": "Remove {{name}} from {{clinic}}?",
+      "body": "They will stop seeing this clinic's appointments and queue. Appointments already booked with them stay as they are.",
+      "confirm": "Remove"
+    },
+    "form": {
+      "newDepartment": "Add a department",
+      "renameDepartment": "Rename department",
+      "createDepartment": "Add department",
+      "kind": "Type",
+      "kindHint": "Clinical departments take bookings; lab and radiology receive doctors' test orders. It can't be changed later.",
+      "kindFixed": "Type: {{kind}} (fixed once created).",
+      "name": "Name",
+      "in": {
+        "en": "English",
+        "ar": "Arabic"
+      },
+      "required": "Required.",
+      "newClinic": "Add a clinic",
+      "editClinic": "Edit clinic",
+      "createClinic": "Add clinic",
+      "building": "Building",
+      "floor": "Floor",
+      "directions": "Directions",
+      "editNote": "Patients see the new details next time they open the app. Booked appointments stay in this clinic."
+    }
+  },
+  "stats": {
+    "title": "Statistics",
+    "intro": "How the clinics ran, day by day. Counts and averages only: no patient is ever named here.",
+    "filters": "Filters",
+    "range": "Date range",
+    "last7": "Last 7 days",
+    "last30": "Last 30 days",
+    "last90": "Last 90 days",
+    "custom": "Custom",
+    "from": "From",
+    "to": "To",
+    "department": "Department",
+    "allDepartments": "All clinical departments",
+    "rangeIncomplete": "Choose both a start and an end day.",
+    "rangeBackwards": "The start day is after the end day.",
+    "rangeTooLong": "Choose at most {{max}} days.",
+    "loadFailed": "The statistics couldn't be loaded.",
+    "showing": "{{from}} to {{to}}, Cairo time.",
+    "notAvailable": "Not available",
+    "noData": "There were no appointments to measure in this range.",
+    "other": "Other departments",
+    "legend": "Departments",
+    "keyboardHint": "Use the arrow keys to read each day.",
+    "showTable": "Show as a table",
+    "hideTable": "Hide table",
+    "day": "Day",
+    "visits": {
+      "title": "Visits",
+      "definition": "Completed visits per day, by department.",
+      "figure": "visits in this range",
+      "total": "All departments"
+    },
+    "wait": {
+      "title": "Average wait",
+      "definition": "From check-in to the consultation starting.",
+      "figure": "average over the range"
+    },
+    "noShow": {
+      "title": "No-show rate",
+      "definition": "Booked patients who didn't come, out of all appointments due (cancelled ones left out).",
+      "figure": "of appointments due"
+    },
+    "minutes": "{{value}} min"
+  },
+  "audit": {
+    "title": "Audit log",
+    "intro": "Every sign-in, booking, record access and admin change, newest first. Nothing here can be edited or deleted, and entries carry no medical content or passwords.",
+    "filters": "Search the log",
+    "who": "Who",
+    "whoPlaceholder": "Name or phone number",
+    "action": "Action",
+    "allActions": "All actions",
+    "from": "From",
+    "to": "To",
+    "backwards": "The start day is after the end day.",
+    "clear": "Clear filters",
+    "loadFailed": "The audit log couldn't be loaded.",
+    "noMatch": "No entries match these filters.",
+    "empty": "The log is empty.",
+    "shown": "Entries shown: {{count}}",
+    "loadOlder": "Load older entries",
+    "end": "Start of the log",
+    "noActor": "Not signed in",
+    "col": {
+      "when": "When",
+      "who": "Who",
+      "action": "Action",
+      "record": "Record",
+      "outcome": "Outcome",
+      "ip": "IP address"
+    },
+    "actorType": {
+      "PATIENT": "Patient",
+      "STAFF": "Staff"
+    },
+    "outcome": {
+      "SUCCESS": "Done",
+      "DENIED": "Refused",
+      "FAILED": "Failed"
+    },
+    "entity": {
+      "ACCOUNT": "Account",
+      "APPOINTMENT": "Appointment",
+      "VISIT_NOTES": "Visit notes",
+      "TEST_ORDER": "Test",
+      "DEPARTMENT": "Department",
+      "CLINIC": "Clinic"
+    },
+    "groups": {
+      "access": "Signing in and access",
+      "visits": "Bookings and visits",
+      "records": "Notes, tests and results",
+      "admin": "Staff and hospital setup"
+    },
+    "actions": {
+      "LOGIN": "Logged in",
+      "LOGIN_FAILED": "Failed login",
+      "LOGOUT": "Logged out",
+      "PATIENT_REGISTERED": "Patient signed up",
+      "ACCESS_DENIED": "Access refused",
+      "APPOINTMENT_BOOKED": "Appointment booked",
+      "APPOINTMENT_CANCELLED": "Appointment cancelled",
+      "CHECK_IN": "Checked in",
+      "VISIT_STARTED": "Visit started",
+      "VISIT_COMPLETED": "Visit finished",
+      "NOTES_VIEWED": "Visit notes opened",
+      "NOTES_SAVED": "Visit notes saved",
+      "TEST_ORDERED": "Test ordered",
+      "RESULT_UPLOADED": "Result uploaded",
+      "RESULT_RELEASED": "Result released",
+      "RESULT_VIEWED": "Result opened",
+      "STAFF_CREATED": "Staff member added",
+      "STAFF_ROLES_CHANGED": "Roles changed",
+      "STAFF_DEACTIVATED": "Staff member deactivated",
+      "STAFF_REACTIVATED": "Staff member reactivated",
+      "DEPARTMENT_CHANGED": "Department changed",
+      "CLINIC_CHANGED": "Clinic changed",
+      "CLINIC_STAFF_CHANGED": "Clinic staff changed"
+    }
   }
 }
