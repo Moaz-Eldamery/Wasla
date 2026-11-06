@@ -16,6 +16,8 @@ const ROW_COLUMNS = {
   sm: '104px minmax(0,1fr) auto minmax(132px,max-content)',
   lg: '112px minmax(0,1.2fr) minmax(0,1fr) auto minmax(140px,max-content)',
 }
+/** Without the doctor column (a doctor's own day). */
+const ROW_COLUMNS_NO_DOCTOR = { ...ROW_COLUMNS, lg: ROW_COLUMNS.sm }
 
 interface DayBookProps {
   appointments: Appointment[]
@@ -24,6 +26,8 @@ interface DayBookProps {
   showNow: boolean
   /** The action at the end of each row, e.g. Check in. */
   renderAction?: (appointment: Appointment) => ReactNode
+  /** Show the doctor's name on each row; off on a doctor's own day. */
+  showDoctor?: boolean
 }
 
 /**
@@ -33,7 +37,7 @@ interface DayBookProps {
  * so the page can bring it into view.
  */
 export const DayBook = forwardRef<HTMLDivElement, DayBookProps>(function DayBook(
-  { appointments, now, showNow, renderAction },
+  { appointments, now, showNow, renderAction, showDoctor = true },
   nowRef,
 ) {
   const { t } = useTranslation()
@@ -52,6 +56,7 @@ export const DayBook = forwardRef<HTMLDivElement, DayBookProps>(function DayBook
           appointment={entry.appointment}
           now={now}
           action={renderAction?.(entry.appointment)}
+          showDoctor={showDoctor}
         />
       )
     }
@@ -89,7 +94,7 @@ export const DayBook = forwardRef<HTMLDivElement, DayBookProps>(function DayBook
   )
 })
 
-function AppointmentRow({ appointment, now, action }: { appointment: Appointment; now: Date; action?: ReactNode }) {
+function AppointmentRow({ appointment, now, action, showDoctor }: { appointment: Appointment; now: Date; action?: ReactNode; showDoctor: boolean }) {
   const lang = currentLanguage()
   const closed = ['COMPLETED', 'CANCELLED', 'NO_SHOW'].includes(appointment.status)
   const consulting = appointment.status === 'IN_CONSULTATION'
@@ -100,7 +105,7 @@ function AppointmentRow({ appointment, now, action }: { appointment: Appointment
       data-status={appointment.status}
       sx={{
         display: 'grid',
-        gridTemplateColumns: ROW_COLUMNS,
+        gridTemplateColumns: showDoctor ? ROW_COLUMNS : ROW_COLUMNS_NO_DOCTOR,
         alignItems: 'center',
         columnGap: 2,
         rowGap: 0.75,
@@ -139,7 +144,7 @@ function AppointmentRow({ appointment, now, action }: { appointment: Appointment
         component="span"
         variant="body2"
         dir="auto"
-        sx={{ display: { xs: 'none', lg: 'block' }, color: color.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}
+        sx={{ display: { xs: 'none', lg: showDoctor ? 'block' : 'none' }, color: color.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'start' }}
       >
         {appointment.doctor.name}
       </Typography>

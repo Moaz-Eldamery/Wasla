@@ -6,7 +6,7 @@ The only code in the dashboard that talks to the backend, always through the gat
 
 ## Files
 
-- `api.ts`: the fetch wrapper and one function per endpoint the website uses so far. It handles:
+- `api.ts`: the fetch wrapper and one function per endpoint the website uses so far (reception, and since KAN-18 the doctor's day, call next, finish, notes, tests, release and the result file). It handles:
   - **Session:** the token lives in sessionStorage, so it ends with the tab.
   - **Errors:** contract errors become `ApiError` with their `code`, and an unreachable server is status 0.
   - **Expired sessions:** a 401 ends the session.

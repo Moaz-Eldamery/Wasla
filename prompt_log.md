@@ -1,3 +1,23 @@
+## 2026-11-06 12:39 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:52
+
+> /impeccable /grill-me now lets move on to KAN-18
+
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:37
+
+> ok final change. change the image to this one [image attached: the same exam-room scene, the doctor and patient smiling]
+
+## 2026-11-06 12:35 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:35
+
+> sry replace it with this image instead [image attached: a doctor talking with an older patient in an exam room]
+
+## 2026-11-06 12:29 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:31
+
+> can you in the logic paage just add this image in the blue area of the website. add a blue blur into it [two images attached: a doctor-and-patient photo, and a screenshot of the login page]
+
 ## 2026-11-06 08:57 +0200 · Youssef Salem
 Changes: none
 

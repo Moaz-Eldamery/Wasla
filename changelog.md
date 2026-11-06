@@ -1,3 +1,32 @@
+## 2026-11-06 12:52 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:39 · Moaz Mohamed
+What: KAN-18, the doctor's screen at `/doctor`:
+- **Day:** the doctor's day on the day book, without the doctor column.
+- **Call next patient:** for the chosen clinic. It stays disabled until the current visit is finished.
+- **Visit panel:** sits beside the day (agreed with the user) and holds:
+  - Finish visit, which warns first when no notes are saved (agreed rule).
+  - Notes with an explicit Save and versioning by `baseVersion`. An unsaved draft is kept in sessionStorage, so it survives a reload but not a closed tab. A save conflict keeps the doctor's text and shows the newer version.
+  - Tests: order a lab or radiology test during the visit, open the private result file, and release it to the patient after confirming.
+- **Past visits:** finished visits open from the day.
+
+Built to the contract without new backend, as the user asked. Notes, tests and release have no backend yet (KAN-10, KAN-11). The core also doesn't serve `GET /doctors/me/appointments` yet (KAN-8/9), so on the real stack the day shows "couldn't be loaded" until it does. The screenshots were checked through a throwaway local stand-in for those calls.
+Files: apps/hospital-dashboard/src/pages/physician/ (DoctorPage, VisitPanel, NotesEditor, TestsSection, DoctorPage.test.tsx, README.md), apps/hospital-dashboard/src/components/ (DayBook showDoctor option, StatusChip TestStatusChip, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts, theme.ts, time.ts), apps/hospital-dashboard/src/pages/receptionist/TodayPage.tsx (REFRESH_MS moved to time.ts), apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:37 · Moaz Mohamed
+What: Swapped the login photo for the user's final choice (the same exam-room scene, with the doctor and patient smiling). The blur, blue wash and crop are unchanged.
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp
+
+## 2026-11-06 12:35 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:35 · Moaz Mohamed
+What: Replaced the login photo with the one the user chose instead (a doctor talking with a patient in an exam room), with the same blur and blue wash. It is re-encoded as WebP (63 kB), and the crop is centred on the doctor.
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp, apps/hospital-dashboard/src/LoginPage.tsx, apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:31 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:29 · Moaz Mohamed
+What: The staff login page's blue panel now shows a photo of a doctor with a patient, which the user supplied. The photo is softly blurred under a Wasla-blue wash that turns solid behind the headline, so the text stays readable. It was re-encoded from a 900 kB PNG to a 33 kB WebP and is decorative (empty alt text).
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp (new), apps/hospital-dashboard/src/LoginPage.tsx, apps/hospital-dashboard/README.md
+
 ## 2026-11-06 12:17 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 11:27 · Moaz Mohamed
 What: KAN-17, the staff website's first version, for receptionists:
