@@ -4,6 +4,7 @@ import type { StaffRole, User } from './lib/api.ts'
 export const ROLE_PATHS: Partial<Record<StaffRole, string>> = {
   RECEPTIONIST: '/reception',
   DOCTOR: '/doctor',
+  LAB: '/lab',
 }
 
 /** Where a staff member lands after logging in: their first role that has a screen. */

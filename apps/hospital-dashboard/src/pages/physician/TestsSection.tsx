@@ -23,13 +23,10 @@ import {
   type Appointment,
   type TestOrder,
 } from '../../lib/api.ts'
+import { formatBytes } from '../lab/resultFile.ts'
 import { color } from '../../theme.ts'
 import { formatTime, REFRESH_MS } from '../../time.ts'
 import { currentLanguage, errorMessage, localized } from '../../translations/i18n.ts'
-
-function fileSize(bytes: number): string {
-  return bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`
-}
 
 /** The visit's tests: order one while the patient is here, review and release results. */
 export function TestsSection({ appointment, onToast }: { appointment: Appointment; onToast(message: string, error?: boolean): void }) {
@@ -101,7 +98,7 @@ export function TestsSection({ appointment, onToast }: { appointment: Appointmen
               </Box>
               <Typography variant="body2" sx={{ color: color.muted }}>
                 {localized(test.clinic.name, lang)} · {t('tests.orderedAt', { time: formatTime(test.orderedAt, lang) })}
-                {test.file && <> · {t('tests.fileInfo', { file: test.file.fileName, size: fileSize(test.file.sizeBytes) })}</>}
+                {test.file && <> · {t('tests.fileInfo', { file: test.file.fileName, size: formatBytes(test.file.sizeBytes) })}</>}
               </Typography>
               {test.file && (test.status === 'AWAITING_REVIEW' || test.status === 'RELEASED') && (
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>

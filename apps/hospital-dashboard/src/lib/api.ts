@@ -232,3 +232,49 @@ export async function downloadTestResult(testId: string): Promise<Blob> {
   }
   return response.blob()
 }
+
+// ------------------------------------------------------------------ lab
+
+/** Tests ordered for the lab staff member's clinics, oldest first; all statuses when `status` is left out. */
+export function listLabTests(status?: TestStatus): Promise<TestOrder[]> {
+  return request('/lab/tests', { query: { status } })
+}
+
+/** Marks a test as started (REQUESTED → IN_PROGRESS). */
+export function startTest(testId: string): Promise<TestOrder> {
+  return request(`/tests/${encodeURIComponent(testId)}/start`, { method: 'POST' })
+}
+
+/** What the API accepts as a result file. */
+export const RESULT_FILE_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const
+export const RESULT_FILE_MAX_BYTES = 10 * 1024 * 1024
+
+/** Uploads the result (IN_PROGRESS → AWAITING_REVIEW); uploading again before release replaces the file. */
+export async function uploadTestResult(testId: string, file: File): Promise<TestOrder> {
+  const body = new FormData()
+  body.append('file', file)
+  const token = session.token
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/tests/${encodeURIComponent(testId)}/result`, {
+      method: 'POST',
+      headers: { Accept: 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body,
+    })
+  } catch {
+    throw new ApiError(0, 'INTERNAL', 'The server could not be reached.')
+  }
+  if (response.ok) return (await response.json()) as TestOrder
+  let payload: Schemas['Error'] | null = null
+  try {
+    payload = (await response.json()) as Schemas['Error']
+  } catch {
+    // The gateway's body limit answers 413 without JSON.
+  }
+  const fallback: ErrorCode = response.status === 413 ? 'FILE_TOO_LARGE' : response.status === 401 ? 'UNAUTHENTICATED' : 'INTERNAL'
+  if (response.status === 401) {
+    session.token = null
+    onUnauthenticated?.()
+  }
+  throw new ApiError(response.status, payload?.error?.code ?? fallback, payload?.error?.message ?? response.statusText)
+}

@@ -1,3 +1,13 @@
+## 2026-11-06 13:19 +0200 · Moaz Mohamed
+Changes: 2026-11-06 13:29
+
+> /impeccable /grill-me  now lets go next for KAN 19
+
+## 2026-11-06 12:56 +0200 · Moaz Mohamed
+Changes: none
+
+> can you like create a testing doctor email that makes me jump to the doctor's dashboard?
+
 ## 2026-11-06 12:39 +0200 · Moaz Mohamed
 Changes: 2026-11-06 12:52
 
