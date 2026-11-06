@@ -52,8 +52,12 @@ CHECKED_IN → NO_SHOW   (receptionist, with a reason)
 
 Only these moves are allowed. For example, a visit can't be completed before it has started.
 
-- **Check-in:** the receptionist checks the patient in. They join their clinic's queue.
-- **Queue:** the doctor calls the next patient. The patient sees how many people are ahead and an estimated wait. The estimate is always labelled as an estimate.
+- **Check-in:** a receptionist of the appointment's clinic checks the patient in. Only on the appointment's own day (Cairo time), at any time that day, even after the slot has ended, so late arrivals are still seen. Any other day is refused.
+- **Queue:** each doctor has their own line in a clinic: the patients booked with them who are checked in there, in check-in order (not slot order). A patient booked with one doctor is never called by another.
+  - The doctor calls the next patient in their own line. A doctor sees one patient at a time, in any clinic: they finish the current visit before calling the next one. Pressing "call next" twice at once calls one patient.
+  - Only the appointment's own doctor completes the visit.
+  - The patient sees how many people are ahead of them in the same doctor's line, and an estimated wait. The estimate is always labelled as an estimate.
+  - The clinic's queue board shows every doctor's waiting and in-consultation patients, each with their doctor. Receptionists and doctors assigned to the clinic can see it. No medical details.
 - **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data, in Arabic and English.
 
 ## Tests and results
@@ -83,5 +87,4 @@ The AI is a helper, never a decision-maker, and the rest of the system must work
 - The core system keeps working when the AI service is down.
 - Every new endpoint checks both the role and the record owner.
 
-## Out of scope
-Caregivers managing dependents, reassigning appointments when a doctor is away, queue order overrides, urgent result flags, prescription templates, internal referrals, service approvals, recurring follow-ups, push notifications and reminders, an audit log viewer.
+

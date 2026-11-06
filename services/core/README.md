@@ -16,4 +16,5 @@ The NestJS core backend: the six business modules, live updates and events, in o
 - `src/health.controller.ts`: `GET /health`, for Docker and Uptime Kuma. Test: `health.controller.spec.ts`.
 - `test/app.e2e-spec.ts`: end-to-end test for the health endpoint.
 - `test/booking.e2e-spec.ts`: booking against a real, migrated database (simultaneous bookings, record ownership, audit log, DB grants). Skipped unless `DATABASE_URL` (as `wasla_core`) and `SEED_DATABASE_URL` (as `wasla_migrator`) are set; use a throwaway database. CI's `database` job runs it; to run it yourself, follow that job's steps in `.github/workflows/ci.yml`.
+- `test/queue.e2e-spec.ts`: check-in and the queue against a real, migrated database (simultaneous check-ins and call-next presses, each doctor's own line, record ownership, audit log). Same setup and skip rule as the booking test.
 - `src/generated/`: the Prisma client, generated on install. Never edit it.

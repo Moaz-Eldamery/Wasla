@@ -10,6 +10,8 @@ export type ErrorCode =
   | 'SLOT_TAKEN'
   | 'SLOT_UNAVAILABLE'
   | 'INVALID_TRANSITION'
+  | 'QUEUE_EMPTY'
+  | 'ALREADY_IN_CONSULTATION'
   | 'INTERNAL';
 
 export interface ErrorDetail {

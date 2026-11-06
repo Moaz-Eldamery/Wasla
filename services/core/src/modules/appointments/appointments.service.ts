@@ -27,6 +27,8 @@ import {
   type SlotView,
 } from './appointment.views.js';
 
+export type { AppointmentView } from './appointment.views.js';
+
 /** Default and longest window for browsing free slots, in Cairo days. */
 const DEFAULT_SLOT_DAYS = 14;
 const MAX_SLOT_DAYS = 31;
@@ -306,6 +308,18 @@ export class AppointmentsService {
       });
       throw notFound();
     }
+    return toAppointmentView(row);
+  }
+
+  /**
+   * One appointment as the contract shows it, with no access check: for
+   * other modules that have already checked the caller (IQueue).
+   */
+  async view(appointmentId: string): Promise<AppointmentView> {
+    const row = await this.prisma.appointment.findUniqueOrThrow({
+      where: { id: appointmentId },
+      select: appointmentSelect,
+    });
     return toAppointmentView(row);
   }
 

@@ -7,7 +7,7 @@ Slots, booking, cancel and reschedule, walk-ins, follow-ups.
 ## Files
 
 - `appointments.module.ts`: the module. Exports `AppointmentsService` (IAppointments).
-- `appointments.service.ts`: browsing (departments, doctors, free slots), booking, and seeing appointments, with the record-owner checks. Test: `appointments.service.spec.ts`.
+- `appointments.service.ts`: browsing (departments, doctors, free slots), booking, and seeing appointments, with the record-owner checks. `view()` gives other modules the contract's Appointment shape after they've checked the caller themselves. Test: `appointments.service.spec.ts`.
 - `catalog.controller.ts`: `GET /departments`, `/departments/{id}/doctors`, `/doctors/{id}/slots`.
 - `appointments.controller.ts`: `POST /appointments`, `GET /me/appointments`, `/appointments/{id}`, `/me/clinics`, `/clinics/{id}/appointments`.
 - `appointment.views.ts`: the response shapes from the contract, and the Prisma selects that load them.

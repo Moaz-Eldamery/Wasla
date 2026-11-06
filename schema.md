@@ -159,7 +159,7 @@ Indexes / constraints:
 A slot is **free** when it is `OPEN`, starts in the future, and has no active appointment.
 
 ### core.appointments
-A patient's booking of a slot, and the visit that follows. The queue is the clinic's `CHECKED_IN` appointments ordered by `checked_in_at`.
+A patient's booking of a slot, and the visit that follows. There is no queue table: a doctor's queue in a clinic is the `CHECKED_IN` appointments whose slot has that doctor and clinic, ordered by `checked_in_at` (then `id`, to break ties).
 
 | Column | Type | Null | Notes |
 |---|---|---|---|

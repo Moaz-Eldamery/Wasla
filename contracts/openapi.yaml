@@ -539,7 +539,10 @@ paths:
     post:
       tags: [Queue]
       summary: Check a patient in (BOOKED → CHECKED_IN)
-      description: Receptionist of the appointment's clinic. The patient joins the clinic's queue.
+      description: |
+        Receptionist of the appointment's clinic. Only on the appointment's own day (Africa/Cairo),
+        at any time that day, also after the slot has ended. The patient joins their doctor's queue
+        in this clinic. Another day, or a status other than `BOOKED`, is `409 INVALID_TRANSITION`.
       operationId: checkIn
       x-service: core
       x-roles: [RECEPTIONIST]
@@ -565,7 +568,10 @@ paths:
     get:
       tags: [Queue]
       summary: Queue board for a clinic
-      description: Receptionists and doctors assigned to this clinic. Who is waiting and who is with the doctor. No medical details.
+      description: |
+        Receptionists and doctors assigned to this clinic. Who is waiting and who is with the doctor,
+        for every doctor of the clinic. Each doctor has their own line: their own waiting patients, in
+        check-in order. No medical details.
       operationId: getClinicQueue
       x-service: core
       x-roles: [RECEPTIONIST, DOCTOR]
@@ -589,6 +595,9 @@ paths:
     post:
       tags: [Queue]
       summary: Call the next patient (CHECKED_IN → IN_CONSULTATION)
+      description: |
+        Calls the earliest checked-in patient booked with the calling doctor in this clinic. The doctor
+        must be assigned to the clinic (`404` otherwise) and sees one patient at a time, in any clinic.
       operationId: callNextPatient
       x-service: core
       x-roles: [DOCTOR]
@@ -627,6 +636,7 @@ paths:
     post:
       tags: [Queue]
       summary: Finish the visit (IN_CONSULTATION → COMPLETED)
+      description: Only the appointment's own doctor. Anyone else gets `404`.
       operationId: completeVisit
       x-service: core
       x-roles: [DOCTOR]
@@ -1480,13 +1490,16 @@ components:
     # ---- queue
     QueueItem:
       type: object
-      required: [appointmentId, patientName, doctorName, checkedInAt]
+      required: [appointmentId, patientName, doctorId, doctorName, checkedInAt]
       properties:
         appointmentId:
           type: string
           format: uuid
         patientName:
           type: string
+        doctorId:
+          type: string
+          format: uuid
         doctorName:
           type: string
         checkedInAt:
@@ -1509,6 +1522,7 @@ components:
           items:
             $ref: '#/components/schemas/QueueItem'
         inConsultation:
+          description: IN_CONSULTATION, earliest start first
           type: array
           items:
             $ref: '#/components/schemas/QueueItem'
@@ -1525,7 +1539,9 @@ components:
         peopleAhead:
           type: [integer, 'null']
           minimum: 0
-          description: Only while CHECKED_IN; `null` otherwise
+          description: |
+            Patients waiting for the same doctor in the same clinic who checked in earlier.
+            Only while CHECKED_IN; `null` otherwise
 
     # ---- journey
     JourneyStageCode:

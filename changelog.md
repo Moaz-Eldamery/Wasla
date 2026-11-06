@@ -1,3 +1,8 @@
+## 2026-11-06 07:53 +0200 · NourElghaly
+Prompt: 2026-11-06 07:43 · NourElghaly
+What: KAN-9 check-in and queue in the core. A receptionist of the clinic checks a patient in on the appointment's Cairo day; each doctor has their own line in a clinic, calls the earliest checked-in patient booked with them (one patient at a time, and a double press calls only one), and completes their own visits. Patients see how many people are ahead of them in the same doctor's line, and clinic staff see a queue board. Only BOOKED → CHECKED_IN → IN_CONSULTATION → COMPLETED goes through; a status only changes if it is still the expected one, so simultaneous changes can't both win, and every change is audited. The contract's QueueItem gained doctorId, and the queue endpoints now spell out these rules. Unit tests plus an end-to-end test against a real database.
+Files: services/core/src/modules/queue-checkin/, services/core/src/modules/appointments/appointments.service.ts, services/core/src/shared/api-error.ts, services/core/src/app.module.ts, services/core/test/queue.e2e-spec.ts, contracts/openapi.yaml, business.md, schema.md, services/core/src/modules/queue-checkin/README.md, services/core/src/modules/appointments/README.md, services/core/README.md, .github/workflows/README.md
+
 ## 2026-11-05 21:09 +0200 · NourElghaly
 Prompt: 2026-11-05 19:38 · NourElghaly
 What: CI's database job now loads the demo data before the e2e tests, so every pull request checks that the seed still works with the schema and that the tests run alongside real-looking data.
