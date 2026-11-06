@@ -1,3 +1,18 @@
+## 2026-11-06 18:04 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 5, statistics at `/admin/statistics`, where `/admin` now opens (the user's choice):
+- **Measures:** visits per day by department (stacked columns), average wait from check-in to the consultation starting, and the no-show rate (lines), each headed by its figure for the range.
+- **Filters:** last 7, 30 or 90 days or a custom range (at most 92 days), and one department or all.
+- **Missing data:** a day or range with nothing to measure says "Not available", never 0.
+- **Charts:** hand-built SVG.
+  - **Reading values:** a hover and keyboard readout, plus a table view.
+  - **Direction:** time runs right to left in Arabic.
+  - **Colours:** each department keeps the same colour whatever the filter. The six colours were checked for colour-blind separation, and a seventh department onwards goes into "Other".
+- **Business rules:** added the draft definitions to business.md.
+
+9 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (StatisticsPage.tsx, StatisticsPage.test.tsx, charts.tsx, statistics.ts), apps/hospital-dashboard/src/App.tsx, business.md
+
 ## 2026-11-06 18:03 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: KAN-20 section 4, departments, clinics and assignments at `/admin/hospital`:

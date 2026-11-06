@@ -12,6 +12,7 @@ import { AdminLayout } from './pages/admin/AdminLayout.tsx'
 import { ChatPage } from './pages/admin/ChatPage.tsx'
 import { HospitalPage } from './pages/admin/HospitalPage.tsx'
 import { StaffPage } from './pages/admin/StaffPage.tsx'
+import { StatisticsPage } from './pages/admin/StatisticsPage.tsx'
 import { LabPage } from './pages/lab/LabPage.tsx'
 import { DoctorPage } from './pages/physician/DoctorPage.tsx'
 import { TodayPage } from './pages/receptionist/TodayPage.tsx'
@@ -97,11 +98,12 @@ export default function App() {
           </RequireRole>
         }
       >
-        <Route index element={<Navigate to="assistant" replace />} />
+        <Route index element={<Navigate to="statistics" replace />} />
+        <Route path="statistics" element={<StatisticsPage />} />
         <Route path="assistant" element={<ChatPage />} />
         <Route path="staff" element={<StaffPage />} />
         <Route path="hospital" element={<HospitalPage />} />
-        <Route path="*" element={<Navigate to="assistant" replace />} />
+        <Route path="*" element={<Navigate to="statistics" replace />} />
       </Route>
       <Route
         path="/"
