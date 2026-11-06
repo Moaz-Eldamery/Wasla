@@ -1,5 +1,18 @@
 ## 2026-11-06 18:03 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 17:18 · Moaz Mohamed
+What: KAN-20 section 4, departments, clinics and assignments at `/admin/hospital`:
+- **Layout:** departments on the start side; the chosen one's clinics beside it, each with its location and staff.
+- **Departments:** add (type, plus the name in English and Arabic) and rename.
+- **Clinics:** add and edit name, building, floor and directions.
+- **Staff:** assign doctors, receptionists and lab staff to a clinic, and remove them.
+- **Deactivating:** a department or clinic, after a confirmation that says it won't be bookable but booked and past appointments keep it.
+- **Warnings:** an active clinic with no active doctor is flagged.
+
+8 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (HospitalPage.tsx, HospitalPage.test.tsx), apps/hospital-dashboard/src/App.tsx
+
+## 2026-11-06 18:03 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 17:18 · Moaz Mohamed
 What: KAN-20 section 3, staff and roles at `/admin/staff`:
 - **List:** every staff account with roles and active or inactive status. Search by name or phone, and filter all, active or inactive.
 - **Add:** name, mobile number (accepted as staff type it, e.g. `010 1234 5678`) and roles.
