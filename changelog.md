@@ -1,3 +1,8 @@
+## 2026-11-06 20:02 +0200 · NourElghaly
+Prompt: 2026-11-06 20:01 · NourElghaly
+What: Merged feat/kan-10-lab-results (private lab results workflow) and feat/kan-11-visit-notes (versioned visit notes and patient summaries, built on KAN-10) into main. Both merged cleanly on top of KAN-17 to KAN-20; lint, unit tests and build pass on the merged tree.
+Files: none beyond the two merged branches (their own files and log entries come with them)
+
 ## 2026-11-06 16:31 +0000 · copilot-swe-agent[bot]
 Prompt: 2026-11-06 16:29 · copilot-swe-agent[bot]
 What: Fixed the patient app CI failure by increasing the timeout for the sign-up + verify flow test that exceeded Jest’s default 5-second limit on GitHub runners.
