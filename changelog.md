@@ -1,3 +1,8 @@
+## 2026-11-06 12:31 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:29 · Moaz Mohamed
+What: The staff login page's blue panel now shows a photo of a doctor with a patient, which the user supplied. The photo is softly blurred under a Wasla-blue wash that turns solid behind the headline, so the text stays readable. It was re-encoded from a 900 kB PNG to a 33 kB WebP and is decorative (empty alt text).
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp (new), apps/hospital-dashboard/src/LoginPage.tsx, apps/hospital-dashboard/README.md
+
 ## 2026-11-06 12:17 +0200 · Moaz Mohamed
 Prompt: 2026-11-06 11:27 · Moaz Mohamed
 What: KAN-17, the staff website's first version, for receptionists:

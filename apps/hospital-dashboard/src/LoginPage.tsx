@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
+import doctorPhoto from './assets/login-doctor.webp'
 import { homePathFor } from './roles.ts'
 import { useSession } from './session.tsx'
 import { color } from './theme.ts'
@@ -46,6 +47,9 @@ export function LoginPage() {
     <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0,5fr) minmax(0,6fr)' } }}>
       <Box
         sx={{
+          position: 'relative',
+          overflow: 'hidden',
+          isolation: 'isolate',
           bgcolor: color.brand,
           color: '#FFFFFF',
           px: { xs: 3, md: 7 },
@@ -53,8 +57,33 @@ export function LoginPage() {
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
+          // The photo, softly blurred, under a Wasla-blue wash that deepens toward the text.
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            zIndex: -1,
+            background: `linear-gradient(180deg, rgba(11,92,171,0.68) 0%, rgba(11,92,171,0.6) 40%, rgba(8,71,133,0.94) 78%, ${color.brandDeep} 100%)`,
+          },
         }}
       >
+        <Box
+          component="img"
+          src={doctorPhoto}
+          alt=""
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: -2,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: '42% 30%',
+            filter: 'blur(3px) saturate(0.9)',
+            transform: 'scale(1.06)',
+          }}
+        />
         <Typography component="span" sx={{ fontSize: '1.75rem', fontWeight: 700, letterSpacing: '-0.015em' }}>
           {t('app.name')}
         </Typography>

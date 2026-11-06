@@ -1,3 +1,8 @@
+## 2026-11-06 12:29 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:31
+
+> can you in the logic paage just add this image in the blue area of the website. add a blue blur into it [two images attached: a doctor-and-patient photo, and a screenshot of the login page]
+
 ## 2026-11-06 08:57 +0200 · Youssef Salem
 Changes: none
 
