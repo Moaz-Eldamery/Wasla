@@ -30,3 +30,6 @@ apps/patient-app/android/
 .idea/
 .vscode/
 *.log
+
+# Impeccable design-tool working files (local)
+.impeccable/

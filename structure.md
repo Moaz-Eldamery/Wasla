@@ -49,6 +49,7 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 ├── business.md                  business logic and rules
 ├── schema.md                    databases, schemas, tables
 ├── structure.md                 this file
+├── PRODUCT.md                   who uses Wasla, what it must do, brand and design principles (read before UI work)
 ├── changelog.md                 every change, newest at the top (format in CLAUDE.md)
 ├── prompt_log.md                every prompt, newest at the top (format in CLAUDE.md)
 ├── README.md                    how to run, test and mock the system
@@ -78,16 +79,17 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 │
 ├── apps/                        the frontends. They talk ONLY to the gateway
 │   ├── patient-app/             Expo (expo-router)
-│   │   ├── app/                 _layout.tsx + one file per screen (index.tsx is a placeholder until KAN-14)
-│   │   ├── app/(auth)/          screens before login: sign-up, code, login
+│   │   ├── app/                 _layout.tsx + one file per screen (index.tsx redirects to (auth) or (tabs))
+│   │   ├── app/(auth)/          screens before login: sign-up, verify-code, login
 │   │   ├── app/(tabs)/          screens after login: book, queue, journey, results, profile
 │   │   ├── lib/                 api.ts, socket.ts, api-types.ts: the ONLY backend calls
-│   │   └── translations/        ar.json, en.json
-│   └── hospital-dashboard/      Vite + React
-│       └── src/
+│   │   └── translations/        ar.json, en.json, i18n.ts
+│   └── hospital-dashboard/      Vite + React, MUI, TanStack Query, i18next
+│       └── src/                 App.tsx (routes), LoginPage, session, theme, time helpers
 │           ├── pages/           one folder per role: receptionist/ physician/ lab/ admin/
+│           ├── components/      UI pieces several roles share: AppShell, DayBook, QueuePanel, StatusChip
 │           ├── lib/             api.ts, socket.ts, api-types.ts: the ONLY backend calls
-│           └── translations/    ar.json, en.json
+│           └── translations/    ar.json, en.json, i18n.ts
 │
 └── services/                    the backend: each one runs as its own program, with its own Dockerfile
     ├── auth/                    the Auth Layer (NestJS)
@@ -161,7 +163,7 @@ Each folder we write code in has a `README.md` that says what the folder is for,
 ## Inside each app and service: framework defaults
 Only the folders above are ours. Everything else follows the framework's standard layout, as its generator creates it: Nest CLI for `auth` and `core`, Expo for the patient app, Vite for the dashboard, FastAPI conventions for `ai`.
 - **Inside a NestJS module or area folder:** the Nest defaults (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/`). Unit tests sit next to the code as `*.spec.ts`; end-to-end tests go in the service's `test/` folder.
-- **Frontends:** shared UI pieces go in a `components/` folder once the first one is written, after asking. Tests sit next to the code as `*.test.tsx`. The exception is the patient app's `app/` folder: expo-router turns every file there into a screen, so screen tests go in the patient app's root folder instead (for example `app.test.tsx`).
+- **Frontends:** shared UI pieces go in `components/` (the dashboard has one, added in KAN-17; the patient app gets one after asking). Tests sit next to the code as `*.test.tsx`. The exception is the patient app's `app/` folder: expo-router turns every file there into a screen, so screen tests go in the patient app's root folder instead (for example `app.test.tsx`).
 - **AI service:** tests go in `services/ai/tests/`.
 
 ## Naming

@@ -2,6 +2,78 @@
 Prompt: 2026-11-06 08:30 · Youssef Salem
 What: KAN-12 patient journey in the core. Added migration 20261106083500_journey_stages to seed the six journey stages (BOOKED, CHECKED_IN, WITH_DOCTOR, TEST_ORDERED, RESULT_READY, DONE) with Arabic and English titles, next steps and location rules in core.journey_stages. Added JourneyModule, JourneyController (GET /appointments/{appointmentId}/journey) and JourneyService, which maps each visit state and test order status to its stage row and location clinic, enforces patient ownership, and records denied access in the audit log. Unit tests plus an end-to-end test against a real database.
 Files: database/clinical/migrations/20261106083500_journey_stages/migration.sql, services/core/src/modules/patient-journey/, services/core/src/app.module.ts, services/core/test/journey.e2e-spec.ts, business.md, schema.md, services/core/README.md, services/core/src/modules/patient-journey/README.md
+## 2026-11-06 13:55 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 13:47 · Moaz Mohamed
+What: KAN-20, the admin's hospital-information assistant at `/admin`:
+- **Asking:** ask in English or Arabic. Enter sends and Shift+Enter adds a line. Questions are limited to 1,000 characters.
+- **Answers:** each answer is shown in its own language and direction, with source chips.
+- **When it can't answer:** "No information" and "assistant unavailable" each get a clear message, with Ask again.
+- **First visit:** four example questions in an empty chat, as the user chose.
+- **History:** the thread is kept for this tab only (sessionStorage), the default the user left to me. It's cleared by New conversation, by closing the tab or by logging out.
+
+The endpoint has no backend yet (KAN-22), so the screen follows the contract and was checked through the local stand-in. 7 new tests.
+Files: apps/hospital-dashboard/src/pages/admin/ (ChatPage.tsx, ChatPage.test.tsx, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts, session.tsx), apps/hospital-dashboard/README.md
+
+## 2026-11-06 13:29 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 13:19 · Moaz Mohamed
+What: KAN-19, the lab and radiology worklist at `/lab`:
+- **Worklist:** the department's tests, oldest first, in tabs (To start, In progress, Sent to doctor) with counts. Each test shows how long it has waited, in amber after an hour.
+- **Side panel:** shows the doctor's instructions, Start test, then the result upload.
+- **Upload:** pick, check, then send, as the user chose. The file is checked right away (PDF, JPEG or PNG, at most 10 MB) and shows a preview for images and a reminder to check the patient and test. Nothing is sent until "Send to doctor".
+- **Sent files:** can be viewed or replaced until the doctor releases them.
+
+The lab endpoints have no backend yet (KAN-10), so the screen follows the contract and was checked through the local stand-in. `formatBytes` is now shared with the doctor's tests panel.
+Files: apps/hospital-dashboard/src/pages/lab/ (LabPage, ResultUpload, resultFile.ts, LabPage.test.tsx, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts), apps/hospital-dashboard/src/pages/physician/TestsSection.tsx, apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:52 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:39 · Moaz Mohamed
+What: KAN-18, the doctor's screen at `/doctor`:
+- **Day:** the doctor's day on the day book, without the doctor column.
+- **Call next patient:** for the chosen clinic. It stays disabled until the current visit is finished.
+- **Visit panel:** sits beside the day (agreed with the user) and holds:
+  - Finish visit, which warns first when no notes are saved (agreed rule).
+  - Notes with an explicit Save and versioning by `baseVersion`. An unsaved draft is kept in sessionStorage, so it survives a reload but not a closed tab. A save conflict keeps the doctor's text and shows the newer version.
+  - Tests: order a lab or radiology test during the visit, open the private result file, and release it to the patient after confirming.
+- **Past visits:** finished visits open from the day.
+
+Built to the contract without new backend, as the user asked. Notes, tests and release have no backend yet (KAN-10, KAN-11). The core also doesn't serve `GET /doctors/me/appointments` yet (KAN-8/9), so on the real stack the day shows "couldn't be loaded" until it does. The screenshots were checked through a throwaway local stand-in for those calls.
+Files: apps/hospital-dashboard/src/pages/physician/ (DoctorPage, VisitPanel, NotesEditor, TestsSection, DoctorPage.test.tsx, README.md), apps/hospital-dashboard/src/components/ (DayBook showDoctor option, StatusChip TestStatusChip, README.md), apps/hospital-dashboard/src/lib/ (api.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/src/ (App.tsx, roles.ts, theme.ts, time.ts), apps/hospital-dashboard/src/pages/receptionist/TodayPage.tsx (REFRESH_MS moved to time.ts), apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:37 · Moaz Mohamed
+What: Swapped the login photo for the user's final choice (the same exam-room scene, with the doctor and patient smiling). The blur, blue wash and crop are unchanged.
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp
+
+## 2026-11-06 12:35 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:35 · Moaz Mohamed
+What: Replaced the login photo with the one the user chose instead (a doctor talking with a patient in an exam room), with the same blur and blue wash. It is re-encoded as WebP (63 kB), and the crop is centred on the doctor.
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp, apps/hospital-dashboard/src/LoginPage.tsx, apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:31 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 12:29 · Moaz Mohamed
+What: The staff login page's blue panel now shows a photo of a doctor with a patient, which the user supplied. The photo is softly blurred under a Wasla-blue wash that turns solid behind the headline, so the text stays readable. It was re-encoded from a 900 kB PNG to a 33 kB WebP and is decorative (empty alt text).
+Files: apps/hospital-dashboard/src/assets/login-doctor.webp (new), apps/hospital-dashboard/src/LoginPage.tsx, apps/hospital-dashboard/README.md
+
+## 2026-11-06 12:17 +0200 · Moaz Mohamed
+Prompt: 2026-11-06 11:27 · Moaz Mohamed
+What: KAN-17, the staff website's first version, for receptionists:
+- **Login:** staff log in with phone and password. Patient accounts are turned away. A 401 from the gateway goes back to login.
+- **Shell:** a blue top bar with the clinic picker, today's date, the English/Arabic switch (Arabic flips the whole layout right-to-left) and the account menu with log out.
+- **Day book:** `/reception` sets today's appointments on a timetable, hour by hour, with a red line at the current Cairo time, a late mark and one-click Check in. The clinic's queue sits beside it.
+- **Refresh:** both panels refresh every 15 seconds until live updates (KAN-27) exist.
+
+The design follows the "day book" layout the user chose and the patient app's palette, recorded in the new PRODUCT.md. Added the src/components/ folder with the user's approval. The dashboard moved from TypeScript 7 to 6 so openapi-typescript can generate the API types, like the patient app. 26 Vitest tests. Also checked against the real stack: login, the receptionist's clinics and day, and a live check-in.
+Files: PRODUCT.md, .gitignore, structure.md, pnpm-lock.yaml, apps/hospital-dashboard/package.json, apps/hospital-dashboard/vite.config.ts, apps/hospital-dashboard/README.md, apps/hospital-dashboard/src/ (App, main, Providers, LoginPage + test, session, roles, theme, time, useNow, index.css, test-setup, test-fixtures; App.test.tsx removed), apps/hospital-dashboard/src/components/ (new: AppShell, DayBook, dayLayout + test, QueuePanel, StatusChip, UpdatedAt, README.md), apps/hospital-dashboard/src/lib/ (api.ts, api-types.ts, api.test.ts, README.md), apps/hospital-dashboard/src/translations/ (en.json, ar.json, i18n.ts, translations.test.ts, README.md), apps/hospital-dashboard/src/pages/receptionist/ (TodayPage + test, README.md)
+
+## 2026-11-06 08:52 +0200 · Youssef Salem
+Prompt: 2026-11-06 08:48 · Youssef Salem
+What: KAN-15 patient mobile app queue position and visit journey screens. Added getQueuePosition and getAppointmentJourney to apps/patient-app/lib/api.ts, added the queue and journey tabs in apps/patient-app/app/(tabs)/ with pull-to-refresh and manual refresh, added Arabic (RTL) and English strings in translations/ar.json and translations/en.json, and added tests in apps/patient-app/app.test.tsx.
+Files: apps/patient-app/lib/api.ts, apps/patient-app/app/(tabs)/_layout.tsx, apps/patient-app/app/(tabs)/queue.tsx, apps/patient-app/app/(tabs)/journey.tsx, apps/patient-app/translations/en.json, apps/patient-app/translations/ar.json, apps/patient-app/app.test.tsx, apps/patient-app/README.md, apps/patient-app/app/(tabs)/README.md, apps/patient-app/lib/README.md
+
+## 2026-11-06 08:14 +0200 · Youssef Salem
+Prompt: 2026-11-06 07:45 · Youssef Salem
+What: KAN-14 patient mobile app sign-up, phone verification, login, logout, and appointment booking. Added generated API types from contracts/openapi.yaml (checked in lint), gateway HTTP and socket helpers in apps/patient-app/lib/, Arabic (RTL) and English translations with i18next, auth screens (login, sign-up, 6-digit verification code with simulated SMS banner), and the booking screen to browse clinical departments → doctors → free slots, book a slot, and view upcoming/past appointments.
+Files: apps/patient-app/package.json, apps/patient-app/app/_layout.tsx, apps/patient-app/app/index.tsx, apps/patient-app/app/(auth)/, apps/patient-app/app/(tabs)/, apps/patient-app/lib/, apps/patient-app/translations/, apps/patient-app/app.test.tsx, pnpm-lock.yaml, structure.md, apps/patient-app/README.md, apps/patient-app/app/(auth)/README.md, apps/patient-app/app/(tabs)/README.md, apps/patient-app/lib/README.md, apps/patient-app/translations/README.md
 
 ## 2026-11-06 07:53 +0200 · NourElghaly
 Prompt: 2026-11-06 07:43 · NourElghaly

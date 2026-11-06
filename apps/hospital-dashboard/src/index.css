@@ -1,8 +1,50 @@
+/* Browser surfaces MUI doesn't draw: selection, focus, scrollbars, numerals. */
 :root {
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
+  color-scheme: light;
+  accent-color: #0b5cab;
+  scrollbar-color: #b8c4d3 transparent;
 }
 
 body {
   margin: 0;
+  background: #f4f7fb;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: #c9ddf3;
+  color: #0f172a;
+}
+
+:focus-visible {
+  outline: 2px solid #0b5cab;
+  outline-offset: 2px;
+}
+
+/* Times and counts line up in columns. */
+time,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c5d0dd;
+  border-radius: 999px;
+  border: 2px solid #f4f7fb;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -7,6 +7,65 @@ Changes: none
 Changes: 2026-11-06 08:37
 
 > push then open an pr then lets work on kan 12
+## 2026-11-06 13:47 +0200 · Moaz Mohamed
+Changes: 2026-11-06 13:55
+
+> /grill-me /impeccable  finally lets do KAN-20
+
+## 2026-11-06 13:19 +0200 · Moaz Mohamed
+Changes: 2026-11-06 13:29
+
+> /impeccable /grill-me  now lets go next for KAN 19
+
+## 2026-11-06 12:56 +0200 · Moaz Mohamed
+Changes: none
+
+> can you like create a testing doctor email that makes me jump to the doctor's dashboard?
+
+## 2026-11-06 12:39 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:52
+
+> /impeccable /grill-me now lets move on to KAN-18
+
+## 2026-11-06 12:37 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:37
+
+> ok final change. change the image to this one [image attached: the same exam-room scene, the doctor and patient smiling]
+
+## 2026-11-06 12:35 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:35
+
+> sry replace it with this image instead [image attached: a doctor talking with an older patient in an exam room]
+
+## 2026-11-06 12:29 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:31
+
+> can you in the logic paage just add this image in the blue area of the website. add a blue blur into it [two images attached: a doctor-and-patient photo, and a screenshot of the login page]
+
+## 2026-11-06 08:57 +0200 · Youssef Salem
+Changes: none
+
+> yes
+
+## 2026-11-06 08:48 +0200 · Youssef Salem
+Changes: 2026-11-06 08:52
+
+> lets do kan 15
+
+## 2026-11-06 08:22 +0200 · Youssef Salem
+Changes: none
+
+> is there any ticket that is blocker for what we implemented yet
+
+## 2026-11-06 08:01 +0200 · Youssef Salem
+Changes: none
+
+> pull the repo again it looks like it has an update 
+
+## 2026-11-06 07:45 +0200 · Youssef Salem
+Changes: 2026-11-06 08:14
+
+> first pull the repo from https://github.com/Moaz-Eldamery/Wasla to /Users/joe/Local documents/AUC materials/swe/project then pick some of sprint backlog  change their status to assign it to me then lets start implement it , inside the repo you'll find a handful of md files that will help you navigate the repo , start by reading the claud.md file
 
 ## 2026-11-06 07:43 +0200 · NourElghaly
 Changes: 2026-11-06 07:53
@@ -62,6 +121,20 @@ Changes: none
 Changes: 2026-11-05 13:42, 2026-11-05 13:43
 
 > remove redis, you see what should be done and do them
+## 2026-11-06 11:27 +0200 · Moaz Mohamed
+Changes: 2026-11-06 12:17
+
+> /impeccable /grill-me  now we gotta start with the high priority ones (17,18,19,20,16). when you start move them to in progress section and after done move them to review and do some test.
+
+## 2026-11-06 11:26 +0200 · Moaz Mohamed
+Changes: none
+
+> what about the sprint backlog, what are thr frontend tasks init
+
+## 2026-11-06 11:20 +0200 · Moaz Mohamed
+Changes: none
+
+> as we separated the work i was assigneed to all front end tasks. which backlog tasks are the front end? from the jira board
 
 ## 2026-11-05 13:20 +0200 · Moaz Mohamed
 Changes: 2026-11-05 13:20

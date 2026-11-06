@@ -6,4 +6,11 @@ Screens for receptionists: today's appointments, check-in and the queue board; l
 
 ## Files
 
-_None yet._ Filled by KAN-17, KAN-28, KAN-42.
+- `TodayPage.tsx`: `/reception` (KAN-17). It shows:
+  - the clinic picker (remembered per browser)
+  - today's appointments on the day book, with one-click **Check in** on booked patients
+  - the clinic's queue beside it
+
+  Both panels refresh every 15 seconds and on demand until live updates (KAN-27) exist.
+- `TodayPage.test.tsx`: the whole page against a fake gateway:
+  - the now line, check-in, a refused check-in, no clinic, Arabic, and signed out
