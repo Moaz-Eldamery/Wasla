@@ -38,6 +38,32 @@ export class RecordAccessService {
     return visit;
   }
 
+  async patientVisit(
+    caller: Caller,
+    appointmentId: string,
+    action: string,
+    db: Prisma.TransactionClient = this.prisma,
+  ) {
+    const visit = await db.appointment.findUnique({
+      where: { id: appointmentId },
+      select: {
+        id: true,
+        patientId: true,
+        status: true,
+        completedAt: true,
+        slot: { select: { doctor: { select: { name: true } } } },
+      },
+    });
+    if (
+      !visit ||
+      !hasRole(caller, 'PATIENT') ||
+      visit.patientId !== caller.id
+    ) {
+      return this.deny(caller, action, 'appointment', appointmentId);
+    }
+    return visit;
+  }
+
   async test(
     caller: Caller,
     testId: string,

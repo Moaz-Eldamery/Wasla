@@ -16,7 +16,7 @@ Code several modules use, as files (not sub-folders): the database client, who i
 - `cairo-time.ts`: Cairo calendar days ↔ UTC instants, daylight saving included. Test: `cairo-time.spec.ts`.
 - `clinic.views.ts`: the contract's `Clinic` shape, `clinicSelect` and `toClinicView()`, used by every module that returns a clinic (appointments, patient journey).
 
-- `record-access.service.ts`: checks the ordering doctor, the visit's doctor/clinic assignment, the lab clinic assignment, or patient ownership and release state before accessing clinical records. Denials are audited outside the caller's transaction so rollback cannot erase them. Test: `record-access.service.spec.ts`.
+- `record-access.service.ts`: checks the ordering doctor, the visit's doctor/clinic assignment, the lab clinic assignment, or patient ownership and release state before accessing clinical records. `patientVisit()` checks ownership before the visit summary can be loaded. Denials are audited outside the caller's transaction so rollback cannot erase them. Test: `record-access.service.spec.ts`.
 - `file-storage.service.ts`: lazy MinIO client for private result uploads, reads and removal. Uses `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY` and `MINIO_RESULTS_BUCKET`; never creates public or signed links.
 
 Still to come: the AI service client (KAN-22).

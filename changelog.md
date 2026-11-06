@@ -73,6 +73,16 @@ What: KAN-20 was rewritten into the whole admin dashboard, whose staff, hospital
 
 No backend code.
 Files: contracts/drafts/admin.yaml, contracts/drafts/README.md, contracts/mock.mjs, contracts/README.md, package.json, pnpm-lock.yaml, README.md, structure.md, apps/hospital-dashboard/package.json, apps/hospital-dashboard/src/lib/ (admin-api-types.ts, api.ts, README.md)
+## 2026-11-06 18:17 +0200 · reemeldeib
+Prompt: 2026-11-06 18:17 · reemeldeib
+What: Prepared the verified KAN-11 visit-notes implementation for publication on feat/kan-11-visit-notes. Recorded the push request; no application code changed during publication preparation.
+Files: prompt_log.md, changelog.md
+
+## 2026-11-06 18:15 +0200 · reemeldeib
+Prompt: 2026-11-06 18:08 · reemeldeib
+What: Implemented KAN-11 visit notes using the existing database schema and API contract. Doctors can save complete snapshots, read the latest notes and browse preserved versions; appointment row locks and baseVersion prevent concurrent edits from overwriting each other. Added shared patient-visit ownership checks and a summary endpoint that selects no clinical notes and exposes only the latest patient summary after completion. Reads and edits are audited transactionally; audit failures block access or roll back saves, and database errors are redacted before logging. Verified all 89 core unit tests and 59 real Postgres/MinIO integration tests, lint and production build; local tests used thread workers.
+Files: services/core/src/modules/clinical-care/clinical.module.ts, services/core/src/modules/clinical-care/visit-notes.controller.ts, services/core/src/modules/clinical-care/visit-notes.dto.ts, services/core/src/modules/clinical-care/visit-notes.service.ts, services/core/src/modules/clinical-care/visit-notes.views.ts, services/core/src/modules/clinical-care/visit-notes.service.spec.ts, services/core/src/modules/clinical-care/README.md, services/core/src/shared/api-error.ts, services/core/src/shared/record-access.service.ts, services/core/src/shared/record-access.service.spec.ts, services/core/src/shared/README.md, services/core/test/visit-notes.e2e-spec.ts, services/core/README.md, structure.md, prompt_log.md, changelog.md
+
 ## 2026-11-06 18:03 +0200 · reemeldeib
 Prompt: 2026-11-06 18:03 · reemeldeib
 What: Prepared the verified KAN-10 implementation and Codex instructions for publication on feat/kan-10-lab-results for team review. Recorded the push request; no application code changed during publication preparation.

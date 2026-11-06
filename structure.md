@@ -109,6 +109,9 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
     │       │                    clinical-care: clinical.module.ts, clinical.controller.ts,
     │       │                    clinical.service.ts, clinical.dto.ts, clinical.views.ts,
     │       │                    result-upload.ts and their unit tests (KAN-10)
+    │       │                    visit-notes.controller.ts, visit-notes.service.ts,
+    │       │                    visit-notes.dto.ts, visit-notes.views.ts and
+    │       │                    visit-notes.service.spec.ts (KAN-11)
     │       ├── realtime/        Socket.IO; only listens to events
     │       ├── events/          outbox + publishing events
     │       ├── shared/          code several modules use (database client, roles and
