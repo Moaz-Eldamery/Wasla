@@ -14,5 +14,6 @@ Code several modules use, as files (not sub-folders): the database client, who i
 - `api-error.ts`: `ApiError` (the contract's error body), `notFound()`, and `IdPipe` for `:id` parameters.
 - `api-exception.filter.ts`: turns every error into the contract's error body; unknown errors become 500 `INTERNAL`.
 - `cairo-time.ts`: Cairo calendar days ↔ UTC instants, daylight saving included. Test: `cairo-time.spec.ts`.
+- `clinic.views.ts`: the contract's `Clinic` shape, `clinicSelect` and `toClinicView()`, used by every module that returns a clinic (appointments, patient journey).
 
 Still to come: file storage (KAN-10) and the AI service client (KAN-22).

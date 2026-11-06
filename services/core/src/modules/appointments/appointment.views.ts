@@ -6,20 +6,12 @@ import type {
   AppointmentStatus,
   DepartmentKind,
 } from '../../generated/prisma/enums.js';
-
-interface LocalizedText {
-  ar: string;
-  en: string;
-}
-
-export interface ClinicView {
-  id: string;
-  departmentId: string;
-  name: LocalizedText;
-  building: string;
-  floor: string;
-  directions: LocalizedText;
-}
+import {
+  clinicSelect,
+  toClinicView,
+  type ClinicView,
+  type LocalizedText,
+} from '../../shared/clinic.views.js';
 
 export interface DepartmentView {
   id: string;
@@ -57,17 +49,6 @@ export interface AppointmentView {
   completedAt: Date | null;
 }
 
-export const clinicSelect = {
-  id: true,
-  departmentId: true,
-  nameAr: true,
-  nameEn: true,
-  building: true,
-  floor: true,
-  directionsAr: true,
-  directionsEn: true,
-} satisfies Prisma.ClinicSelect;
-
 export const slotSelect = {
   id: true,
   doctorId: true,
@@ -97,22 +78,10 @@ export const appointmentSelect = {
   },
 } satisfies Prisma.AppointmentSelect;
 
-type ClinicRow = Prisma.ClinicGetPayload<{ select: typeof clinicSelect }>;
 type SlotRow = Prisma.SlotGetPayload<{ select: typeof slotSelect }>;
 export type AppointmentRow = Prisma.AppointmentGetPayload<{
   select: typeof appointmentSelect;
 }>;
-
-export function toClinicView(c: ClinicRow): ClinicView {
-  return {
-    id: c.id,
-    departmentId: c.departmentId,
-    name: { ar: c.nameAr, en: c.nameEn },
-    building: c.building,
-    floor: c.floor,
-    directions: { ar: c.directionsAr, en: c.directionsEn },
-  };
-}
 
 export function toSlotView(s: SlotRow): SlotView {
   return {
