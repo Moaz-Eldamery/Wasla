@@ -9,7 +9,7 @@ Works out the patient's current stage, next step and where to go, from the visit
 - `journey.module.ts`: the module. Exports `JourneyService` (IJourney).
 - `journey.controller.ts`: `GET /appointments/{appointmentId}/journey`.
 - `journey.service.ts`: resolves the patient's current stage (`BOOKED`, `CHECKED_IN`, `WITH_DOCTOR`, `TEST_ORDERED`, `RESULT_READY`, `DONE`) and location (`APPOINTMENT_CLINIC`, `TEST_CLINIC`, `NONE`) from `core.journey_stages`, with record-ownership checks and audit logging for denied access. Test: `journey.service.spec.ts`.
-- `journey.views.ts`: the `Journey` response shape from the contract and the Prisma selects that load it.
+- `journey.views.ts`: the `Journey` response shape from the contract and the Prisma selects that load it. The clinic shape comes from `shared/clinic.views.ts`.
 
 Still to come: live journey updates via events (KAN-27).
 

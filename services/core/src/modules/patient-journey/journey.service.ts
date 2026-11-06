@@ -19,20 +19,25 @@ export type { JourneyView } from './journey.views.js';
  * status and its ordered tests:
  * - `BOOKED` -> `BOOKED` (at the appointment clinic)
  * - `CHECKED_IN` -> `CHECKED_IN` (waiting at the appointment clinic)
- * - `IN_CONSULTATION` with an unreleased test (`REQUESTED` / `IN_PROGRESS` /
- *   `AWAITING_REVIEW`) -> `TEST_ORDERED` (at the test's lab/radiology clinic)
- * - `IN_CONSULTATION` with a released test (`RELEASED`) and no pending tests
- *   -> `RESULT_READY` (at the appointment clinic)
- * - `IN_CONSULTATION` with no tests -> `WITH_DOCTOR` (at the appointment clinic)
- * - `COMPLETED` with an unreleased test -> `TEST_ORDERED` (at the test clinic)
- * - `COMPLETED` (all tests released or no tests) -> `DONE` (`location = null`)
+ * - `IN_CONSULTATION` or `COMPLETED` with a test the lab hasn't done yet
+ *   (`REQUESTED` / `IN_PROGRESS`) -> `TEST_ORDERED` (at the test's lab or
+ *   radiology clinic)
+ * - `IN_CONSULTATION` with a released test (`RELEASED`) -> `RESULT_READY`
+ *   (at the appointment clinic)
+ * - `IN_CONSULTATION` otherwise -> `WITH_DOCTOR` (at the appointment clinic).
+ *   This includes tests `AWAITING_REVIEW`: the lab is done, so the patient
+ *   goes back to the doctor rather than to the lab.
+ * - `COMPLETED` otherwise -> `DONE` (`location = null`). A result still
+ *   `AWAITING_REVIEW` reaches the patient once the doctor releases it.
  */
 export function resolveJourneyStage(appointment: JourneyAppointmentRow): {
   stage: JourneyStageCode;
   testClinic: JourneyAppointmentRow['testOrders'][number]['clinic'] | null;
 } {
+  // Only tests the patient still has to go to the lab for. A test
+  // AWAITING_REVIEW is done at the lab and waits for the doctor.
   const pendingTest = appointment.testOrders.find(
-    (t) => t.status !== 'RELEASED',
+    (t) => t.status === 'REQUESTED' || t.status === 'IN_PROGRESS',
   );
   const releasedTest = appointment.testOrders.find(
     (t) => t.status === 'RELEASED',

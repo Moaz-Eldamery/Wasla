@@ -216,6 +216,45 @@ describe('JourneyService', () => {
     expect(done.location).toBeNull();
   });
 
+  it('sends the patient to the lab only while the test is REQUESTED or IN_PROGRESS, not AWAITING_REVIEW', async () => {
+    const appointmentId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+    const visit = (
+      status: 'IN_CONSULTATION' | 'COMPLETED',
+      testStatus: 'IN_PROGRESS' | 'AWAITING_REVIEW',
+    ) => ({
+      id: appointmentId,
+      patientId: patientCaller.id,
+      status,
+      slot: { clinic: appointmentClinic },
+      testOrders: [
+        {
+          id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+          status: testStatus,
+          orderedAt: new Date('2026-11-06T08:00:00Z'),
+          clinic: labClinic,
+        },
+      ],
+    });
+
+    // IN_PROGRESS: still at the lab -> TEST_ORDERED at the lab clinic
+    findUniqueAppointment.mockResolvedValueOnce(visit('IN_CONSULTATION', 'IN_PROGRESS'));
+    const atLab = await service.getJourney(patientCaller, appointmentId);
+    expect(atLab.stage).toBe('TEST_ORDERED');
+    expect(atLab.location?.id).toBe(labClinic.id);
+
+    // AWAITING_REVIEW during the visit: the lab is done -> back with the doctor
+    findUniqueAppointment.mockResolvedValueOnce(visit('IN_CONSULTATION', 'AWAITING_REVIEW'));
+    const backWithDoctor = await service.getJourney(patientCaller, appointmentId);
+    expect(backWithDoctor.stage).toBe('WITH_DOCTOR');
+    expect(backWithDoctor.location?.id).toBe(appointmentClinic.id);
+
+    // AWAITING_REVIEW after the visit: nowhere to go -> DONE
+    findUniqueAppointment.mockResolvedValueOnce(visit('COMPLETED', 'AWAITING_REVIEW'));
+    const done = await service.getJourney(patientCaller, appointmentId);
+    expect(done.stage).toBe('DONE');
+    expect(done.location).toBeNull();
+  });
+
   it("returns 404 NOT_FOUND and audits DENIED when another patient requests the journey", async () => {
     const appointmentId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
     findUniqueAppointment.mockResolvedValueOnce({

@@ -1,3 +1,23 @@
+## 2026-11-06 15:04 +0200 · NourElghaly
+Changes: 2026-11-06 15:06
+
+> do waht you see fits to fix this
+
+## 2026-11-06 14:46 +0200 · NourElghaly
+Changes: none
+
+> can you view pull requests and review them
+
+## 2026-11-06 14:13 +0200 · NourElghaly
+Changes: none
+
+> how do you run the website? npm run dev?
+
+## 2026-11-06 11:09 +0200 · NourElghaly
+Changes: none
+
+> can you open the prs and check them and merge?
+
 ## 2026-11-06 08:44 +0200 · Youssef Salem
 Changes: none
 

@@ -5,13 +5,10 @@ import type { JourneyStageCode } from '../../generated/prisma/enums.js';
 import {
   clinicSelect,
   toClinicView,
+  type ClinicRow,
   type ClinicView,
-} from '../appointments/appointment.views.js';
-
-interface LocalizedText {
-  ar: string;
-  en: string;
-}
+  type LocalizedText,
+} from '../../shared/clinic.views.js';
 
 export interface JourneyView {
   appointmentId: string;
@@ -61,7 +58,7 @@ export type JourneyStageRow = Prisma.JourneyStageGetPayload<{
 export function toJourneyView(
   appointmentId: string,
   stageRow: JourneyStageRow,
-  locationClinic: Prisma.ClinicGetPayload<{ select: typeof clinicSelect }> | null,
+  locationClinic: ClinicRow | null,
 ): JourneyView {
   return {
     appointmentId,

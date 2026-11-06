@@ -11,17 +11,19 @@ import {
   startOfCairoDay,
 } from '../../shared/cairo-time.js';
 import { hasRole, type Caller } from '../../shared/caller.js';
+import {
+  clinicSelect,
+  toClinicView,
+  type ClinicView,
+} from '../../shared/clinic.views.js';
 import { PrismaService } from '../../shared/prisma.service.js';
 import {
   appointmentSelect,
-  clinicSelect,
   slotSelect,
   toAppointmentView,
-  toClinicView,
   toSlotView,
   type AppointmentRow,
   type AppointmentView,
-  type ClinicView,
   type DepartmentView,
   type DoctorView,
   type SlotView,

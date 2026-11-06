@@ -61,10 +61,10 @@ Only these moves are allowed. For example, a visit can't be completed before it 
 - **Journey:** at every step the patient sees their current stage, what to do next and where to go (building, floor, directions). Stages and messages are stored as data in `core.journey_stages`, in Arabic and English:
   - `BOOKED` → appointment clinic
   - `CHECKED_IN` → appointment clinic
-  - `WITH_DOCTOR` (`IN_CONSULTATION` with no ordered tests) → appointment clinic
-  - `TEST_ORDERED` (an ordered test is not yet `RELEASED`) → that test's lab or radiology clinic
-  - `RESULT_READY` (`IN_CONSULTATION` and ordered test(s) are `RELEASED`) → appointment clinic
-  - `DONE` (`COMPLETED` with no pending tests, or `CANCELLED` / `NO_SHOW`) → no location (`null`)
+  - `TEST_ORDERED` (`IN_CONSULTATION` or `COMPLETED`, and an ordered test is still `REQUESTED` or `IN_PROGRESS`, so the patient still has to go to the lab) → that test's lab or radiology clinic
+  - `RESULT_READY` (`IN_CONSULTATION`, no test left at the lab, and at least one test `RELEASED`) → appointment clinic
+  - `WITH_DOCTOR` (`IN_CONSULTATION` otherwise: no tests, or tests `AWAITING_REVIEW`, where the lab is done and the patient goes back to the doctor) → appointment clinic
+  - `DONE` (`COMPLETED` with no test left at the lab, or `CANCELLED` / `NO_SHOW`) → no location (`null`). A result still `AWAITING_REVIEW` reaches the patient once the doctor releases it.
 
 ## Tests and results
 - A doctor orders a test during a visit. It goes to a clinic of the lab or radiology department, and the lab staff assigned to that clinic see it.
