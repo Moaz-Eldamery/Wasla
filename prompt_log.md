@@ -1,3 +1,8 @@
+## 2026-11-07 19:13 +0200 · Moaz Mohamed
+Changes: none
+
+> what are the demo emails for each role
+
 ## 2026-11-07 18:21 +0200 · Moaz Mohamed
 Changes: 2026-11-07 18:21, 2026-11-07 18:24, 2026-11-07 18:31, 2026-11-07 18:46, 2026-11-07 19:03
 
