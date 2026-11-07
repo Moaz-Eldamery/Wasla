@@ -85,7 +85,9 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 │   ├── patient-app/             Expo (expo-router)
 │   │   ├── app/                 _layout.tsx + one file per screen (index.tsx redirects to (auth) or (tabs))
 │   │   ├── app/(auth)/          screens before login: _layout.tsx, sign-up, verify-code, login
-│   │   ├── app/(tabs)/          screens after login: _layout.tsx, book, queue, journey, results; profile planned (KAN-29)
+│   │   ├── app/(tabs)/          screens after login: _layout.tsx, book, visit (My Visit), results, assistant
+│   │   │                        (AI placeholder); profile planned (KAN-29)
+│   │   ├── components/          UI pieces several screens share: Dropdown, ScreenHeader, VisitSteps
 │   │   ├── lib/                 api.ts, socket.ts, api-types.ts: the ONLY backend calls
 │   │   └── translations/        ar.json, en.json, i18n.ts
 │   └── hospital-dashboard/      Vite + React, MUI, TanStack Query, i18next
@@ -176,7 +178,7 @@ Each folder we write code in has a `README.md` that says what the folder is for,
 ## Inside each app and service: framework defaults
 Only the folders above are ours. Everything else follows the framework's standard layout, as its generator creates it: Nest CLI for `auth` and `core`, Expo for the patient app, Vite for the dashboard, FastAPI conventions for `ai`.
 - **Inside a NestJS module or area folder:** the Nest defaults (`*.module.ts`, `*.controller.ts`, `*.service.ts`, `dto/`). Unit tests sit next to the code as `*.spec.ts`; end-to-end tests go in the service's `test/` folder.
-- **Frontends:** shared UI pieces go in `components/` (the dashboard has one, added in KAN-17; the patient app gets one after asking). Tests sit next to the code as `*.test.tsx`. The exception is the patient app's `app/` folder: expo-router turns every file there into a screen, so screen tests go in the patient app's root folder instead (for example `app.test.tsx`).
+- **Frontends:** shared UI pieces go in `components/` (the dashboard has one, added in KAN-17; the patient app has one since its UI was simplified on 2026-11-07). Tests sit next to the code as `*.test.tsx`. The exception is the patient app's `app/` folder: expo-router turns every file there into a screen, so screen tests go in the patient app's root folder instead (for example `app.test.tsx`).
 - **AI service:** tests go in `services/ai/tests/`.
 
 ## Naming

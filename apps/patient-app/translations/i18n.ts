@@ -147,6 +147,20 @@ export function formatCairoShortDay(
   }).format(date);
 }
 
+/** Formats only the time of day (e.g. "10:00 AM") in Africa/Cairo time. */
+export function formatCairoTime(isoString: string, lang: AppLanguage = currentLang): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return isoString;
+  }
+  const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: 'Africa/Cairo',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
 /** Translates a contract ErrorCode into localized user-facing text. */
 export function translateErrorCode(code: ErrorCode | string): string {
   ensureI18n();
