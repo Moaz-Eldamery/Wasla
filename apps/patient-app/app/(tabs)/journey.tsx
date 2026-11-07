@@ -253,7 +253,9 @@ export default function JourneyScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 56,
+    paddingBottom: 24,
     backgroundColor: '#F4F7FB',
   },
   ltr: {

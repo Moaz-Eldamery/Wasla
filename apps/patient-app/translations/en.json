@@ -58,7 +58,8 @@
     "timeLabel": "Time",
     "statusLabel": "Status",
     "changeDepartment": "Change department",
-    "changeDoctor": "Change doctor"
+    "changeDoctor": "Change doctor",
+    "allDaysFilter": "All Days"
   },
   "queue": {
     "tabTitle": "Queue",
@@ -99,6 +100,9 @@
     "downloadButton": "Open / Download Result",
     "downloading": "Downloading...",
     "downloadedBanner": "Downloaded {{fileName}} ({{contentType}})",
+    "previewTitle": "Result Report Preview",
+    "shareResultButton": "Share / Save Report",
+    "closePreviewButton": "Close Preview",
     "visitSummarySectionTitle": "Completed Visit Summaries",
     "noCompletedVisits": "You have no completed visits yet.",
     "selectCompletedVisitLabel": "Select a completed visit",

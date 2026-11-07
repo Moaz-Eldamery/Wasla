@@ -58,7 +58,8 @@
     "timeLabel": "الوقت",
     "statusLabel": "الحالة",
     "changeDepartment": "تغيير القسم",
-    "changeDoctor": "تغيير الطبيب"
+    "changeDoctor": "تغيير الطبيب",
+    "allDaysFilter": "كل الأيام"
   },
   "queue": {
     "tabTitle": "الدور",
@@ -99,6 +100,9 @@
     "downloadButton": "فتح / تحميل النتيجة",
     "downloading": "جارٍ التحميل...",
     "downloadedBanner": "تم تحميل {{fileName}} ({{contentType}})",
+    "previewTitle": "معاينة تقرير النتيجة",
+    "shareResultButton": "مشاركة / حفظ التقرير",
+    "closePreviewButton": "إغلاق المعاينة",
     "visitSummarySectionTitle": "ملخصات الزيارات المكتملة",
     "noCompletedVisits": "لا توجد زيارات مكتملة حتى الآن.",
     "selectCompletedVisitLabel": "اختر زيارة مكتملة",

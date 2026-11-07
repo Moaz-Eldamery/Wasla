@@ -24,7 +24,9 @@ import {
 } from '../../lib/api';
 import {
   formatCairoDateTime,
+  formatCairoShortDay,
   getAppLanguage,
+  getCairoDayKey,
   isRtlLanguage,
   pickLocalized,
   toggleAppLanguage,
@@ -44,6 +46,7 @@ export default function BookScreen() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [selectedDayKey, setSelectedDayKey] = useState<string>('ALL');
 
   const [appointmentsTab, setAppointmentsTab] = useState<'upcoming' | 'past'>('upcoming');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -121,6 +124,7 @@ export default function BookScreen() {
     setErrorMessage(null);
     setSuccessMessage(null);
     setSelectedDoctor(doctor);
+    setSelectedDayKey('ALL');
     setLoadingSlots(true);
     try {
       const data = await listDoctorFreeSlots(doctor.id);
@@ -332,44 +336,107 @@ export default function BookScreen() {
             ) : slots.length === 0 ? (
               <Text style={[styles.emptyText, rtl && styles.textRtl]}>{t('booking.noSlots')}</Text>
             ) : (
-              <View style={styles.listContainer}>
-                {slots.map((slot) => {
-                  const isBooking = bookingSlotId === slot.id;
+              <>
+                {(() => {
+                  const uniqueDays = new Map<string, string>();
+                  for (const s of slots) {
+                    const key = getCairoDayKey(s.startsAt);
+                    if (!uniqueDays.has(key)) {
+                      uniqueDays.set(key, formatCairoShortDay(s.startsAt, lang));
+                    }
+                  }
+                  if (uniqueDays.size <= 1) return null;
                   return (
-                    <View
-                      key={slot.id}
-                      testID={`slot-item-${slot.id}`}
-                      style={[styles.slotCard, rtl ? styles.rowReverse : styles.row]}
-                    >
-                      <View style={styles.slotDetails}>
-                        <Text style={[styles.slotTime, rtl && styles.textRtl]}>
-                          {formatCairoDateTime(slot.startsAt, lang)}
-                        </Text>
-                        <Text style={[styles.slotClinic, rtl && styles.textRtl]}>
-                          {pickLocalized(slot.clinic.name, lang)} ({t('common.building')}{' '}
-                          {slot.clinic.building}, {t('common.floor')} {slot.clinic.floor})
-                        </Text>
-                      </View>
+                    <View style={[styles.dayFilterRow, rtl ? styles.rowReverse : styles.row]}>
                       <Pressable
                         accessibilityRole="button"
-                        testID={`book-slot-${slot.id}`}
-                        disabled={bookingSlotId !== null}
-                        onPress={() => void handleBookSlot(slot)}
+                        testID="slot-day-ALL"
+                        onPress={() => setSelectedDayKey('ALL')}
                         style={[
-                          styles.bookButton,
-                          bookingSlotId !== null && styles.disabledButton,
+                          styles.dayPill,
+                          selectedDayKey === 'ALL' && styles.dayPillActive,
                         ]}
                       >
-                        {isBooking ? (
-                          <ActivityIndicator color="#FFFFFF" size="small" />
-                        ) : (
-                          <Text style={styles.bookButtonText}>{t('booking.bookSlotButton')}</Text>
-                        )}
+                        <Text
+                          style={[
+                            styles.dayPillText,
+                            selectedDayKey === 'ALL' && styles.dayPillTextActive,
+                          ]}
+                        >
+                          {t('booking.allDaysFilter')}
+                        </Text>
                       </Pressable>
+                      {[...uniqueDays.entries()].map(([dayKey, label]) => (
+                        <Pressable
+                          key={dayKey}
+                          accessibilityRole="button"
+                          testID={`slot-day-${dayKey}`}
+                          onPress={() => setSelectedDayKey(dayKey)}
+                          style={[
+                            styles.dayPill,
+                            selectedDayKey === dayKey && styles.dayPillActive,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.dayPillText,
+                              selectedDayKey === dayKey && styles.dayPillTextActive,
+                            ]}
+                          >
+                            {label}
+                          </Text>
+                        </Pressable>
+                      ))}
                     </View>
                   );
-                })}
-              </View>
+                })()}
+                <View style={styles.listContainer}>
+                  {slots
+                    .filter(
+                      (slot) =>
+                        selectedDayKey === 'ALL' ||
+                        getCairoDayKey(slot.startsAt) === selectedDayKey,
+                    )
+                    .map((slot) => {
+                      const isBooking = bookingSlotId === slot.id;
+                      return (
+                        <View
+                          key={slot.id}
+                          testID={`slot-item-${slot.id}`}
+                          style={[styles.slotCard, rtl ? styles.rowReverse : styles.row]}
+                        >
+                          <View style={styles.slotDetails}>
+                            <Text style={[styles.slotTime, rtl && styles.textRtl]}>
+                              {formatCairoDateTime(slot.startsAt, lang)}
+                            </Text>
+                            <Text style={[styles.slotClinic, rtl && styles.textRtl]}>
+                              {pickLocalized(slot.clinic.name, lang)} ({t('common.building')}{' '}
+                              {slot.clinic.building}, {t('common.floor')} {slot.clinic.floor})
+                            </Text>
+                          </View>
+                          <Pressable
+                            accessibilityRole="button"
+                            testID={`book-slot-${slot.id}`}
+                            disabled={bookingSlotId !== null}
+                            onPress={() => void handleBookSlot(slot)}
+                            style={[
+                              styles.bookButton,
+                              bookingSlotId !== null && styles.disabledButton,
+                            ]}
+                          >
+                            {isBooking ? (
+                              <ActivityIndicator color="#FFFFFF" size="small" />
+                            ) : (
+                              <Text style={styles.bookButtonText}>
+                                {t('booking.bookSlotButton')}
+                              </Text>
+                            )}
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                </View>
+              </>
             )}
           </View>
         ) : null}
@@ -456,8 +523,35 @@ export default function BookScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 56,
+    paddingBottom: 24,
     backgroundColor: '#F4F7FB',
+  },
+  dayFilterRow: {
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  dayPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F8FAFC',
+  },
+  dayPillActive: {
+    borderColor: '#0B5CAB',
+    backgroundColor: '#0B5CAB',
+  },
+  dayPillText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  dayPillTextActive: {
+    color: '#FFFFFF',
   },
   ltr: {
     direction: 'ltr',

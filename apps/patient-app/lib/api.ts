@@ -27,7 +27,7 @@ export interface DownloadedResultFile {
   testId: string;
   contentType: string;
   sizeBytes: number;
-  blob?: Blob;
+  previewText?: string;
 }
 
 /** Error thrown when the backend returns a non-2xx response or network error. */
@@ -353,13 +353,19 @@ export async function downloadTestResult(testId: string): Promise<DownloadedResu
 
   const contentType =
     response.headers?.get?.('content-type') ?? 'application/octet-stream';
-  if (typeof response.blob === 'function') {
-    const blob = await response.blob();
+  if (typeof response.arrayBuffer === 'function') {
+    const buffer = await response.arrayBuffer();
+    let previewText: string | undefined;
+    try {
+      previewText = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
+    } catch {
+      previewText = undefined;
+    }
     return {
       testId,
-      contentType: blob.type || contentType,
-      sizeBytes: blob.size ?? 0,
-      blob,
+      contentType,
+      sizeBytes: buffer.byteLength,
+      previewText,
     };
   }
 
@@ -368,6 +374,7 @@ export async function downloadTestResult(testId: string): Promise<DownloadedResu
     testId,
     contentType,
     sizeBytes: text.length,
+    previewText: text,
   };
 }
 

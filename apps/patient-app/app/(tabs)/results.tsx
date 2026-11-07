@@ -4,6 +4,7 @@ import {
   Pressable,
   RefreshControl,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -292,6 +293,61 @@ export default function ResultsScreen() {
                               contentType: downloaded.contentType,
                             })}
                           </Text>
+
+                          {downloaded.previewText ? (
+                            <View style={styles.previewCard}>
+                              <Text style={[styles.previewTitle, rtl && styles.textRtl]}>
+                                {t('results.previewTitle')}
+                              </Text>
+                              <Text
+                                style={[styles.previewBody, rtl && styles.textRtl]}
+                                testID={`preview-text-${item.testId}`}
+                              >
+                                {downloaded.previewText}
+                              </Text>
+                            </View>
+                          ) : null}
+
+                          <View
+                            style={[
+                              styles.previewActions,
+                              rtl ? styles.rowReverse : styles.row,
+                            ]}
+                          >
+                            <Pressable
+                              accessibilityRole="button"
+                              testID={`share-result-${item.testId}`}
+                              onPress={() =>
+                                void Share.share({
+                                  title: fileName,
+                                  message:
+                                    downloaded.previewText ??
+                                    `${item.testName} (${fileName})`,
+                                })
+                              }
+                              style={styles.shareButton}
+                            >
+                              <Text style={styles.shareButtonText}>
+                                {t('results.shareResultButton')}
+                              </Text>
+                            </Pressable>
+                            <Pressable
+                              accessibilityRole="button"
+                              testID={`close-preview-${item.testId}`}
+                              onPress={() =>
+                                setDownloadedFiles((prev) => {
+                                  const next = { ...prev };
+                                  delete next[item.testId];
+                                  return next;
+                                })
+                              }
+                              style={styles.closePreviewButton}
+                            >
+                              <Text style={styles.closePreviewText}>
+                                {t('results.closePreviewButton')}
+                              </Text>
+                            </Pressable>
+                          </View>
                         </View>
                       ) : null}
                     </>
@@ -395,8 +451,55 @@ export default function ResultsScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 56,
+    paddingBottom: 24,
     backgroundColor: '#F4F7FB',
+  },
+  previewCard: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  previewTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0B5CAB',
+    marginBottom: 6,
+  },
+  previewBody: {
+    fontSize: 13,
+    color: '#1E293B',
+    lineHeight: 19,
+  },
+  previewActions: {
+    marginTop: 10,
+    gap: 8,
+  },
+  shareButton: {
+    backgroundColor: '#0B5CAB',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  shareButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  closePreviewButton: {
+    backgroundColor: '#E2E8F0',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+  },
+  closePreviewText: {
+    color: '#334155',
+    fontSize: 12,
+    fontWeight: '600',
   },
   ltr: {
     direction: 'ltr',
