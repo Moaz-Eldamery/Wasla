@@ -83,6 +83,7 @@ Only these moves are allowed. For example, a visit can't be completed before it 
 - Test status: `REQUESTED → IN_PROGRESS → AWAITING_REVIEW → RELEASED`
 - The lab uploads a PDF or image (max 10 MB). Files are stored privately and are never public links.
 - **The patient only sees a result after the doctor releases it.** Before that they see "waiting for review", with no content.
+- On the phone, a released result is downloaded with the patient's session and saved only in the app's private cache. The patient can open it or share the file themselves. Saved results are deleted from the phone when the session ends (logout or expired session).
 
 ## Visit notes
 - Doctors write and edit notes for a visit. Every edit keeps the previous version.

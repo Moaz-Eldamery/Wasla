@@ -6,10 +6,10 @@ The patient mobile app (React Native + Expo, expo-router), in Arabic and English
 
 ## Files
 
-- `package.json`: dependencies and scripts (`start`, `android`, `ios`, `web`, `generate:api-types`, `lint`, `test`). `main` points at expo-router.
+- `package.json`: dependencies (including `expo-file-system` and `expo-sharing` for result files) and scripts (`start`, `android`, `ios`, `web`, `generate:api-types`, `lint`, `test`). `main` points at expo-router.
 - `app.json`: Expo settings: name, icons, the `wasla://` link scheme, the expo-router plugin.
 - `tsconfig.json`: TypeScript settings (extends Expo's).
-- `app.test.tsx`: tests for the patient app (sign-up, verification code, login, logout, browsing and booking, appointments, queue position, visit journey, test results and visit summary, and Arabic/English translations).
+- `app.test.tsx`: tests for the patient app (sign-up, verification code, login, logout, browsing and booking, the booking day filter, appointments, queue position, visit journey, test results (open, share, deleted at logout, refused downloads) and visit summaries (not ready yet, switching visits), and Arabic/English translations). Mocks `expo-sharing` and the safe-area insets.
 - `assets/`: app icons and splash image.
 - `app/_layout.tsx`: the root layout (a stack navigator) around every screen, re-rendering when the language changes.
 - `app/index.tsx`: redirects to `/(tabs)/book` when logged in or `/(auth)/login` when logged out.

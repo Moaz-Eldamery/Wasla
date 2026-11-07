@@ -1,3 +1,14 @@
+## 2026-11-07 09:03 +0200 · NourElghaly
+Prompt: 2026-11-07 08:57 · NourElghaly
+What: Review fixes on PR #11 (KAN-16) before merging:
+- **Result files:** a released result is now saved byte-for-byte to the app's private cache and opened in the phone's viewer (Quick Look / the default PDF or image app). Share sends the file itself. Before, the PDF was decoded as text and shown as an unreadable "preview". Saved results are deleted when the session ends. `api.ts` now builds every request and error through one shared helper instead of a second copy for downloads.
+- **Visit summary:** switching quickly between visits can no longer show the wrong visit's summary. A 404 is reported as an error, not as "summary not ready yet".
+- **Booking day filter:** if the chosen day loses its last free slot, the list falls back to all days instead of going empty.
+- **Screens:** the top padding is the device's safe-area inset instead of a fixed 56 px.
+- **Tests:** 3 new tests and a rewritten results test. They cover real binary bytes, open, share and logout cleanup, a summary not ready yet, a refused download, the visit-switch race and the day filter; 11 in the patient app.
+- **Log correction:** the PR's own entry (2026-11-07 06:34 · Youssef Salem) also changed `book.tsx` (day filter), `queue.tsx` and `journey.tsx` (padding), `_layout.tsx` (tab icons), `translations/i18n.ts` (`getCairoDayKey`, `formatCairoShortDay`), `translations/README.md` and `structure.md`, and its prompt (2026-11-07 06:30) has no `prompt_log.md` entry.
+Files: apps/patient-app/lib/api.ts, apps/patient-app/app/(tabs)/results.tsx, apps/patient-app/app/(tabs)/book.tsx, apps/patient-app/app/(tabs)/queue.tsx, apps/patient-app/app/(tabs)/journey.tsx, apps/patient-app/app.test.tsx, apps/patient-app/translations/en.json, apps/patient-app/translations/ar.json, apps/patient-app/package.json, pnpm-lock.yaml, apps/patient-app/README.md, apps/patient-app/app/(tabs)/README.md, apps/patient-app/lib/README.md, structure.md, business.md
+
 ## 2026-11-07 06:34 +0200 · Youssef Salem
 Prompt: 2026-11-07 06:30 · Youssef Salem
 What: KAN-16 patient mobile app test results and visit summaries. Added listMyResults, downloadTestResult and getVisitSummary to apps/patient-app/lib/api.ts, added the results tab screen in apps/patient-app/app/(tabs)/results.tsx (shows "Waiting for review" for unreleased tests, downloads released result files with the session token, and displays completed visit summaries), added Arabic (RTL) and English strings in translations/ar.json and translations/en.json, and added tests in apps/patient-app/app.test.tsx.

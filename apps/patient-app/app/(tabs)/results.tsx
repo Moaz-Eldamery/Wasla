@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useState } from 'react';
+import { File } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
   RefreshControl,
   ScrollView,
-  Share,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ApiClientError,
   downloadTestResult,
@@ -34,6 +36,7 @@ export default function ResultsScreen() {
   const { t } = useTranslation();
   const lang = getAppLanguage();
   const rtl = isRtlLanguage(lang);
+  const insets = useSafeAreaInsets();
 
   const [results, setResults] = useState<PatientResult[]>([]);
   const [completedVisits, setCompletedVisits] = useState<Appointment[]>([]);
@@ -58,25 +61,29 @@ export default function ResultsScreen() {
     }
   }, []);
 
+  // Only the most recently requested visit may write the summary, so a slow
+  // response for a visit the patient already left can't replace the current one.
+  const latestSummaryRequest = useRef<string | null>(null);
+
   const loadSummaryFor = useCallback(
     async (appointmentId: string) => {
+      latestSummaryRequest.current = appointmentId;
+      const isCurrent = () => latestSummaryRequest.current === appointmentId;
       setLoadingSummary(true);
       setSummaryUnavailable(false);
+      setVisitSummary(null);
       try {
         const summary = await getVisitSummary(appointmentId);
-        setVisitSummary(summary);
+        if (isCurrent()) setVisitSummary(summary);
       } catch (err) {
-        if (
-          err instanceof ApiClientError &&
-          (err.code === 'NOT_YET_AVAILABLE' || err.status === 404 || err.status === 409)
-        ) {
-          setVisitSummary(null);
+        if (!isCurrent()) return;
+        if (err instanceof ApiClientError && err.code === 'NOT_YET_AVAILABLE') {
           setSummaryUnavailable(true);
         } else {
           handleApiError(err);
         }
       } finally {
-        setLoadingSummary(false);
+        if (isCurrent()) setLoadingSummary(false);
       }
     },
     [handleApiError],
@@ -131,24 +138,68 @@ export default function ResultsScreen() {
     await loadSummaryFor(visit.id);
   };
 
-  const handleDownloadResult = async (result: PatientResult) => {
+  /** Downloads the file once (into the app's private cache), then reuses the saved copy. */
+  const ensureDownloaded = async (result: PatientResult): Promise<DownloadedResultFile> => {
+    const saved = downloadedFiles[result.testId];
+    if (saved && new File(saved.uri).exists) return saved;
+    const downloaded = await downloadTestResult(result.testId);
+    setDownloadedFiles((prev) => ({ ...prev, [result.testId]: downloaded }));
+    return downloaded;
+  };
+
+  const runFileAction = async (
+    result: PatientResult,
+    action: (file: DownloadedResultFile) => Promise<void>,
+  ) => {
     if (result.status !== 'RELEASED') return;
     setErrorMessage(null);
     setDownloadingTestId(result.testId);
     try {
-      const downloaded = await downloadTestResult(result.testId);
-      setDownloadedFiles((prev) => ({ ...prev, [result.testId]: downloaded }));
+      await action(await ensureDownloaded(result));
     } catch (err) {
-      handleApiError(err);
+      if (err instanceof ApiClientError) {
+        handleApiError(err);
+      } else {
+        setErrorMessage(t('results.openFailed'));
+      }
     } finally {
       setDownloadingTestId(null);
     }
   };
 
+  const shareFile = async (result: PatientResult, file: DownloadedResultFile) => {
+    if (!(await Sharing.isAvailableAsync())) {
+      throw new Error('Sharing is not available on this device');
+    }
+    await Sharing.shareAsync(file.uri, {
+      mimeType: file.contentType,
+      dialogTitle: result.testName,
+    });
+  };
+
+  /** Opens the result in the phone's viewer (Quick Look / the default PDF or image app). */
+  const handleOpenResult = (result: PatientResult) =>
+    runFileAction(result, async (file) => {
+      const local = new File(file.uri);
+      if (await local.canPreview({ mimeType: file.contentType })) {
+        await local.preview({ title: result.testName, mimeType: file.contentType });
+      } else {
+        // No viewer installed: let the patient pick an app that can open it.
+        await shareFile(result, file);
+      }
+    });
+
+  const handleShareResult = (result: PatientResult) =>
+    runFileAction(result, (file) => shareFile(result, file));
+
   return (
     <ScrollView
       testID="results-scroll-view"
-      contentContainerStyle={[styles.container, rtl ? styles.rtl : styles.ltr]}
+      contentContainerStyle={[
+        styles.container,
+        { paddingTop: insets.top + 16 },
+        rtl ? styles.rtl : styles.ltr,
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -263,92 +314,42 @@ export default function ResultsScreen() {
                         </Text>
                       ) : null}
 
-                      <Pressable
-                        accessibilityRole="button"
-                        testID={`download-result-${item.testId}`}
-                        disabled={isDownloading}
-                        onPress={() => void handleDownloadResult(item)}
-                        style={[
-                          styles.downloadButton,
-                          isDownloading && styles.disabledButton,
-                        ]}
-                      >
-                        {isDownloading ? (
-                          <ActivityIndicator color="#FFFFFF" size="small" />
-                        ) : (
-                          <Text style={styles.downloadButtonText}>
-                            {t('results.downloadButton')}
+                      <View style={[styles.fileActions, rtl ? styles.rowReverse : styles.row]}>
+                        <Pressable
+                          accessibilityRole="button"
+                          testID={`download-result-${item.testId}`}
+                          disabled={isDownloading}
+                          onPress={() => void handleOpenResult(item)}
+                          style={[styles.downloadButton, isDownloading && styles.disabledButton]}
+                        >
+                          {isDownloading ? (
+                            <ActivityIndicator color="#FFFFFF" size="small" />
+                          ) : (
+                            <Text style={styles.downloadButtonText}>
+                              {t('results.downloadButton')}
+                            </Text>
+                          )}
+                        </Pressable>
+                        <Pressable
+                          accessibilityRole="button"
+                          testID={`share-result-${item.testId}`}
+                          disabled={isDownloading}
+                          onPress={() => void handleShareResult(item)}
+                          style={[styles.shareButton, isDownloading && styles.disabledButton]}
+                        >
+                          <Text style={styles.shareButtonText}>
+                            {t('results.shareResultButton')}
                           </Text>
-                        )}
-                      </Pressable>
+                        </Pressable>
+                      </View>
 
                       {downloaded ? (
-                        <View
-                          style={styles.downloadedBox}
+                        <Text
+                          style={[styles.downloadedText, rtl && styles.textRtl]}
                           testID={`downloaded-result-${item.testId}`}
                         >
-                          <Text style={[styles.downloadedText, rtl && styles.textRtl]}>
-                            {t('results.downloadedBanner', {
-                              fileName,
-                              contentType: downloaded.contentType,
-                            })}
-                          </Text>
-
-                          {downloaded.previewText ? (
-                            <View style={styles.previewCard}>
-                              <Text style={[styles.previewTitle, rtl && styles.textRtl]}>
-                                {t('results.previewTitle')}
-                              </Text>
-                              <Text
-                                style={[styles.previewBody, rtl && styles.textRtl]}
-                                testID={`preview-text-${item.testId}`}
-                              >
-                                {downloaded.previewText}
-                              </Text>
-                            </View>
-                          ) : null}
-
-                          <View
-                            style={[
-                              styles.previewActions,
-                              rtl ? styles.rowReverse : styles.row,
-                            ]}
-                          >
-                            <Pressable
-                              accessibilityRole="button"
-                              testID={`share-result-${item.testId}`}
-                              onPress={() =>
-                                void Share.share({
-                                  title: fileName,
-                                  message:
-                                    downloaded.previewText ??
-                                    `${item.testName} (${fileName})`,
-                                })
-                              }
-                              style={styles.shareButton}
-                            >
-                              <Text style={styles.shareButtonText}>
-                                {t('results.shareResultButton')}
-                              </Text>
-                            </Pressable>
-                            <Pressable
-                              accessibilityRole="button"
-                              testID={`close-preview-${item.testId}`}
-                              onPress={() =>
-                                setDownloadedFiles((prev) => {
-                                  const next = { ...prev };
-                                  delete next[item.testId];
-                                  return next;
-                                })
-                              }
-                              style={styles.closePreviewButton}
-                            >
-                              <Text style={styles.closePreviewText}>
-                                {t('results.closePreviewButton')}
-                              </Text>
-                            </Pressable>
-                          </View>
-                        </View>
+                          {t('results.downloadedBanner', { fileName })}
+                        </Text>
                       ) : null}
                     </>
                   )}
@@ -452,53 +453,26 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingHorizontal: 16,
-    paddingTop: 56,
     paddingBottom: 24,
     backgroundColor: '#F4F7FB',
   },
-  previewCard: {
-    marginTop: 10,
-    padding: 12,
-    borderRadius: 8,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-  },
-  previewTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0B5CAB',
-    marginBottom: 6,
-  },
-  previewBody: {
-    fontSize: 13,
-    color: '#1E293B',
-    lineHeight: 19,
-  },
-  previewActions: {
-    marginTop: 10,
+  fileActions: {
+    flexWrap: 'wrap',
     gap: 8,
+    marginTop: 8,
   },
   shareButton: {
-    backgroundColor: '#0B5CAB',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#0B5CAB',
+    backgroundColor: '#FFFFFF',
   },
   shareButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  closePreviewButton: {
-    backgroundColor: '#E2E8F0',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  closePreviewText: {
-    color: '#334155',
-    fontSize: 12,
+    color: '#0B5CAB',
+    fontSize: 14,
     fontWeight: '600',
   },
   ltr: {
@@ -640,7 +614,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 14,
     alignItems: 'center',
-    marginTop: 12,
+    justifyContent: 'center',
   },
   disabledButton: {
     opacity: 0.6,
@@ -650,15 +624,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  downloadedBox: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#ECFDF3',
-    borderColor: '#A6F4C5',
-    borderWidth: 1,
-  },
   downloadedText: {
+    marginTop: 8,
     color: '#027A48',
     fontSize: 13,
     fontWeight: '600',

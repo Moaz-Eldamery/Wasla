@@ -28,7 +28,7 @@ patient-app / hospital-dashboard
 - **Core service:** NestJS + TypeScript, modular monolith (six modules), Socket.IO for live updates, transactional outbox in Postgres with a poller inside the core for async work. No Redis.
 - **AI service:** Python FastAPI, Claude API. Reachable only from the core, never from the internet.
 - **Database:** PostgreSQL 16 + pgvector, Prisma. One clinical database with `auth` and `core` schemas, plus a separate `wasla_ai` database. Each service has its own DB user (see `schema.md`).
-- **Mobile app:** React Native + Expo (expo-router), i18next.
+- **Mobile app:** React Native + Expo (expo-router), i18next. `expo-file-system` and `expo-sharing` open and share released result files.
 - **Website:** React + Vite, MUI, TanStack Query, i18next.
 - **Tooling:** Node 24 LTS (at least 24.18, pinned in `.nvmrc`), pnpm monorepo, Docker Compose, GitHub Actions. Prism 5.16 serves the mock API from `contracts/openapi.yaml` plus the drafts in `contracts/drafts/` (`pnpm mock`, through `contracts/mock.mjs`); it needs Node 24.18 or newer.
 - **Lint and tests:**

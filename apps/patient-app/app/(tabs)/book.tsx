@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,6 +8,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ApiClientError,
   bookAppointment,
@@ -36,6 +37,7 @@ import {
 
 export default function BookScreen() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const lang = getAppLanguage();
   const rtl = isRtlLanguage(lang);
@@ -156,13 +158,36 @@ export default function BookScreen() {
     }
   };
 
+  // The days that still have free slots, in slot order, each with its display label.
+  const slotDays = useMemo(() => {
+    const days = new Map<string, string>();
+    for (const slot of slots) {
+      const key = getCairoDayKey(slot.startsAt);
+      if (!days.has(key)) days.set(key, formatCairoShortDay(slot.startsAt, lang));
+    }
+    return days;
+  }, [slots, lang]);
+  // Falls back to all days when the chosen day has no free slots left (for example
+  // after booking its last slot), so the list never goes empty with slots remaining.
+  const activeDayKey = slotDays.has(selectedDayKey) ? selectedDayKey : 'ALL';
+  const visibleSlots =
+    activeDayKey === 'ALL'
+      ? slots
+      : slots.filter((slot) => getCairoDayKey(slot.startsAt) === activeDayKey);
+
   const handleLogout = async () => {
     await logout();
     router.replace('/(auth)/login');
   };
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, rtl ? styles.rtl : styles.ltr]}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { paddingTop: insets.top + 16 },
+        rtl ? styles.rtl : styles.ltr,
+      ]}
+    >
       <View style={[styles.header, rtl ? styles.rowReverse : styles.row]}>
         <View>
           <Text style={[styles.brand, rtl && styles.textRtl]}>{t('appName')}</Text>
@@ -337,104 +362,88 @@ export default function BookScreen() {
               <Text style={[styles.emptyText, rtl && styles.textRtl]}>{t('booking.noSlots')}</Text>
             ) : (
               <>
-                {(() => {
-                  const uniqueDays = new Map<string, string>();
-                  for (const s of slots) {
-                    const key = getCairoDayKey(s.startsAt);
-                    if (!uniqueDays.has(key)) {
-                      uniqueDays.set(key, formatCairoShortDay(s.startsAt, lang));
-                    }
-                  }
-                  if (uniqueDays.size <= 1) return null;
-                  return (
-                    <View style={[styles.dayFilterRow, rtl ? styles.rowReverse : styles.row]}>
+                {slotDays.size > 1 ? (
+                  <View style={[styles.dayFilterRow, rtl ? styles.rowReverse : styles.row]}>
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="slot-day-ALL"
+                      onPress={() => setSelectedDayKey('ALL')}
+                      style={[
+                        styles.dayPill,
+                        activeDayKey === 'ALL' && styles.dayPillActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayPillText,
+                          activeDayKey === 'ALL' && styles.dayPillTextActive,
+                        ]}
+                      >
+                        {t('booking.allDaysFilter')}
+                      </Text>
+                    </Pressable>
+                    {[...slotDays.entries()].map(([dayKey, label]) => (
                       <Pressable
+                        key={dayKey}
                         accessibilityRole="button"
-                        testID="slot-day-ALL"
-                        onPress={() => setSelectedDayKey('ALL')}
+                        testID={`slot-day-${dayKey}`}
+                        onPress={() => setSelectedDayKey(dayKey)}
                         style={[
                           styles.dayPill,
-                          selectedDayKey === 'ALL' && styles.dayPillActive,
+                          activeDayKey === dayKey && styles.dayPillActive,
                         ]}
                       >
                         <Text
                           style={[
                             styles.dayPillText,
-                            selectedDayKey === 'ALL' && styles.dayPillTextActive,
+                            activeDayKey === dayKey && styles.dayPillTextActive,
                           ]}
                         >
-                          {t('booking.allDaysFilter')}
+                          {label}
                         </Text>
                       </Pressable>
-                      {[...uniqueDays.entries()].map(([dayKey, label]) => (
+                    ))}
+                  </View>
+                ) : null}
+                <View style={styles.listContainer}>
+                  {visibleSlots.map((slot) => {
+                    const isBooking = bookingSlotId === slot.id;
+                    return (
+                      <View
+                        key={slot.id}
+                        testID={`slot-item-${slot.id}`}
+                        style={[styles.slotCard, rtl ? styles.rowReverse : styles.row]}
+                      >
+                        <View style={styles.slotDetails}>
+                          <Text style={[styles.slotTime, rtl && styles.textRtl]}>
+                            {formatCairoDateTime(slot.startsAt, lang)}
+                          </Text>
+                          <Text style={[styles.slotClinic, rtl && styles.textRtl]}>
+                            {pickLocalized(slot.clinic.name, lang)} ({t('common.building')}{' '}
+                            {slot.clinic.building}, {t('common.floor')} {slot.clinic.floor})
+                          </Text>
+                        </View>
                         <Pressable
-                          key={dayKey}
                           accessibilityRole="button"
-                          testID={`slot-day-${dayKey}`}
-                          onPress={() => setSelectedDayKey(dayKey)}
+                          testID={`book-slot-${slot.id}`}
+                          disabled={bookingSlotId !== null}
+                          onPress={() => void handleBookSlot(slot)}
                           style={[
-                            styles.dayPill,
-                            selectedDayKey === dayKey && styles.dayPillActive,
+                            styles.bookButton,
+                            bookingSlotId !== null && styles.disabledButton,
                           ]}
                         >
-                          <Text
-                            style={[
-                              styles.dayPillText,
-                              selectedDayKey === dayKey && styles.dayPillTextActive,
-                            ]}
-                          >
-                            {label}
-                          </Text>
+                          {isBooking ? (
+                            <ActivityIndicator color="#FFFFFF" size="small" />
+                          ) : (
+                            <Text style={styles.bookButtonText}>
+                              {t('booking.bookSlotButton')}
+                            </Text>
+                          )}
                         </Pressable>
-                      ))}
-                    </View>
-                  );
-                })()}
-                <View style={styles.listContainer}>
-                  {slots
-                    .filter(
-                      (slot) =>
-                        selectedDayKey === 'ALL' ||
-                        getCairoDayKey(slot.startsAt) === selectedDayKey,
-                    )
-                    .map((slot) => {
-                      const isBooking = bookingSlotId === slot.id;
-                      return (
-                        <View
-                          key={slot.id}
-                          testID={`slot-item-${slot.id}`}
-                          style={[styles.slotCard, rtl ? styles.rowReverse : styles.row]}
-                        >
-                          <View style={styles.slotDetails}>
-                            <Text style={[styles.slotTime, rtl && styles.textRtl]}>
-                              {formatCairoDateTime(slot.startsAt, lang)}
-                            </Text>
-                            <Text style={[styles.slotClinic, rtl && styles.textRtl]}>
-                              {pickLocalized(slot.clinic.name, lang)} ({t('common.building')}{' '}
-                              {slot.clinic.building}, {t('common.floor')} {slot.clinic.floor})
-                            </Text>
-                          </View>
-                          <Pressable
-                            accessibilityRole="button"
-                            testID={`book-slot-${slot.id}`}
-                            disabled={bookingSlotId !== null}
-                            onPress={() => void handleBookSlot(slot)}
-                            style={[
-                              styles.bookButton,
-                              bookingSlotId !== null && styles.disabledButton,
-                            ]}
-                          >
-                            {isBooking ? (
-                              <ActivityIndicator color="#FFFFFF" size="small" />
-                            ) : (
-                              <Text style={styles.bookButtonText}>
-                                {t('booking.bookSlotButton')}
-                              </Text>
-                            )}
-                          </Pressable>
-                        </View>
-                      );
-                    })}
+                      </View>
+                    );
+                  })}
                 </View>
               </>
             )}
@@ -524,7 +533,6 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingHorizontal: 16,
-    paddingTop: 56,
     paddingBottom: 24,
     backgroundColor: '#F4F7FB',
   },

@@ -1,4 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { File } from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import LoginScreen from './app/(auth)/login';
 import SignUpScreen from './app/(auth)/sign-up';
 import VerifyCodeScreen from './app/(auth)/verify-code';
@@ -40,6 +42,23 @@ jest.mock('expo-router', () => ({
   Stack: () => null,
   Tabs: Object.assign(() => null, { Screen: () => null }),
 }));
+
+jest.mock('react-native-safe-area-context', () => {
+  const mock = jest.requireActual('react-native-safe-area-context/jest/mock');
+  return mock.default ?? mock;
+});
+
+jest.mock('expo-sharing', () => ({
+  isAvailableAsync: jest.fn(async () => true),
+  shareAsync: jest.fn(async () => undefined),
+}));
+
+/** A fetch response with a JSON body, the shape the app's API client reads. */
+const jsonResponse = (body: unknown, status = 200) => ({
+  ok: status >= 200 && status < 300,
+  status,
+  text: async () => JSON.stringify(body),
+});
 
 // Tests live outside app/: expo-router would treat any file in app/ as a screen.
 describe('Patient app (KAN-14: sign up, log in and book)', () => {
@@ -526,14 +545,14 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     );
   });
 
-  it('lists unreleased and released results, downloads a released result, and shows the completed visit summary', async () => {
-    setSession('live-token-abc', {
+  describe('results and visit summary (KAN-16)', () => {
+    const patient = {
       id: '11111111-1111-1111-1111-111111111111',
-      type: 'PATIENT',
+      type: 'PATIENT' as const,
       name: 'Salma Hassan',
       phone: '+201000000006',
       roles: [],
-    });
+    };
 
     const clinic = {
       id: '22222222-2222-2222-2222-222222222222',
@@ -569,94 +588,233 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       },
     };
 
-    const completedAppointment: Appointment = {
-      id: '77777777-7777-7777-7777-777777777777',
+    const completedVisit = (id: string, doctorName: string, startsAt: string): Appointment => ({
+      id,
       status: 'COMPLETED',
-      startsAt: '2026-11-06T09:00:00Z',
-      endsAt: '2026-11-06T09:15:00Z',
-      bookedAt: '2026-11-05T10:00:00Z',
-      checkedInAt: '2026-11-06T08:50:00Z',
-      startedAt: '2026-11-06T09:00:00Z',
-      completedAt: '2026-11-06T09:20:00Z',
-      patient: {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: 'Salma Hassan',
-      },
-      doctor: {
-        id: '44444444-4444-4444-4444-444444444444',
-        name: 'Dr. Kareem Adel',
-      },
+      startsAt,
+      endsAt: startsAt,
+      bookedAt: '2026-11-01T10:00:00Z',
+      checkedInAt: startsAt,
+      startedAt: startsAt,
+      completedAt: startsAt,
+      patient: { id: patient.id, name: patient.name },
+      doctor: { id: '44444444-4444-4444-4444-444444444444', name: doctorName },
       clinic,
-    };
+    });
 
-    const summary: VisitSummary = {
-      appointmentId: completedAppointment.id,
-      doctorName: 'Dr. Kareem Adel',
-      completedAt: '2026-11-06T09:20:00Z',
-      summary: 'Continue iron supplement once daily for 4 weeks and drink plenty of water.',
-    };
-
-    (globalThis.fetch as jest.Mock)
-      // listMyResults
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([pendingResult, releasedResult]),
-      })
-      // listMyAppointments('past')
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([completedAppointment]),
-      })
-      // getVisitSummary
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(summary),
-      })
-      // downloadTestResult
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        headers: {
-          get: (name: string) =>
-            name.toLowerCase() === 'content-type' ? 'application/pdf' : null,
-        },
-        text: async () => '%PDF-1.7 fake pdf content',
-      });
-
-    await render(<ResultsScreen />);
-
-    // Unreleased result shows "Waiting for review" and no download button
-    expect(await screen.findByText('Chest X-Ray')).toBeTruthy();
-    expect(await screen.findByText('Waiting for review')).toBeTruthy();
-    expect(screen.queryByTestId(`download-result-${pendingResult.testId}`)).toBeNull();
-
-    // Released result shows "Released" and can be downloaded
-    expect(await screen.findByText('Complete Blood Count (CBC)')).toBeTruthy();
-    expect(await screen.findByText('Released')).toBeTruthy();
-    const downloadBtn = await screen.findByTestId(`download-result-${releasedResult.testId}`);
-    await fireEvent.press(downloadBtn);
-
-    expect(
-      await screen.findByTestId(`downloaded-result-${releasedResult.testId}`),
-    ).toBeTruthy();
-    expect(
-      await screen.findByText('Downloaded cbc-report.pdf (application/pdf)'),
-    ).toBeTruthy();
-
-    // Completed visit summary is shown
-    expect((await screen.findByTestId('visit-summary-text')).props.children).toBe(
-      summary.summary,
+    const visitA = completedVisit(
+      '77777777-7777-7777-7777-777777777777',
+      'Dr. Kareem Adel',
+      '2026-11-06T09:00:00Z',
+    );
+    const visitB = completedVisit(
+      '88888888-8888-8888-8888-888888888888',
+      'Dr. Mona Fathy',
+      '2026-10-20T09:00:00Z',
     );
 
-    // Switch to Arabic and verify RTL strings
-    await act(async () => {
-      await setAppLanguage('ar');
+    const summaryFor = (visit: Appointment, text: string): VisitSummary => ({
+      appointmentId: visit.id,
+      doctorName: visit.doctor.name,
+      completedAt: visit.completedAt ?? visit.startsAt,
+      summary: text,
     });
-    expect(await screen.findByText('بانتظار مراجعة الطبيب')).toBeTruthy();
-    expect(await screen.findByText('متاحة')).toBeTruthy();
-    expect(await screen.findByText('ملخص الزيارة')).toBeTruthy();
+
+    // Real PDF bytes are not valid UTF-8; the app must save them untouched, not decode them.
+    const pdfBytes = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0xff, 0xfe, 0x00, 0x9c]);
+    const fileResponse = (bytes: Uint8Array, contentType: string) => ({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => (name.toLowerCase() === 'content-type' ? contentType : null) },
+      arrayBuffer: async () => bytes.slice().buffer,
+      text: async () => '',
+    });
+
+    beforeEach(() => {
+      setSession('live-token-abc', patient);
+      (Sharing.shareAsync as jest.Mock).mockClear();
+    });
+
+    it('shows waiting and released results, opens and shares the real file, and shows the summary', async () => {
+      const previewSpy = jest.spyOn(File.prototype, 'preview');
+      const summary = summaryFor(
+        visitA,
+        'Continue iron supplement once daily for 4 weeks and drink plenty of water.',
+      );
+
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([pendingResult, releasedResult])) // listMyResults
+        .mockResolvedValueOnce(jsonResponse([visitA])) // listMyAppointments('past')
+        .mockResolvedValueOnce(jsonResponse(summary)) // getVisitSummary
+        .mockResolvedValueOnce(fileResponse(pdfBytes, 'application/pdf')); // downloadTestResult
+
+      await render(<ResultsScreen />);
+
+      // Unreleased: "Waiting for review", nothing to open or share
+      expect(await screen.findByText('Chest X-Ray')).toBeTruthy();
+      expect(await screen.findByText('Waiting for review')).toBeTruthy();
+      expect(screen.queryByTestId(`download-result-${pendingResult.testId}`)).toBeNull();
+      expect(screen.queryByTestId(`share-result-${pendingResult.testId}`)).toBeNull();
+
+      // Released: open saves the exact bytes privately and hands them to the system viewer
+      expect(await screen.findByText('Released')).toBeTruthy();
+      await fireEvent.press(await screen.findByTestId(`download-result-${releasedResult.testId}`));
+      expect(await screen.findByText('Saved cbc-report.pdf on this phone')).toBeTruthy();
+
+      const fetchMock = globalThis.fetch as jest.Mock;
+      const [url, init] = fetchMock.mock.calls[3];
+      expect(url).toMatch(new RegExp(`/tests/${releasedResult.testId}/result/file$`));
+      expect(init.headers.Authorization).toBe('Bearer live-token-abc');
+
+      expect(previewSpy).toHaveBeenCalledWith({
+        title: releasedResult.testName,
+        mimeType: 'application/pdf',
+      });
+      const saved = previewSpy.mock.contexts[0] as File;
+      expect(saved.uri).toMatch(new RegExp(`results/${releasedResult.testId}\\.pdf$`));
+      expect(Array.from(saved.bytesSync())).toEqual(Array.from(pdfBytes));
+
+      // Share reuses the saved file (no second download) and sends the file, not text
+      await fireEvent.press(screen.getByTestId(`share-result-${releasedResult.testId}`));
+      await waitFor(() =>
+        expect(Sharing.shareAsync).toHaveBeenCalledWith(saved.uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: releasedResult.testName,
+        }),
+      );
+      expect(fetchMock).toHaveBeenCalledTimes(4);
+
+      // Completed visit summary
+      expect((await screen.findByTestId('visit-summary-text')).props.children).toBe(
+        summary.summary,
+      );
+
+      // Arabic (RTL)
+      await act(async () => {
+        await setAppLanguage('ar');
+      });
+      expect(await screen.findByText('بانتظار مراجعة الطبيب')).toBeTruthy();
+      expect(await screen.findByText('متاحة')).toBeTruthy();
+      expect(await screen.findByText('ملخص الزيارة')).toBeTruthy();
+
+      // Ending the session deletes the saved result from the phone
+      await act(async () => {
+        clearSession();
+      });
+      expect(new File(saved.uri).exists).toBe(false);
+      previewSpy.mockRestore();
+    });
+
+    it('says when a summary is not ready yet and shows an error when a download is refused', async () => {
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([releasedResult]))
+        .mockResolvedValueOnce(jsonResponse([visitA]))
+        .mockResolvedValueOnce(
+          jsonResponse(
+            { error: { code: 'NOT_YET_AVAILABLE', message: 'No summary yet' } },
+            409,
+          ),
+        )
+        .mockResolvedValueOnce(
+          jsonResponse({ error: { code: 'NOT_FOUND', message: 'Not found' } }, 404),
+        );
+
+      await render(<ResultsScreen />);
+
+      expect(await screen.findByTestId('summary-not-available-text')).toBeTruthy();
+      expect(screen.queryByTestId('results-error')).toBeNull();
+
+      await fireEvent.press(await screen.findByTestId(`download-result-${releasedResult.testId}`));
+      expect(await screen.findByTestId('results-error')).toBeTruthy();
+      expect(screen.queryByTestId(`downloaded-result-${releasedResult.testId}`)).toBeNull();
+    });
+
+    it('shows the summary of the visit picked last, even if an earlier request answers later', async () => {
+      let answerFirst: (value: unknown) => void = () => undefined;
+      const firstSummary = new Promise((resolve) => {
+        answerFirst = resolve;
+      });
+
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(jsonResponse([visitA, visitB]))
+        .mockResolvedValueOnce(jsonResponse(summaryFor(visitA, 'Summary A')))
+        .mockReturnValueOnce(firstSummary) // visit B, slow
+        .mockResolvedValueOnce(jsonResponse(summaryFor(visitA, 'Summary A again'))); // visit A
+
+      await render(<ResultsScreen />);
+      expect((await screen.findByTestId('visit-summary-text')).props.children).toBe('Summary A');
+
+      await fireEvent.press(screen.getByTestId(`summary-visit-${visitB.id}`));
+      await fireEvent.press(screen.getByTestId(`summary-visit-${visitA.id}`));
+      expect((await screen.findByTestId('visit-summary-text')).props.children).toBe(
+        'Summary A again',
+      );
+
+      await act(async () => {
+        answerFirst(jsonResponse(summaryFor(visitB, 'Summary B')));
+      });
+      expect(screen.getByTestId('visit-summary-text').props.children).toBe('Summary A again');
+    });
+  });
+
+  it('falls back to all days when the chosen day runs out of free slots', async () => {
+    setSession('live-token-abc', {
+      id: '11111111-1111-1111-1111-111111111111',
+      type: 'PATIENT',
+      name: 'Salma Hassan',
+      phone: '+201000000006',
+      roles: [],
+    });
+    const clinic = {
+      id: '22222222-2222-2222-2222-222222222222',
+      departmentId: '33333333-3333-3333-3333-333333333333',
+      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
+      building: 'A',
+      floor: '2',
+      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
+    };
+    const doctor: Doctor = {
+      id: '44444444-4444-4444-4444-444444444444',
+      name: 'Dr. Kareem Adel',
+      clinics: [clinic],
+    };
+    const slot = (id: string, startsAt: string): Slot => ({
+      id,
+      doctorId: doctor.id,
+      clinic,
+      startsAt,
+      endsAt: startsAt,
+    });
+    // 10:00 Cairo on three different days
+    const day1 = slot('55555555-0000-0000-0000-000000000001', '2026-11-08T08:00:00Z');
+    const day2 = slot('55555555-0000-0000-0000-000000000002', '2026-11-09T08:00:00Z');
+    const day3 = slot('55555555-0000-0000-0000-000000000003', '2026-11-10T08:00:00Z');
+
+    (globalThis.fetch as jest.Mock)
+      .mockResolvedValueOnce(
+        jsonResponse([
+          { id: clinic.departmentId, kind: 'CLINICAL', name: { ar: 'الباطنة', en: 'Internal Medicine' }, clinics: [clinic] },
+        ]),
+      )
+      .mockResolvedValueOnce(jsonResponse([])) // upcoming appointments
+      .mockResolvedValueOnce(jsonResponse([doctor]))
+      .mockResolvedValueOnce(jsonResponse([day1, day2, day3]))
+      .mockResolvedValueOnce(jsonResponse({}, 201)) // book day 2
+      .mockResolvedValueOnce(jsonResponse([day1, day3])) // slots after booking
+      .mockResolvedValueOnce(jsonResponse([])); // upcoming appointments after booking
+
+    await render(<BookScreen />);
+    await fireEvent.press(await screen.findByText('Internal Medicine'));
+    await fireEvent.press(await screen.findByText('Dr. Kareem Adel'));
+
+    await fireEvent.press(await screen.findByTestId('slot-day-2026-11-09'));
+    expect(screen.queryByTestId(`slot-item-${day1.id}`)).toBeNull();
+    await fireEvent.press(screen.getByTestId(`book-slot-${day2.id}`));
+
+    expect(await screen.findByText('Appointment booked successfully!')).toBeTruthy();
+    expect(await screen.findByTestId(`slot-item-${day1.id}`)).toBeTruthy();
+    expect(screen.getByTestId(`slot-item-${day3.id}`)).toBeTruthy();
+    expect(screen.queryByTestId('slot-day-2026-11-09')).toBeNull();
   });
 });
