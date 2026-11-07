@@ -556,6 +556,7 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       type: 'PATIENT' as const,
       name: 'Salma Hassan',
       phone: '+201000000006',
+      email: null,
       roles: [],
     };
 
@@ -769,6 +770,7 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       type: 'PATIENT',
       name: 'Salma Hassan',
       phone: '+201000000006',
+      email: null,
       roles: [],
     });
     const clinic = {

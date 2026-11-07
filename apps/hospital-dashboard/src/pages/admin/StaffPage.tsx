@@ -45,13 +45,14 @@ import { color } from '../../theme.ts'
 import { errorMessage } from '../../translations/i18n.ts'
 import { ConfirmDialog } from './ConfirmDialog.tsx'
 import { PageBody, PageHeader } from './AdminLayout.tsx'
-import { ALL_ROLES, normalizePhone, staffKeys } from './staff.ts'
+import { ALL_ROLES, isEmail, normalizePhone, staffKeys } from './staff.ts'
 
 type StatusFilter = 'all' | 'active' | 'inactive'
 
 /**
- * Staff and roles (KAN-20 §3): find anyone by name or phone, add staff with a
- * one-time password, change roles, and deactivate or reactivate accounts.
+ * Staff and roles (KAN-20 §3): find anyone by name, work email or phone, add
+ * staff with a one-time password, change roles, and deactivate or reactivate
+ * accounts. Staff log in with their work email; the phone is optional.
  */
 export function StaffPage() {
   const { t } = useTranslation()
@@ -125,7 +126,7 @@ export function StaffPage() {
             <TableHead>
               <TableRow>
                 <TableCell>{t('staff.col.name')}</TableCell>
-                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('staff.col.phone')}</TableCell>
+                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('staff.col.email')}</TableCell>
                 <TableCell>{t('staff.col.roles')}</TableCell>
                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{t('staff.col.status')}</TableCell>
                 <TableCell align="right">
@@ -195,15 +196,22 @@ function StaffRow({ person, isMe, onRoles, onToggle }: { person: StaffMember; is
             </Box>
           )}
         </Box>
-        <Typography variant="body2" className="tabular" dir="ltr" sx={{ color: color.muted, display: { md: 'none' }, textAlign: 'start' }}>
-          {person.phone}
+        <Typography variant="body2" dir="ltr" sx={{ color: color.muted, display: { md: 'none' }, textAlign: 'start', overflowWrap: 'anywhere' }}>
+          {person.email}
         </Typography>
         <Box sx={{ display: { xs: 'block', sm: 'none' }, mt: 0.25 }}>
           <StatusText active={person.active} />
         </Box>
       </TableCell>
-      <TableCell className="tabular" sx={{ display: { xs: 'none', md: 'table-cell' }, whiteSpace: 'nowrap' }}>
-        <span dir="ltr">{person.phone}</span>
+      <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+        <Box component="span" dir="ltr" sx={{ display: 'block', overflowWrap: 'anywhere' }}>
+          {person.email}
+        </Box>
+        {person.phone && (
+          <Typography variant="body2" className="tabular" dir="ltr" sx={{ color: color.muted, textAlign: 'start' }}>
+            {person.phone}
+          </Typography>
+        )}
       </TableCell>
       <TableCell>
         <RoleTags roles={person.roles} />
@@ -305,31 +313,38 @@ function RoleChecks({ value, onChange, lockAdmin, error }: { value: StaffRole[];
 function AddStaffDialog({ onClose, onCreated }: { onClose(): void; onCreated(): Promise<unknown> }) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [roles, setRoles] = useState<StaffRole[]>([])
   const [tried, setTried] = useState(false)
   const [pending, setPending] = useState(false)
-  const [phoneTaken, setPhoneTaken] = useState(false)
+  const [taken, setTaken] = useState<'email' | 'phone' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<NewStaffResponse | null>(null)
 
-  const normalized = normalizePhone(phone)
+  const cleanEmail = email.trim().toLowerCase()
+  const emailOk = isEmail(cleanEmail)
+  // The phone is optional for staff: only a filled-in number has to be valid.
+  const normalized = phone.trim() ? normalizePhone(phone) : null
+  const phoneOk = !phone.trim() || normalized !== null
   const nameError = tried && name.trim().length < 2 ? t('staff.form.nameRequired') : undefined
-  const phoneError = phoneTaken ? t('errors.PHONE_TAKEN') : tried && !normalized ? t('staff.form.phoneInvalid') : undefined
+  const emailError = taken === 'email' ? t('errors.EMAIL_TAKEN') : tried && !emailOk ? t('staff.form.emailInvalid') : undefined
+  const phoneError = taken === 'phone' ? t('errors.PHONE_TAKEN') : tried && !phoneOk ? t('staff.form.phoneInvalid') : undefined
   const rolesError = tried && roles.length === 0 ? t('staff.form.rolesRequired') : undefined
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     setTried(true)
-    if (name.trim().length < 2 || !normalized || roles.length === 0) return
+    if (name.trim().length < 2 || !emailOk || !phoneOk || roles.length === 0) return
     setPending(true)
     setError(null)
     try {
-      const result = await createStaff({ name: name.trim(), phone: normalized, roles })
+      const result = await createStaff({ name: name.trim(), email: cleanEmail, ...(normalized && { phone: normalized }), roles })
       setCreated(result)
       void onCreated()
     } catch (err) {
-      if (err instanceof ApiError && err.code === 'PHONE_TAKEN') setPhoneTaken(true)
+      if (err instanceof ApiError && err.code === 'EMAIL_TAKEN') setTaken('email')
+      else if (err instanceof ApiError && err.code === 'PHONE_TAKEN') setTaken('phone')
       else setError(errorMessage(err))
     } finally {
       setPending(false)
@@ -347,15 +362,27 @@ function AddStaffDialog({ onClose, onCreated }: { onClose(): void; onCreated(): 
         <DialogContent sx={{ display: 'grid', gap: 2.5, pt: '8px !important' }}>
           <TextField label={t('staff.form.name')} value={name} onChange={(e) => setName(e.target.value)} error={!!nameError} helperText={nameError} autoFocus required slotProps={{ htmlInput: { maxLength: 100 } }} />
           <TextField
+            label={t('staff.form.email')}
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value)
+              if (taken === 'email') setTaken(null)
+            }}
+            error={!!emailError}
+            helperText={emailError ?? t('staff.form.emailHint')}
+            required
+            slotProps={{ htmlInput: { dir: 'ltr', autoComplete: 'off', maxLength: 254 } }}
+          />
+          <TextField
             label={t('staff.form.phone')}
             value={phone}
             onChange={(e) => {
               setPhone(e.target.value)
-              setPhoneTaken(false)
+              if (taken === 'phone') setTaken(null)
             }}
             error={!!phoneError}
             helperText={phoneError ?? t('staff.form.phoneHint')}
-            required
             slotProps={{ htmlInput: { dir: 'ltr', inputMode: 'tel', autoComplete: 'off' } }}
           />
           <RoleChecks value={roles} onChange={setRoles} error={rolesError} />

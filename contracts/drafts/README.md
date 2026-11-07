@@ -6,4 +6,4 @@ Endpoints a frontend is built against before the team has agreed them. They foll
 
 ## Files
 
-- `admin.yaml`: the admin screens (KAN-20): staff and roles (`/auth/staff`, auth service), departments, clinics and assignments (`/admin/departments`, `/admin/clinics`), statistics (`/admin/statistics`) and the audit log (`/admin/audit-log`), all core service and `ADMIN` only. Taken by KAN-36 (staff and hospital setup), KAN-39 (statistics) and KAN-62 (audit log). The dashboard generates `src/lib/admin-api-types.ts` from it, and `pnpm mock` serves it with example data.
+_None open._ The admin draft (`admin.yaml`, KAN-20) moved into `openapi.yaml` when KAN-36, KAN-39 and KAN-62 built its endpoints, with staff work emails and the audit actions the services really write.

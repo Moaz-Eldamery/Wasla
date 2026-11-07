@@ -1,3 +1,22 @@
+## 2026-11-07 18:21 +0200 · Moaz Mohamed
+Changes: 2026-11-07 18:21, 2026-11-07 18:24, 2026-11-07 18:31, 2026-11-07 18:46, 2026-11-07 19:03
+
+> ok you can start working on fixing that and make the dashboard fully functional. also update the jira board when nessicery. also i can not find a merge request from the branch of staff email. could you just add it to the current branch that you will be working on?
+
+## 2026-11-07 18:21 +0200 · Moaz Mohamed
+Changes: none
+
+> is the dashboard connected to the backend funcitons?
+
+(Asked earlier in the same session; logged late with this timestamp because it wasn't logged when it was asked.)
+
+## 2026-11-07 18:21 +0200 · Moaz Mohamed
+Changes: none
+
+> what is missing for this sprint to be ready?
+
+(Asked earlier in the same session; logged late with this timestamp because it wasn't logged when it was asked.)
+
 ## 2026-11-07 08:57 +0200 · NourElghaly
 Changes: 2026-11-07 09:03
 

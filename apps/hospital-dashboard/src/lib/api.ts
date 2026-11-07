@@ -1,4 +1,3 @@
-import type { components as AdminComponents } from './admin-api-types.ts'
 import type { components } from './api-types.ts'
 
 type Schemas = components['schemas']
@@ -22,22 +21,21 @@ export type TestStatus = Schemas['TestStatus']
 export type OrderTestRequest = Schemas['OrderTestRequest']
 export type ChatbotAnswer = Schemas['ChatbotAnswer']
 
-// Admin screens: shapes from the draft in contracts/drafts/admin.yaml until the backend cards move them into the contract.
-type AdminSchemas = AdminComponents['schemas']
-export type StaffMember = AdminSchemas['StaffMember']
-export type NewStaffRequest = AdminSchemas['NewStaffRequest']
-export type NewStaffResponse = AdminSchemas['NewStaffResponse']
-export type AdminDepartment = AdminSchemas['AdminDepartment']
-export type AdminClinic = AdminSchemas['AdminClinic']
-export type AssignedStaff = AdminSchemas['AssignedStaff']
+// Admin screens: staff (auth service), hospital setup, statistics and the audit log (core).
+export type StaffMember = Schemas['StaffMember']
+export type NewStaffRequest = Schemas['NewStaffRequest']
+export type NewStaffResponse = Schemas['NewStaffResponse']
+export type AdminDepartment = Schemas['AdminDepartment']
+export type AdminClinic = Schemas['AdminClinic']
+export type AssignedStaff = Schemas['AssignedStaff']
 export type DepartmentKind = Schemas['DepartmentKind']
-export type ClinicRequest = AdminSchemas['ClinicRequest']
-export type Statistics = AdminSchemas['Statistics']
-export type StatisticsDay = AdminSchemas['StatisticsDay']
-export type AuditAction = AdminSchemas['AuditAction']
-export type AuditEntityType = AdminSchemas['AuditEntityType']
-export type AuditEntry = AdminSchemas['AuditEntry']
-export type AuditPage = AdminSchemas['AuditPage']
+export type ClinicRequest = Schemas['ClinicRequest']
+export type Statistics = Schemas['Statistics']
+export type StatisticsDay = Schemas['StatisticsDay']
+export type AuditAction = Schemas['AuditAction']
+export type AuditEntityType = Schemas['AuditEntityType']
+export type AuditEntry = Schemas['AuditEntry']
+export type AuditPage = Schemas['AuditPage']
 
 /** A non-2xx answer from the gateway, or a network failure (`status` 0). */
 export class ApiError extends Error {

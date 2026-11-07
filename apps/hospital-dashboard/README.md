@@ -15,7 +15,7 @@ The site calls `/api/...` on its own origin, and the dev server forwards those c
 
 ## Files
 
-- `package.json`: dependencies and scripts (`dev`, `build`, `lint`, `test`, `generate:api-types`). `lint` also fails when `src/lib/api-types.ts` is out of date with the contract, or `src/lib/admin-api-types.ts` with `contracts/drafts/admin.yaml`.
+- `package.json`: dependencies and scripts (`dev`, `build`, `lint`, `test`, `generate:api-types`). `lint` also fails when `src/lib/api-types.ts` is out of date with the contract.
 - `index.html`: the page Vite serves; loads `src/main.tsx`.
 - `vite.config.ts`: the `/api` proxy (`VITE_PROXY_TARGET`, default `http://localhost:8080`) and the Vitest settings (jsdom, `src/test-setup.ts`, a 20 s limit per test).
 - `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`: TypeScript 6 settings for the app code and for the Vite config. TypeScript 7 can't run `openapi-typescript`.

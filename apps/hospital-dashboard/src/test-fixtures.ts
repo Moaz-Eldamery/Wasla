@@ -71,14 +71,14 @@ export function fakeGateway(routes: Record<string, Handler>) {
 
 // ------------------------------------------------------------------ admin
 
-export const adminUser: User = { id: 'admin-1', type: 'STAFF', name: 'Demo Admin', phone: '+201000000001', roles: ['ADMIN'] }
+export const adminUser: User = { id: 'admin-1', type: 'STAFF', name: 'Demo Admin', phone: null, email: 'admin@wasla.test', roles: ['ADMIN'] }
 
 export const staffList: StaffMember[] = [
-  { id: 'admin-1', name: 'Demo Admin', phone: '+201000000001', roles: ['ADMIN'], active: true, createdAt: '2026-10-01T08:00:00Z' },
-  { id: 'doc-1', name: 'Dr. Rania Mostafa', phone: '+201000000011', roles: ['DOCTOR'], active: true, createdAt: '2026-10-01T08:00:00Z' },
-  { id: 'doc-2', name: 'Dr. Omar Nabil', phone: '+201000000014', roles: ['DOCTOR'], active: false, createdAt: '2026-10-02T08:00:00Z' },
-  { id: 'rec-1', name: 'Nadia Hassan', phone: '+201000000021', roles: ['RECEPTIONIST'], active: true, createdAt: '2026-10-03T08:00:00Z' },
-  { id: 'lab-1', name: 'Mona Farouk', phone: '+201000000031', roles: ['LAB'], active: true, createdAt: '2026-10-04T08:00:00Z' },
+  { id: 'admin-1', name: 'Demo Admin', email: 'admin@wasla.test', phone: null, roles: ['ADMIN'], active: true, createdAt: '2026-10-01T08:00:00Z' },
+  { id: 'doc-1', name: 'Dr. Rania Mostafa', email: 'rania.mostafa@wasla.test', phone: null, roles: ['DOCTOR'], active: true, createdAt: '2026-10-01T08:00:00Z' },
+  { id: 'doc-2', name: 'Dr. Omar Nabil', email: 'omar.nabil@wasla.test', phone: null, roles: ['DOCTOR'], active: false, createdAt: '2026-10-02T08:00:00Z' },
+  { id: 'rec-1', name: 'Nadia Hassan', email: 'nadia.hassan@wasla.test', phone: '+201000000021', roles: ['RECEPTIONIST'], active: true, createdAt: '2026-10-03T08:00:00Z' },
+  { id: 'lab-1', name: 'Mona Farouk', email: 'mona.farouk@wasla.test', phone: null, roles: ['LAB'], active: true, createdAt: '2026-10-04T08:00:00Z' },
 ]
 
 export function adminDepartments(): AdminDepartment[] {

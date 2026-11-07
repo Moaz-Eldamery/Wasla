@@ -46,7 +46,7 @@ afterEach(() => {
 })
 
 describe('Staff and roles', () => {
-  it('lists staff with their roles and status, and searches by name or phone', async () => {
+  it('lists staff with their roles and status, and searches by name, email or phone', async () => {
     staffGateway()
     renderStaff()
     const user = userEvent.setup()
@@ -80,33 +80,68 @@ describe('Staff and roles', () => {
     expect(within(dialog).getByText('Choose at least one role.')).toBeInTheDocument()
     expect(calls.some((c) => c.method === 'POST')).toBe(false)
 
+    expect(within(dialog).getByText('Enter an email address, e.g. nadia.hassan@hospital.eg.')).toBeInTheDocument()
+
     await user.type(within(dialog).getByRole('textbox', { name: 'Full name' }), 'Laila Mahmoud')
-    await user.type(within(dialog).getByRole('textbox', { name: 'Mobile number' }), '010 1234 5678')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Work email' }), ' Laila.Mahmoud@Wasla.test ')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Mobile number (optional)' }), '010 1234 5678')
     await user.click(within(dialog).getByRole('checkbox', { name: /Receptionist/ }))
     await user.click(within(dialog).getByRole('button', { name: 'Add and get password' }))
 
     const created = await screen.findByRole('dialog', { name: 'Laila Mahmoud can now log in' })
     expect(within(created).getByText('river-amber-4729')).toBeInTheDocument()
     expect(within(created).getByText(/only time the password is shown/)).toBeInTheDocument()
-    expect(body(calls.find((c) => c.method === 'POST')!.init)).toEqual({ name: 'Laila Mahmoud', phone: '+201012345678', roles: ['RECEPTIONIST'] })
+    expect(body(calls.find((c) => c.method === 'POST')!.init)).toEqual({
+      name: 'Laila Mahmoud',
+      email: 'laila.mahmoud@wasla.test',
+      phone: '+201012345678',
+      roles: ['RECEPTIONIST'],
+    })
 
     await user.click(within(created).getByRole('button', { name: 'Done' }))
     await waitFor(() => expect(screen.queryByText('river-amber-4729')).not.toBeInTheDocument())
   })
 
-  it('says when the phone number already has an account', async () => {
-    staffGateway({ 'POST /auth/staff': () => ({ status: 409, body: { error: { code: 'PHONE_TAKEN', message: 'taken' } } }) })
+  it('adds someone without a phone number, since staff log in with their email', async () => {
+    const calls = staffGateway({
+      'POST /auth/staff': (_, init) => ({
+        status: 201,
+        body: { staff: { id: 'new-2', phone: null, ...body(init), active: true, createdAt: '2026-11-06T10:30:00Z' }, temporaryPassword: 'k7Qm-x2Rt-Hb9w' },
+      }),
+    })
     renderStaff()
     const user = userEvent.setup()
 
     await user.click(await screen.findByRole('button', { name: 'Add staff member' }))
     const dialog = screen.getByRole('dialog')
     await user.type(within(dialog).getByRole('textbox', { name: 'Full name' }), 'Laila Mahmoud')
-    await user.type(within(dialog).getByRole('textbox', { name: 'Mobile number' }), '01000000021')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Work email' }), 'laila@wasla.test')
     await user.click(within(dialog).getByRole('checkbox', { name: /Doctor/ }))
     await user.click(within(dialog).getByRole('button', { name: 'Add and get password' }))
 
-    expect(await within(dialog).findByText('This phone number already has an account.')).toBeInTheDocument()
+    expect(await screen.findByText('k7Qm-x2Rt-Hb9w')).toBeInTheDocument()
+    expect(body(calls.find((c) => c.method === 'POST')!.init)).toEqual({ name: 'Laila Mahmoud', email: 'laila@wasla.test', roles: ['DOCTOR'] })
+  })
+
+  it.each([
+    ['EMAIL_TAKEN', 'Work email', 'This work email already has an account.'],
+    ['PHONE_TAKEN', 'Mobile number (optional)', 'This phone number already has an account.'],
+  ])('shows %s under the field it is about', async (code, field, message) => {
+    staffGateway({ 'POST /auth/staff': () => ({ status: 409, body: { error: { code, message: 'taken' } } }) })
+    renderStaff()
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'Add staff member' }))
+    const dialog = screen.getByRole('dialog')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Full name' }), 'Laila Mahmoud')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Work email' }), 'nadia.hassan@wasla.test')
+    await user.type(within(dialog).getByRole('textbox', { name: 'Mobile number (optional)' }), '01000000021')
+    await user.click(within(dialog).getByRole('checkbox', { name: /Doctor/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Add and get password' }))
+
+    const input = within(dialog).getByRole('textbox', { name: field })
+    expect(await within(dialog).findByText(message)).toBeInTheDocument()
+    expect(input).toHaveAccessibleDescription(message)
   })
 
   it('changes a staff member’s roles', async () => {

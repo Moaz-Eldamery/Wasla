@@ -98,7 +98,8 @@
     "FILE_TOO_LARGE": "حجم الملف أكبر من 10 ميجابايت. اختر ملفًا أصغر.",
     "FILE_TYPE_NOT_ALLOWED": "يمكن إرسال ملفات PDF أو JPEG أو PNG فقط.",
     "AI_UNAVAILABLE": "المساعد غير متاح الآن. كل ما عداه في وصلة يعمل بشكل طبيعي؛ حاول مرة أخرى بعد دقائق.",
-    "PHONE_TAKEN": "يوجد حساب بهذا الرقم بالفعل."
+    "PHONE_TAKEN": "يوجد حساب بهذا الرقم بالفعل.",
+    "EMAIL_TAKEN": "يوجد حساب بهذا البريد بالفعل."
   },
   "doctor": {
     "title": "مرضاي اليوم",
@@ -280,7 +281,7 @@
     "intro": "كل من يدخل إلى موقع فريق العمل. أضف الأشخاص، وحدّد ما يمكنهم فعله، وأوقف الحساب عندما يغادر أحدهم.",
     "add": "إضافة عضو",
     "search": "البحث في فريق العمل",
-    "searchPlaceholder": "الاسم أو رقم الهاتف",
+    "searchPlaceholder": "الاسم أو بريد العمل أو رقم الهاتف",
     "statusFilter": "عرض",
     "filter": {
       "all": "الكل",
@@ -292,7 +293,7 @@
     "empty": "لا توجد حسابات لفريق العمل بعد.",
     "col": {
       "name": "الاسم",
-      "phone": "الهاتف",
+      "email": "بريد العمل",
       "roles": "الأدوار",
       "status": "الحالة",
       "actions": "الإجراءات"
@@ -320,8 +321,11 @@
       "addTitle": "إضافة عضو إلى فريق العمل",
       "name": "الاسم الكامل",
       "nameRequired": "اكتب الاسم الكامل.",
-      "phone": "رقم الموبايل",
-      "phoneHint": "يدخل بهذا الرقم، مثل 010 1234 5678",
+      "email": "بريد العمل",
+      "emailHint": "يدخل به إلى هذا الموقع، مثل nadia.hassan@hospital.eg",
+      "emailInvalid": "اكتب عنوان بريد إلكتروني، مثل nadia.hassan@hospital.eg.",
+      "phone": "رقم الموبايل (اختياري)",
+      "phoneHint": "للتواصل معه فقط، ولا يُستخدم لتسجيل الدخول.",
       "phoneInvalid": "اكتب رقم موبايل مصريًا، مثل 010 1234 5678.",
       "roles": "الأدوار",
       "rolesRequired": "اختر دورًا واحدًا على الأقل.",
@@ -501,7 +505,7 @@
     "entity": {
       "ACCOUNT": "حساب",
       "APPOINTMENT": "موعد",
-      "VISIT_NOTES": "ملاحظات الزيارة",
+      "SLOT": "موعد متاح",
       "TEST_ORDER": "تحليل",
       "DEPARTMENT": "قسم",
       "CLINIC": "عيادة"
@@ -517,15 +521,18 @@
       "LOGIN_FAILED": "محاولة دخول فاشلة",
       "LOGOUT": "تسجيل خروج",
       "PATIENT_REGISTERED": "تسجيل مريض جديد",
+      "PHONE_VERIFIED": "تأكيد رقم الهاتف",
       "ACCESS_DENIED": "رفض الوصول",
       "APPOINTMENT_BOOKED": "حجز موعد",
       "APPOINTMENT_CANCELLED": "إلغاء موعد",
       "CHECK_IN": "تسجيل حضور",
       "VISIT_STARTED": "بدء الزيارة",
       "VISIT_COMPLETED": "إنهاء الزيارة",
+      "RECORD_VIEWED": "فتح سجل مريض",
       "NOTES_VIEWED": "فتح ملاحظات الزيارة",
       "NOTES_SAVED": "حفظ ملاحظات الزيارة",
       "TEST_ORDERED": "طلب تحليل",
+      "TEST_STARTED": "بدء التحليل",
       "RESULT_UPLOADED": "رفع نتيجة",
       "RESULT_RELEASED": "نشر نتيجة",
       "RESULT_VIEWED": "فتح نتيجة",
@@ -535,7 +542,8 @@
       "STAFF_REACTIVATED": "إعادة تفعيل عضو",
       "DEPARTMENT_CHANGED": "تغيير قسم",
       "CLINIC_CHANGED": "تغيير عيادة",
-      "CLINIC_STAFF_CHANGED": "تغيير فريق عيادة"
+      "CLINIC_STAFF_CHANGED": "تغيير فريق عيادة",
+      "OTHER": "أخرى"
     }
   }
 }

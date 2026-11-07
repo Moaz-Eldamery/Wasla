@@ -1,3 +1,37 @@
+## 2026-11-07 19:03 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 18:21 · Moaz Mohamed
+What: The admin endpoints are agreed now that they're built, so the draft moved into the contract and the dashboard runs on them:
+- **Contract:** `contracts/drafts/admin.yaml` moved into `openapi.yaml` (staff paths after the auth service, `/admin/*` after the chatbot, schemas under "admin"), with what the backend changed: staff have a required work email and an optional phone, `POST /auth/staff` can answer `EMAIL_TAKEN` (new error code), the 92-day range counts both ends, and `AuditAction` is the list the core really maps to (adds `PHONE_VERIFIED`, `RECORD_VIEWED`, `TEST_STARTED`, `OTHER`; entity types add `SLOT` and drop `VISIT_NOTES`). The drafts folder is empty again. `pnpm mock`'s demo user has an email.
+- **Dashboard:** types come from `api-types.ts` only (`admin-api-types.ts` deleted, `lint` and `generate:api-types` simplified). Staff are added with a work email (their login) and an optional mobile number; the list shows the email, with the phone when there is one, and search covers both. `EMAIL_TAKEN` and `PHONE_TAKEN` show under their own field. New labels for the new audit actions, in English and Arabic. The patient app's generated types were refreshed for the new contract.
+Files: contracts/openapi.yaml, contracts/drafts/admin.yaml (deleted), contracts/drafts/README.md, contracts/mock.mjs, apps/hospital-dashboard/package.json, apps/hospital-dashboard/src/lib/ (api.ts, api-types.ts, admin-api-types.ts deleted, README.md), apps/hospital-dashboard/src/pages/admin/ (StaffPage.tsx, staff.ts, StaffPage.test.tsx, AuditPage.test.tsx, README.md), apps/hospital-dashboard/src/test-fixtures.ts, apps/hospital-dashboard/src/translations/ (en.json, ar.json), apps/hospital-dashboard/README.md, apps/patient-app/lib/api-types.ts, structure.md, PRODUCT.md
+
+## 2026-11-07 18:46 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 18:21 · Moaz Mohamed
+What: After merging `staff-email-login`, the visit-notes and clinical end-to-end tests (KAN-10, KAN-11) failed in setup: they create staff without an email, which the new `accounts_login_identifier` check refuses. Their test staff now get a random `@e2e.test` work email; patients still get none. Two patient-app tests (KAN-16) built a user without the now-required `email`, which failed the app's type check; they now say `email: null`.
+Files: services/core/test/visit-notes.e2e-spec.ts, services/core/test/clinical.e2e-spec.ts, apps/patient-app/app.test.tsx
+
+## 2026-11-07 18:31 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 18:21 · Moaz Mohamed
+What: The admin backend (KAN-36, KAN-39, KAN-62), so the admin dashboard works without the mock:
+- **Staff accounts (auth service):** `GET`/`POST /auth/staff`, `PUT /auth/staff/{id}/roles`, `POST /auth/staff/{id}/deactivate` and `/reactivate`. `AdminGuard` checks the session and the Admin role before validation (/auth/* skips the gateway's auth check). A new account gets a 12-character temporary password, returned once; only its hash is stored. Deactivating revokes every open session in the same transaction. An admin can't deactivate themselves or drop their own Admin role. Roles are stored in screen order. Every change is audited (`staff.*`, no names or passwords). New error codes `FORBIDDEN` and `EMAIL_TAKEN` in the auth service.
+- **Hospital setup (core):** `/admin/departments` (list with clinics and assigned staff, add, rename, deactivate, reactivate), `/admin/departments/{id}/clinics`, `/admin/clinics/{id}` (edit, deactivate, reactivate) and `/admin/clinics/{id}/staff/{staffId}` (assign, remove). Only active staff with a clinic role can be assigned. Each change is audited in its transaction.
+- **Booking rule:** free slots and booking now also need the clinic's department to be active, as `business.md` says (before, only the clinic was checked).
+- **Statistics (core):** `GET /admin/statistics`: visits per clinical department, average wait and no-show rate per Cairo day, plus weighted totals; null when there's nothing to measure. The definitions in `business.md` are no longer a draft.
+- **Audit log (core):** `GET /admin/audit-log`: by who, action and Cairo days, newest first, 50 per page. `audit-actions.ts` maps the stored dotted names to the screen's actions.
+- **Shared:** the Cairo-day validator moved from `appointments/dto/booking.dto.ts` to `shared/validators.ts`, so the admin module can use it without importing another module.
+- **Tests:** unit tests for each service, and `staff.e2e-spec.ts` (auth) and `admin.e2e-spec.ts` (core) against a real database.
+Files: services/auth/src/api-error.ts, services/auth/src/api-exception.filter.ts, services/auth/src/identity/ (identity.module.ts, staff.controller.ts, staff.service.ts, staff.service.spec.ts, admin.guard.ts, dto/staff.dto.ts, README.md), services/auth/README.md, services/auth/test/staff.e2e-spec.ts, services/core/src/app.module.ts, services/core/src/modules/admin-reporting/ (admin-reporting.module.ts, admin.controller.ts, admin.dto.ts, audit-actions.ts, audit-log.service.ts, audit-log.service.spec.ts, hospital-setup.service.ts, hospital-setup.service.spec.ts, statistics.service.ts, statistics.service.spec.ts, README.md), services/core/src/modules/appointments/ (appointments.service.ts, appointments.service.spec.ts, dto/booking.dto.ts, README.md), services/core/src/shared/ (validators.ts, README.md), services/core/test/admin.e2e-spec.ts, business.md, structure.md
+
+## 2026-11-07 18:24 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 18:21 · Moaz Mohamed
+What: `GET /doctors/me/appointments` was in the contract (KAN-8) but no service served it, so the doctor screen's day list got a 404 on the real backend. The core now answers it: the calling doctor's appointments for one Cairo day (default today), in every clinic, earliest first, cancelled ones left out.
+Files: services/core/src/modules/appointments/ (appointments.controller.ts, appointments.service.ts, appointments.service.spec.ts, README.md)
+
+## 2026-11-07 18:21 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 18:21 · Moaz Mohamed
+What: Merged Nour's `staff-email-login` branch (staff log in to the website with a work email; it had no pull request) into this branch, as asked. Two conflicts, both resolved by keeping both sides: `business.md` (KAN-20's account rules plus the email login rules; staff have a work email and an optional phone) and the dashboard README (the KAN-20 routes plus the email login).
+Files: business.md, apps/hospital-dashboard/README.md (plus everything in that branch)
+
 ## 2026-11-07 09:03 +0200 · NourElghaly
 Prompt: 2026-11-07 08:57 · NourElghaly
 What: Review fixes on PR #11 (KAN-16) before merging:

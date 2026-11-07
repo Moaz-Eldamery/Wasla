@@ -193,6 +193,95 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List staff accounts
+         * @description Every staff account, active and inactive, sorted by name. Patients are never listed.
+         */
+        get: operations["listStaff"];
+        put?: never;
+        /**
+         * Add a staff member
+         * @description Creates an active staff account and a temporary password. The password is returned once,
+         *     in this response only, for the admin to hand over in person; the auth service stores just its hash.
+         *     Staff don't get a phone code: the admin created the account.
+         */
+        post: operations["createStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/staff/{staffId}/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change a staff member's roles
+         * @description Replaces the roles. Takes effect on the person's next request (the forward-auth check reads roles each time).
+         *     An admin can't remove their own `ADMIN` role (403), so there is always someone who can undo a change.
+         */
+        put: operations["setStaffRoles"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/staff/{staffId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate a staff member
+         * @description The account can't log in any more and **every session it has is revoked at once**, so the next
+         *     request from any of its devices gets 401. Its past records keep its name. An admin can't deactivate themselves (403).
+         *     Doing it twice is harmless.
+         */
+        post: operations["deactivateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/staff/{staffId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reactivate a staff member
+         * @description The account can log in again with its existing password. Doing it twice is harmless.
+         */
+        post: operations["reactivateStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/departments": {
         parameters: {
             query?: never;
@@ -698,6 +787,239 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/departments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Departments with their clinics and assigned staff
+         * @description Everything, inactive included (`GET /departments` is the bookable view and leaves inactive ones out).
+         *     Departments come in a fixed order (clinical first, then lab, then radiology, each by English name),
+         *     the same order the statistics use.
+         */
+        get: operations["listAdminDepartments"];
+        put?: never;
+        /** Add a department */
+        post: operations["createDepartment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/departments/{departmentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Rename a department
+         * @description The kind (clinical, lab, radiology) is fixed once created.
+         */
+        put: operations["updateDepartment"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/departments/{departmentId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate a department
+         * @description The department and all its clinics stop being bookable (they leave `GET /departments`), whatever
+         *     each clinic's own setting. Existing appointments keep it, and past ones still show it.
+         */
+        post: operations["deactivateDepartment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/departments/{departmentId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reactivate a department
+         * @description Its active clinics become bookable again; inactive clinics stay inactive.
+         */
+        post: operations["reactivateDepartment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/departments/{departmentId}/clinics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add a clinic to a department */
+        post: operations["createClinic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/clinics/{clinicId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Edit a clinic
+         * @description Name, building, floor and directions. Patients see the change on their next look; booked appointments keep the clinic.
+         */
+        put: operations["updateClinic"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/clinics/{clinicId}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate a clinic
+         * @description No new bookings (its open slots stop being offered). Existing appointments keep it, and past ones still show it.
+         */
+        post: operations["deactivateClinic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/clinics/{clinicId}/reactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reactivate a clinic
+         * @description Bookable again, unless its department is inactive.
+         */
+        post: operations["reactivateClinic"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/clinics/{clinicId}/staff/{staffId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Assign a staff member to a clinic
+         * @description Doctors, receptionists and lab staff work only in the clinics they're assigned to.
+         *     Assigning someone already assigned is harmless. Inactive or admin-only accounts can't be assigned (400).
+         */
+        put: operations["assignClinicStaff"];
+        post?: never;
+        /**
+         * Remove a staff member from a clinic
+         * @description Their past and booked appointments in the clinic are unchanged. Removing someone not assigned is harmless.
+         */
+        delete: operations["unassignClinicStaff"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visits, wait times and no-shows per day
+         * @description Counts and averages only, never patients. Days are Cairo calendar days.
+         *     - **Visits:** appointments that reached `COMPLETED`, per clinical department.
+         *     - **Average wait:** minutes from check-in to the consultation starting, over the visits that started that day.
+         *     - **No-show rate:** `NO_SHOW` ÷ appointments due that day that weren't cancelled (0 to 1).
+         *     A value is `null` when there is nothing to measure (no appointments, hospital closed, or a day still to come);
+         *     the screen shows "Not available", never 0. A real zero is `0`.
+         */
+        get: operations["getStatistics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/audit-log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search the audit log
+         * @description Newest first, 50 at a time. Read-only: there is no endpoint that edits or deletes an entry.
+         *     Entries say who did what to which record and whether it worked. They never carry medical content,
+         *     passwords, tokens or codes.
+         */
+        get: operations["searchAuditLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -726,7 +1048,7 @@ export interface components {
             };
         };
         /** @enum {string} */
-        ErrorCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "PHONE_TAKEN" | "PHONE_NOT_VERIFIED" | "INVALID_CREDENTIALS" | "CODE_INVALID" | "CODE_EXPIRED" | "SLOT_TAKEN" | "SLOT_UNAVAILABLE" | "INVALID_TRANSITION" | "QUEUE_EMPTY" | "ALREADY_IN_CONSULTATION" | "VERSION_CONFLICT" | "NOT_YET_AVAILABLE" | "FILE_TYPE_NOT_ALLOWED" | "FILE_TOO_LARGE" | "AI_UNAVAILABLE" | "INTERNAL";
+        ErrorCode: "VALIDATION_FAILED" | "UNAUTHENTICATED" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED" | "PHONE_TAKEN" | "EMAIL_TAKEN" | "PHONE_NOT_VERIFIED" | "INVALID_CREDENTIALS" | "CODE_INVALID" | "CODE_EXPIRED" | "SLOT_TAKEN" | "SLOT_UNAVAILABLE" | "INVALID_TRANSITION" | "QUEUE_EMPTY" | "ALREADY_IN_CONSULTATION" | "VERSION_CONFLICT" | "NOT_YET_AVAILABLE" | "FILE_TYPE_NOT_ALLOWED" | "FILE_TOO_LARGE" | "AI_UNAVAILABLE" | "INTERNAL";
         LocalizedText: {
             ar: string;
             en: string;
@@ -986,6 +1308,155 @@ export interface components {
                 title: components["schemas"]["LocalizedText"];
             }[];
         };
+        StaffMember: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /**
+             * Format: email
+             * @description Work email, stored lowercase. Staff log in to the website with it.
+             */
+            email: string;
+            /** @description Optional contact number, never a login */
+            phone: components["schemas"]["Phone"] | null;
+            roles: components["schemas"]["StaffRole"][];
+            active: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        NewStaffRequest: {
+            name: string;
+            /**
+             * Format: email
+             * @description Work email; matched without regard to case
+             */
+            email: string;
+            /** @description Optional */
+            phone?: components["schemas"]["Phone"];
+            roles: components["schemas"]["StaffRole"][];
+        };
+        NewStaffResponse: {
+            staff: components["schemas"]["StaffMember"];
+            /** @description Shown to the admin once, e.g. `k7Qm-x2Rt-Hb9w` (12 characters without look-alikes). Never returned again and never logged. */
+            temporaryPassword: string;
+        };
+        StaffRolesRequest: {
+            roles: components["schemas"]["StaffRole"][];
+        };
+        AdminDepartment: {
+            /** Format: uuid */
+            id: string;
+            kind: components["schemas"]["DepartmentKind"];
+            name: components["schemas"]["LocalizedText"];
+            active: boolean;
+            /** @description Inactive ones included, by English name */
+            clinics: components["schemas"]["AdminClinic"][];
+        };
+        AdminClinic: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            departmentId: string;
+            name: components["schemas"]["LocalizedText"];
+            building: string;
+            floor: string;
+            directions: components["schemas"]["LocalizedText"];
+            /** @description The clinic's own setting. It is bookable only when it and its department are both active. */
+            active: boolean;
+            /** @description Everyone assigned, by name */
+            staff: components["schemas"]["AssignedStaff"][];
+        };
+        AssignedStaff: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            roles: components["schemas"]["StaffRole"][];
+            active: boolean;
+        };
+        NewDepartmentRequest: {
+            kind: components["schemas"]["DepartmentKind"];
+            name: components["schemas"]["RequiredText"];
+        };
+        DepartmentNameRequest: {
+            name: components["schemas"]["RequiredText"];
+        };
+        ClinicRequest: {
+            name: components["schemas"]["RequiredText"];
+            building: string;
+            floor: string;
+            directions: components["schemas"]["RequiredText"];
+        };
+        /** @description `{ ar, en }` where both sides are filled in (1 to 200 characters) */
+        RequiredText: {
+            ar: string;
+            en: string;
+        };
+        Statistics: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+            /**
+             * Format: uuid
+             * @description The department filter, or null for all
+             */
+            departmentId: string | null;
+            /** @description The clinical departments counted, in the fixed order of `GET /admin/departments`. Inactive ones are included while they have visits in the range. */
+            departments: {
+                /** Format: uuid */
+                id: string;
+                name: components["schemas"]["LocalizedText"];
+            }[];
+            days: components["schemas"]["StatisticsDay"][];
+            /** @description The whole range. Wait and no-show rate are weighted by the day's appointments, not an average of the days. */
+            totals: {
+                visits: number | null;
+                averageWaitMinutes: number | null;
+                noShowRate: number | null;
+            };
+        };
+        StatisticsDay: {
+            /** Format: date */
+            date: string;
+            /** @description Completed visits per department, one entry per department in `departments` (0 included). Null when there's no data for the day. */
+            visits: {
+                /** Format: uuid */
+                departmentId: string;
+                count: number;
+            }[] | null;
+            averageWaitMinutes: number | null;
+            noShowRate: number | null;
+        };
+        /**
+         * @description What happened, grouped from the dotted names the services store (`auth.login`, `appointment.check_in`, ...). `RECORD_VIEWED` is any other read of a patient record (appointment, queue, journey, test). `OTHER` is a stored name the core does not group yet. The mapping is in `services/core/src/modules/admin-reporting/audit-actions.ts`.
+         * @enum {string}
+         */
+        AuditAction: "LOGIN" | "LOGIN_FAILED" | "LOGOUT" | "PATIENT_REGISTERED" | "PHONE_VERIFIED" | "ACCESS_DENIED" | "APPOINTMENT_BOOKED" | "APPOINTMENT_CANCELLED" | "CHECK_IN" | "VISIT_STARTED" | "VISIT_COMPLETED" | "RECORD_VIEWED" | "NOTES_VIEWED" | "NOTES_SAVED" | "TEST_ORDERED" | "TEST_STARTED" | "RESULT_UPLOADED" | "RESULT_RELEASED" | "RESULT_VIEWED" | "STAFF_CREATED" | "STAFF_ROLES_CHANGED" | "STAFF_DEACTIVATED" | "STAFF_REACTIVATED" | "DEPARTMENT_CHANGED" | "CLINIC_CHANGED" | "CLINIC_STAFF_CHANGED" | "OTHER";
+        /** @enum {string} */
+        AuditEntityType: "ACCOUNT" | "APPOINTMENT" | "SLOT" | "TEST_ORDER" | "DEPARTMENT" | "CLINIC";
+        AuditEntry: {
+            id: string;
+            /** Format: date-time */
+            occurredAt: string;
+            /** @description Null when nobody was signed in, e.g. a failed login with an unknown number */
+            actor: null | {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                type: components["schemas"]["AccountType"];
+            };
+            action: components["schemas"]["AuditAction"];
+            /** @enum {string} */
+            outcome: "SUCCESS" | "DENIED" | "FAILED";
+            entityType: null | components["schemas"]["AuditEntityType"];
+            entityId: string | null;
+            ip: string | null;
+        };
+        AuditPage: {
+            entries: components["schemas"]["AuditEntry"][];
+            /** @description Pass as `cursor` for the next 50; null on the last page */
+            nextCursor: string | null;
+        };
     };
     responses: {
         /** @description `VALIDATION_FAILED`: `error.details` lists the bad fields */
@@ -1051,6 +1522,7 @@ export interface components {
         TestId: string;
         /** @description Cairo calendar day. Defaults to today in Cairo. */
         CairoDate: string;
+        StaffId: string;
     };
     requestBodies: never;
     headers: never;
@@ -1331,6 +1803,310 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listStaff: {
+        parameters: {
+            query?: {
+                /** @description Part of a name, work email or phone number */
+                q?: string;
+                /** @description Only active or only inactive accounts; both when left out */
+                status?: "active" | "inactive";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The matching staff */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000001",
+                     *         "name": "Demo Admin",
+                     *         "email": "admin@wasla.test",
+                     *         "phone": "+201000000001",
+                     *         "roles": [
+                     *           "ADMIN"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-01T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *         "name": "Dr. Rania Mostafa",
+                     *         "email": "rania.mostafa@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "DOCTOR"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-01T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000012",
+                     *         "name": "Dr. Karim Adel",
+                     *         "email": "karim.adel@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "DOCTOR",
+                     *           "ADMIN"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-01T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000013",
+                     *         "name": "Dr. Salma Fawzy",
+                     *         "email": "salma.fawzy@wasla.test",
+                     *         "phone": "+201000000013",
+                     *         "roles": [
+                     *           "DOCTOR"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-02T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000014",
+                     *         "name": "Dr. Omar Nabil",
+                     *         "email": "omar.nabil@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "DOCTOR"
+                     *         ],
+                     *         "active": false,
+                     *         "createdAt": "2026-10-02T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000021",
+                     *         "name": "Nadia Hassan",
+                     *         "email": "nadia.hassan@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "RECEPTIONIST"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-03T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000022",
+                     *         "name": "Youssef Samir",
+                     *         "email": "youssef.samir@wasla.test",
+                     *         "phone": "+201000000022",
+                     *         "roles": [
+                     *           "RECEPTIONIST"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-03T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000031",
+                     *         "name": "Mona Farouk",
+                     *         "email": "mona.farouk@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "LAB"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-04T08:00:00Z"
+                     *       },
+                     *       {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000032",
+                     *         "name": "Hany Ibrahim",
+                     *         "email": "hany.ibrahim@wasla.test",
+                     *         "phone": null,
+                     *         "roles": [
+                     *           "LAB"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-10-04T08:00:00Z"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["StaffMember"][];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewStaffRequest"];
+            };
+        };
+        responses: {
+            /** @description Account created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "staff": {
+                     *         "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000099",
+                     *         "name": "Laila Mahmoud",
+                     *         "email": "laila.mahmoud@wasla.test",
+                     *         "phone": "+201000000099",
+                     *         "roles": [
+                     *           "RECEPTIONIST"
+                     *         ],
+                     *         "active": true,
+                     *         "createdAt": "2026-11-06T10:30:00Z"
+                     *       },
+                     *       "temporaryPassword": "k7Qm-x2Rt-Hb9w"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["NewStaffResponse"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            /** @description `EMAIL_TAKEN`: another account has this work email. `PHONE_TAKEN`: another account (staff or patient) uses this number. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    setStaffRoles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: components["parameters"]["StaffId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffRolesRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *       "name": "Dr. Rania Mostafa",
+                     *       "email": "rania.mostafa@wasla.test",
+                     *       "phone": null,
+                     *       "roles": [
+                     *         "DOCTOR",
+                     *         "RECEPTIONIST"
+                     *       ],
+                     *       "active": true,
+                     *       "createdAt": "2026-10-01T08:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StaffMember"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deactivateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: components["parameters"]["StaffId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000022",
+                     *       "name": "Youssef Samir",
+                     *       "email": "youssef.samir@wasla.test",
+                     *       "phone": null,
+                     *       "roles": [
+                     *         "RECEPTIONIST"
+                     *       ],
+                     *       "active": false,
+                     *       "createdAt": "2026-10-03T08:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StaffMember"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    reactivateStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                staffId: components["parameters"]["StaffId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated account */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000014",
+                     *       "name": "Dr. Omar Nabil",
+                     *       "email": "omar.nabil@wasla.test",
+                     *       "phone": null,
+                     *       "roles": [
+                     *         "DOCTOR"
+                     *       ],
+                     *       "active": true,
+                     *       "createdAt": "2026-10-02T08:00:00Z"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StaffMember"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
         };
     };
     listDepartments: {
@@ -2146,6 +2922,1088 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+        };
+    };
+    listAdminDepartments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description All departments */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000001",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Internal Medicine",
+                     *           "ar": "الباطنة"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000011",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *             "name": {
+                     *               "en": "Internal Medicine Clinic 1",
+                     *               "ar": "عيادة الباطنة ١"
+                     *             },
+                     *             "building": "A",
+                     *             "floor": "1",
+                     *             "directions": {
+                     *               "en": "First floor",
+                     *               "left of the lift": null,
+                     *               "ar": "الدور الأول، يسار المصعد"
+                     *             },
+                     *             "active": true,
+                     *             "staff": [
+                     *               {
+                     *                 "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *                 "name": "Dr. Rania Mostafa",
+                     *                 "roles": [
+                     *                   "DOCTOR"
+                     *                 ],
+                     *                 "active": true
+                     *               },
+                     *               {
+                     *                 "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000021",
+                     *                 "name": "Nadia Hassan",
+                     *                 "roles": [
+                     *                   "RECEPTIONIST"
+                     *                 ],
+                     *                 "active": true
+                     *               }
+                     *             ]
+                     *           },
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000012",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *             "name": {
+                     *               "en": "Internal Medicine Clinic 2",
+                     *               "ar": "عيادة الباطنة ٢"
+                     *             },
+                     *             "building": "A",
+                     *             "floor": "1",
+                     *             "directions": {
+                     *               "en": "First floor",
+                     *               "end of the corridor": null,
+                     *               "ar": "الدور الأول، آخر الممر"
+                     *             },
+                     *             "active": false,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000004",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Pediatrics",
+                     *           "ar": "طب الأطفال"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000041",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *             "name": {
+                     *               "en": "Pediatrics Clinic 1",
+                     *               "ar": "عيادة الأطفال ١"
+                     *             },
+                     *             "building": "A",
+                     *             "floor": "2",
+                     *             "directions": {
+                     *               "en": "Second floor, right of the lift",
+                     *               "ar": "الدور الثاني، يمين المصعد"
+                     *             },
+                     *             "active": true,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000002",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Cardiology",
+                     *           "ar": "أمراض القلب"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000021",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *             "name": {
+                     *               "en": "Cardiology Clinic",
+                     *               "ar": "عيادة القلب"
+                     *             },
+                     *             "building": "B",
+                     *             "floor": "1",
+                     *             "directions": {
+                     *               "en": "Building B, first floor, first door on the right",
+                     *               "ar": "المبنى ب، الدور الأول، أول باب يمينًا"
+                     *             },
+                     *             "active": true,
+                     *             "staff": [
+                     *               {
+                     *                 "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000012",
+                     *                 "name": "Dr. Karim Adel",
+                     *                 "roles": [
+                     *                   "DOCTOR",
+                     *                   "ADMIN"
+                     *                 ],
+                     *                 "active": true
+                     *               },
+                     *               {
+                     *                 "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000014",
+                     *                 "name": "Dr. Omar Nabil",
+                     *                 "roles": [
+                     *                   "DOCTOR"
+                     *                 ],
+                     *                 "active": false
+                     *               }
+                     *             ]
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000005",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Orthopedics",
+                     *           "ar": "العظام"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000051",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *             "name": {
+                     *               "en": "Orthopedics Clinic",
+                     *               "ar": "عيادة العظام"
+                     *             },
+                     *             "building": "B",
+                     *             "floor": "2",
+                     *             "directions": {
+                     *               "en": "Building B, second floor, opposite the lift",
+                     *               "ar": "المبنى ب، الدور الثاني، مقابل المصعد"
+                     *             },
+                     *             "active": true,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000003",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Dermatology",
+                     *           "ar": "الجلدية"
+                     *         },
+                     *         "active": false,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000031",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *             "name": {
+                     *               "en": "Dermatology Clinic",
+                     *               "ar": "عيادة الجلدية"
+                     *             },
+                     *             "building": "B",
+                     *             "floor": "3",
+                     *             "directions": {
+                     *               "en": "Building B, third floor, left of the lift",
+                     *               "ar": "المبنى ب، الدور الثالث، يسار المصعد"
+                     *             },
+                     *             "active": true,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000006",
+                     *         "kind": "CLINICAL",
+                     *         "name": {
+                     *           "en": "Ear, Nose and Throat",
+                     *           "ar": "الأنف والأذن والحنجرة"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000061",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *             "name": {
+                     *               "en": "ENT Clinic",
+                     *               "ar": "عيادة الأنف والأذن"
+                     *             },
+                     *             "building": "C",
+                     *             "floor": "1",
+                     *             "directions": {
+                     *               "en": "Building C, first floor, end of the corridor",
+                     *               "ar": "المبنى ج، الدور الأول، آخر الممر"
+                     *             },
+                     *             "active": true,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000007",
+                     *         "kind": "LAB",
+                     *         "name": {
+                     *           "en": "Laboratory",
+                     *           "ar": "المعمل"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000071",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000007",
+                     *             "name": {
+                     *               "en": "Main Laboratory",
+                     *               "ar": "المعمل الرئيسي"
+                     *             },
+                     *             "building": "C",
+                     *             "floor": "Ground",
+                     *             "directions": {
+                     *               "en": "Building C, ground floor, next to the pharmacy",
+                     *               "ar": "المبنى ج، الدور الأرضي، بجوار الصيدلية"
+                     *             },
+                     *             "active": true,
+                     *             "staff": [
+                     *               {
+                     *                 "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000031",
+                     *                 "name": "Mona Farouk",
+                     *                 "roles": [
+                     *                   "LAB"
+                     *                 ],
+                     *                 "active": true
+                     *               }
+                     *             ]
+                     *           }
+                     *         ]
+                     *       },
+                     *       {
+                     *         "id": "1d000000-0000-4000-8000-000000000008",
+                     *         "kind": "RADIOLOGY",
+                     *         "name": {
+                     *           "en": "Radiology",
+                     *           "ar": "الأشعة"
+                     *         },
+                     *         "active": true,
+                     *         "clinics": [
+                     *           {
+                     *             "id": "1c000000-0000-4000-8000-000000000081",
+                     *             "departmentId": "1d000000-0000-4000-8000-000000000008",
+                     *             "name": {
+                     *               "en": "Radiology Unit",
+                     *               "ar": "قسم الأشعة"
+                     *             },
+                     *             "building": "C",
+                     *             "floor": "Basement",
+                     *             "directions": {
+                     *               "en": "Building C, basement, by the stairs",
+                     *               "ar": "المبنى ج، البدروم، بجوار السلم"
+                     *             },
+                     *             "active": true,
+                     *             "staff": []
+                     *           }
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"][];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    createDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewDepartmentRequest"];
+            };
+        };
+        responses: {
+            /** @description The new department, active and with no clinics */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "1d000000-0000-4000-8000-000000000009",
+                     *       "kind": "CLINICAL",
+                     *       "name": {
+                     *         "en": "Ophthalmology",
+                     *         "ar": "الرمد"
+                     *       },
+                     *       "active": true,
+                     *       "clinics": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    updateDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                departmentId: components["parameters"]["DepartmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DepartmentNameRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated department */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "1d000000-0000-4000-8000-000000000002",
+                     *       "kind": "CLINICAL",
+                     *       "name": {
+                     *         "en": "Cardiology",
+                     *         "ar": "أمراض القلب"
+                     *       },
+                     *       "active": true,
+                     *       "clinics": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deactivateDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                departmentId: components["parameters"]["DepartmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated department */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "1d000000-0000-4000-8000-000000000003",
+                     *       "kind": "CLINICAL",
+                     *       "name": {
+                     *         "en": "Dermatology",
+                     *         "ar": "الجلدية"
+                     *       },
+                     *       "active": false,
+                     *       "clinics": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    reactivateDepartment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                departmentId: components["parameters"]["DepartmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated department */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "1d000000-0000-4000-8000-000000000003",
+                     *       "kind": "CLINICAL",
+                     *       "name": {
+                     *         "en": "Dermatology",
+                     *         "ar": "الجلدية"
+                     *       },
+                     *       "active": true,
+                     *       "clinics": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminDepartment"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    createClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                departmentId: components["parameters"]["DepartmentId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicRequest"];
+            };
+        };
+        responses: {
+            /** @description The new clinic, active and with nobody assigned */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "1c000000-0000-4000-8000-000000000099",
+                     *       "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *       "name": {
+                     *         "en": "Cardiology Clinic 2",
+                     *         "ar": "عيادة القلب ٢"
+                     *       },
+                     *       "building": "B",
+                     *       "floor": "1",
+                     *       "directions": {
+                     *         "en": "Building B, first floor, second door on the right",
+                     *         "ar": "المبنى ب، الدور الأول، ثاني باب يمينًا"
+                     *       },
+                     *       "active": true,
+                     *       "staff": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    updateClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: components["parameters"]["ClinicId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClinicRequest"];
+            };
+        };
+        responses: {
+            /** @description The updated clinic */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    deactivateClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: components["parameters"]["ClinicId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated clinic */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    reactivateClinic: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: components["parameters"]["ClinicId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The updated clinic */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    assignClinicStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: components["parameters"]["ClinicId"];
+                staffId: components["parameters"]["StaffId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The clinic with its updated staff */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    unassignClinicStaff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clinicId: components["parameters"]["ClinicId"];
+                staffId: components["parameters"]["StaffId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The clinic with its updated staff */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminClinic"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getStatistics: {
+        parameters: {
+            query: {
+                /** @description First Cairo day, `YYYY-MM-DD` */
+                from: string;
+                /** @description Last Cairo day, `YYYY-MM-DD`. The range is at most 92 days, both ends counted. */
+                to: string;
+                /** @description One clinical department; all of them when left out */
+                departmentId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One entry per day from `from` to `to` */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "from": "2026-10-31",
+                     *       "to": "2026-11-06",
+                     *       "departmentId": null,
+                     *       "departments": [
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000001",
+                     *           "name": {
+                     *             "en": "Internal Medicine",
+                     *             "ar": "الباطنة"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000004",
+                     *           "name": {
+                     *             "en": "Pediatrics",
+                     *             "ar": "طب الأطفال"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000002",
+                     *           "name": {
+                     *             "en": "Cardiology",
+                     *             "ar": "أمراض القلب"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000005",
+                     *           "name": {
+                     *             "en": "Orthopedics",
+                     *             "ar": "العظام"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000003",
+                     *           "name": {
+                     *             "en": "Dermatology",
+                     *             "ar": "الجلدية"
+                     *           }
+                     *         },
+                     *         {
+                     *           "id": "1d000000-0000-4000-8000-000000000006",
+                     *           "name": {
+                     *             "en": "Ear, Nose and Throat",
+                     *             "ar": "الأنف والأذن والحنجرة"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "days": [
+                     *         {
+                     *           "date": "2026-10-31",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 41
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 33
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 18
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 22
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 27
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 19
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 23.4,
+                     *           "noShowRate": 0.081
+                     *         },
+                     *         {
+                     *           "date": "2026-11-01",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 46
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 38
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 21
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 24
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 25
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 20
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 27.9,
+                     *           "noShowRate": 0.094
+                     *         },
+                     *         {
+                     *           "date": "2026-11-02",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 44
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 35
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 19
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 23
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 28
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 17
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 25.1,
+                     *           "noShowRate": 0.072
+                     *         },
+                     *         {
+                     *           "date": "2026-11-03",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 39
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 31
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 20
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 21
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 24
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 18
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 21.6,
+                     *           "noShowRate": 0.066
+                     *         },
+                     *         {
+                     *           "date": "2026-11-04",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 48
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 36
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 23
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 25
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 26
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 21
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 31.2,
+                     *           "noShowRate": 0.103
+                     *         },
+                     *         {
+                     *           "date": "2026-11-05",
+                     *           "visits": [
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000001",
+                     *               "count": 37
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000004",
+                     *               "count": 30
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000002",
+                     *               "count": 17
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000005",
+                     *               "count": 20
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000003",
+                     *               "count": 22
+                     *             },
+                     *             {
+                     *               "departmentId": "1d000000-0000-4000-8000-000000000006",
+                     *               "count": 16
+                     *             }
+                     *           ],
+                     *           "averageWaitMinutes": 19.8,
+                     *           "noShowRate": 0.058
+                     *         },
+                     *         {
+                     *           "date": "2026-11-06",
+                     *           "visits": null,
+                     *           "averageWaitMinutes": null,
+                     *           "noShowRate": null
+                     *         }
+                     *       ],
+                     *       "totals": {
+                     *         "visits": 1031,
+                     *         "averageWaitMinutes": 24.9,
+                     *         "noShowRate": 0.079
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["Statistics"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    searchAuditLog: {
+        parameters: {
+            query?: {
+                /** @description Part of the actor's name or phone number */
+                who?: string;
+                action?: components["schemas"]["AuditAction"];
+                /** @description First Cairo day, `YYYY-MM-DD` */
+                from?: string;
+                /** @description Last Cairo day, `YYYY-MM-DD` */
+                to?: string;
+                /** @description `nextCursor` from the previous page */
+                cursor?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of entries */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "nextCursor": null,
+                     *       "entries": [
+                     *         {
+                     *           "id": "10452",
+                     *           "occurredAt": "2026-11-06T08:21:14Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000001",
+                     *             "name": "Demo Admin",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "STAFF_ROLES_CHANGED",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "ACCOUNT",
+                     *           "entityId": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *           "ip": "10.0.4.12"
+                     *         },
+                     *         {
+                     *           "id": "10451",
+                     *           "occurredAt": "2026-11-06T08:19:02Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *             "name": "Dr. Rania Mostafa",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "RESULT_RELEASED",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "TEST_ORDER",
+                     *           "entityId": "7a1b0c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d",
+                     *           "ip": "10.0.4.31"
+                     *         },
+                     *         {
+                     *           "id": "10450",
+                     *           "occurredAt": "2026-11-06T08:17:45Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000021",
+                     *             "name": "Nadia Hassan",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "ACCESS_DENIED",
+                     *           "outcome": "DENIED",
+                     *           "entityType": "VISIT_NOTES",
+                     *           "entityId": "3c2d1e0f-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+                     *           "ip": "10.0.4.18"
+                     *         },
+                     *         {
+                     *           "id": "10449",
+                     *           "occurredAt": "2026-11-06T08:12:30Z",
+                     *           "actor": null,
+                     *           "action": "LOGIN_FAILED",
+                     *           "outcome": "FAILED",
+                     *           "entityType": null,
+                     *           "entityId": null,
+                     *           "ip": "41.33.12.7"
+                     *         },
+                     *         {
+                     *           "id": "10448",
+                     *           "occurredAt": "2026-11-06T08:05:11Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000031",
+                     *             "name": "Mona Farouk",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "RESULT_UPLOADED",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "TEST_ORDER",
+                     *           "entityId": "7a1b0c2d-3e4f-4a5b-8c6d-7e8f9a0b1c2d",
+                     *           "ip": "10.0.4.40"
+                     *         },
+                     *         {
+                     *           "id": "10447",
+                     *           "occurredAt": "2026-11-06T07:58:03Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000011",
+                     *             "name": "Dr. Rania Mostafa",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "NOTES_VIEWED",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "VISIT_NOTES",
+                     *           "entityId": "3c2d1e0f-9a8b-4c7d-8e6f-5a4b3c2d1e0f",
+                     *           "ip": "10.0.4.31"
+                     *         },
+                     *         {
+                     *           "id": "10446",
+                     *           "occurredAt": "2026-11-06T07:41:27Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000021",
+                     *             "name": "Nadia Hassan",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "CHECK_IN",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "APPOINTMENT",
+                     *           "entityId": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
+                     *           "ip": "10.0.4.18"
+                     *         },
+                     *         {
+                     *           "id": "10445",
+                     *           "occurredAt": "2026-11-06T07:30:55Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000006",
+                     *             "name": "Demo Patient",
+                     *             "type": "PATIENT"
+                     *           },
+                     *           "action": "APPOINTMENT_BOOKED",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": "APPOINTMENT",
+                     *           "entityId": "9e8d7c6b-5a4f-4e3d-8c2b-1a0f9e8d7c6b",
+                     *           "ip": "156.204.3.88"
+                     *         },
+                     *         {
+                     *           "id": "10444",
+                     *           "occurredAt": "2026-11-06T07:02:10Z",
+                     *           "actor": {
+                     *             "id": "6f1c2a10-1d1e-4c3a-9a51-0a0000000001",
+                     *             "name": "Demo Admin",
+                     *             "type": "STAFF"
+                     *           },
+                     *           "action": "LOGIN",
+                     *           "outcome": "SUCCESS",
+                     *           "entityType": null,
+                     *           "entityId": null,
+                     *           "ip": "10.0.4.12"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AuditPage"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
         };
     };
 }
