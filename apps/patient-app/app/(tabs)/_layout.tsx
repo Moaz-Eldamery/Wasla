@@ -42,16 +42,9 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="queue"
+        name="visit"
         options={{
-          title: t('queue.tabTitle'),
-          tabBarIcon: ({ color }) => <TabIcon symbol="⏳" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="journey"
-        options={{
-          title: t('journey.tabTitle'),
+          title: t('visit.tabTitle'),
           tabBarIcon: ({ color }) => <TabIcon symbol="🧭" color={color} />,
         }}
       />
@@ -60,6 +53,13 @@ export default function TabsLayout() {
         options={{
           title: t('results.tabTitle'),
           tabBarIcon: ({ color }) => <TabIcon symbol="📋" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="assistant"
+        options={{
+          title: t('assistant.tabTitle'),
+          tabBarIcon: ({ color }) => <TabIcon symbol="💬" color={color} />,
         }}
       />
     </Tabs>

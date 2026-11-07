@@ -1,3 +1,8 @@
+## 2026-11-07 19:41 +0200 · Moaz Mohamed
+Prompt: 2026-11-07 19:41 · Moaz Mohamed
+What: Merged `main` into `dashboard-backend` before opening the pull request. Nour's patient-app UI commit rewrote `app.test.tsx`, which conflicted with the `email: null` fix; kept `main`'s tests and gave their four test users `email: null` again, which the staff-email change makes required. Patient app: lint clean, 16 tests pass.
+Files: apps/patient-app/app.test.tsx
+
 ## 2026-11-07 19:03 +0200 · Moaz Mohamed
 Prompt: 2026-11-07 18:21 · Moaz Mohamed
 What: The admin endpoints are agreed now that they're built, so the draft moved into the contract and the dashboard runs on them:
@@ -31,6 +36,17 @@ Files: services/core/src/modules/appointments/ (appointments.controller.ts, appo
 Prompt: 2026-11-07 18:21 · Moaz Mohamed
 What: Merged Nour's `staff-email-login` branch (staff log in to the website with a work email; it had no pull request) into this branch, as asked. Two conflicts, both resolved by keeping both sides: `business.md` (KAN-20's account rules plus the email login rules; staff have a work email and an optional phone) and the dashboard README (the KAN-20 routes plus the email login).
 Files: business.md, apps/hospital-dashboard/README.md (plus everything in that branch)
+## 2026-11-07 19:12 +0200 · NourElghaly
+Prompt: 2026-11-07 19:01 · NourElghaly
+What: Simplified the patient app, as agreed in the grill-me session (prompt 2026-11-07 18:53):
+- **Tabs:** Book · My Visit · Results · Assistant. Every tab has the same header (title, language switch, logout).
+- **Booking:** four dropdowns (Department → Doctor → Day → Time) and one Book button, replacing the long page of cards, day pills and slot lists. A list with one option is picked automatically. A time someone else just took shows an error and the free times reload. After booking there's a link to My Visit.
+- **My Visit:** replaces the Queue and Journey tabs. It shows the visit as five fixed steps, and the current step shows what to do, where to go and the people ahead. After the lab the patient stays on step 4, so the steps only move forward. Today's completed visits that still have a lab step stay listed. An active visit refreshes every 30 seconds while the screen is open.
+- **Results:** now lists every past visit (moved from Book) with a dropdown. Only a completed visit asks for a summary.
+- **Assistant:** a placeholder chat for the future symptom checker. The input is disabled, nothing is sent, and an emergency banner opens the dialer to call 123.
+- **Shared code:** a new `components/` folder (approved in the grill-me session) with `Dropdown`, `ScreenHeader` and `VisitSteps`, plus `formatCairoTime` in i18n. Strings were rewritten in Arabic and English, and the unused queue and journey keys were removed.
+- **Tests:** rewritten for the new screens: 16 in the patient app, covering the step mapping, the 30-second refresh, the lab return trip, dropdown booking, slot taken, the assistant and cancelled past visits.
+Files: apps/patient-app/app/(tabs)/_layout.tsx, apps/patient-app/app/(tabs)/book.tsx, apps/patient-app/app/(tabs)/visit.tsx (new), apps/patient-app/app/(tabs)/assistant.tsx (new), apps/patient-app/app/(tabs)/results.tsx, apps/patient-app/app/(tabs)/queue.tsx (deleted), apps/patient-app/app/(tabs)/journey.tsx (deleted), apps/patient-app/components/Dropdown.tsx (new), apps/patient-app/components/ScreenHeader.tsx (new), apps/patient-app/components/VisitSteps.tsx (new), apps/patient-app/components/README.md (new), apps/patient-app/translations/en.json, apps/patient-app/translations/ar.json, apps/patient-app/translations/i18n.ts, apps/patient-app/translations/README.md, apps/patient-app/app.test.tsx, apps/patient-app/README.md, apps/patient-app/app/(tabs)/README.md, structure.md, business.md
 
 ## 2026-11-07 09:03 +0200 · NourElghaly
 Prompt: 2026-11-07 08:57 · NourElghaly

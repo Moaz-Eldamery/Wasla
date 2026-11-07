@@ -11,6 +11,8 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Dropdown } from '../../components/Dropdown';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import {
   ApiClientError,
   downloadTestResult,
@@ -27,7 +29,6 @@ import {
   getAppLanguage,
   isRtlLanguage,
   pickLocalized,
-  toggleAppLanguage,
   translateErrorCode,
   useTranslation,
 } from '../../translations/i18n';
@@ -39,7 +40,7 @@ export default function ResultsScreen() {
   const insets = useSafeAreaInsets();
 
   const [results, setResults] = useState<PatientResult[]>([]);
-  const [completedVisits, setCompletedVisits] = useState<Appointment[]>([]);
+  const [pastVisits, setPastVisits] = useState<Appointment[]>([]);
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
   const [visitSummary, setVisitSummary] = useState<VisitSummary | null>(null);
   const [summaryUnavailable, setSummaryUnavailable] = useState(false);
@@ -89,6 +90,22 @@ export default function ResultsScreen() {
     [handleApiError],
   );
 
+  /** Picks a past visit; only a completed visit can have a summary. */
+  const selectVisit = useCallback(
+    async (visit: Appointment | null) => {
+      setSelectedVisitId(visit?.id ?? null);
+      if (visit?.status === 'COMPLETED') {
+        await loadSummaryFor(visit.id);
+      } else {
+        latestSummaryRequest.current = null;
+        setVisitSummary(null);
+        setSummaryUnavailable(false);
+        setLoadingSummary(false);
+      }
+    },
+    [loadSummaryFor],
+  );
+
   const loadAll = useCallback(
     async (currentVisitId: string | null, isPullRefresh = false) => {
       setErrorMessage(null);
@@ -105,19 +122,14 @@ export default function ResultsScreen() {
         ]);
         setResults(myResults);
 
-        const completed = pastAppointments.filter((a) => a.status === 'COMPLETED');
-        setCompletedVisits(completed);
+        setPastVisits(pastAppointments);
 
         const preferredVisit =
-          completed.find((a) => a.id === currentVisitId) ?? completed[0] ?? null;
-        if (preferredVisit) {
-          setSelectedVisitId(preferredVisit.id);
-          await loadSummaryFor(preferredVisit.id);
-        } else {
-          setSelectedVisitId(null);
-          setVisitSummary(null);
-          setSummaryUnavailable(false);
-        }
+          pastAppointments.find((a) => a.id === currentVisitId) ??
+          pastAppointments.find((a) => a.status === 'COMPLETED') ??
+          pastAppointments[0] ??
+          null;
+        await selectVisit(preferredVisit);
       } catch (err) {
         handleApiError(err);
       } finally {
@@ -125,18 +137,19 @@ export default function ResultsScreen() {
         setRefreshing(false);
       }
     },
-    [handleApiError, loadSummaryFor],
+    [handleApiError, selectVisit],
   );
 
   useEffect(() => {
     void loadAll(null, false);
   }, [loadAll]);
 
-  const handleSelectVisit = async (visit: Appointment) => {
+  const handleSelectVisit = async (visitId: string) => {
     setErrorMessage(null);
-    setSelectedVisitId(visit.id);
-    await loadSummaryFor(visit.id);
+    await selectVisit(pastVisits.find((v) => v.id === visitId) ?? null);
   };
+
+  const selectedVisit = pastVisits.find((v) => v.id === selectedVisitId) ?? null;
 
   /** Downloads the file once (into the app's private cache), then reuses the saved copy. */
   const ensureDownloaded = async (result: PatientResult): Promise<DownloadedResultFile> => {
@@ -207,29 +220,7 @@ export default function ResultsScreen() {
         />
       }
     >
-      <View style={[styles.header, rtl ? styles.rowReverse : styles.row]}>
-        <Text style={[styles.screenTitle, rtl && styles.textRtl]}>
-          {t('results.screenTitle')}
-        </Text>
-        <View style={[styles.headerActions, rtl ? styles.rowReverse : styles.row]}>
-          <Pressable
-            accessibilityRole="button"
-            testID="results-refresh-button"
-            onPress={() => void loadAll(selectedVisitId, true)}
-            style={styles.refreshButton}
-          >
-            <Text style={styles.refreshButtonText}>{t('results.refreshButton')}</Text>
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            testID="results-language-toggle"
-            onPress={() => void toggleAppLanguage()}
-            style={styles.langButton}
-          >
-            <Text style={styles.langButtonText}>{t('common.languageToggle')}</Text>
-          </Pressable>
-        </View>
-      </View>
+      <ScreenHeader title={t('results.screenTitle')} />
 
       {errorMessage ? (
         <View style={styles.errorBox} testID="results-error">
@@ -360,66 +351,60 @@ export default function ResultsScreen() {
         )}
       </View>
 
-      {/* Section 2: Completed Visit Summaries */}
+      {/* Section 2: Past visits and their summaries */}
       <View style={styles.sectionCard}>
         <Text style={[styles.sectionTitle, rtl && styles.textRtl]}>
-          {t('results.visitSummarySectionTitle')}
+          {t('results.pastVisitsSectionTitle')}
         </Text>
 
-        {loading && completedVisits.length === 0 ? (
+        {loading && pastVisits.length === 0 ? (
           <ActivityIndicator testID="summaries-loading" />
-        ) : completedVisits.length === 0 ? (
-          <Text
-            style={[styles.emptyText, rtl && styles.textRtl]}
-            testID="no-completed-visits-text"
-          >
-            {t('results.noCompletedVisits')}
+        ) : pastVisits.length === 0 ? (
+          <Text style={[styles.emptyText, rtl && styles.textRtl]} testID="no-past-visits-text">
+            {t('results.noPastVisits')}
           </Text>
         ) : (
           <>
-            {completedVisits.length > 1 ? (
-              <View style={styles.visitSelectorBlock}>
-                <Text style={[styles.selectorLabel, rtl && styles.textRtl]}>
-                  {t('results.selectCompletedVisitLabel')}
-                </Text>
-                <View style={styles.listContainer}>
-                  {completedVisits.map((visit) => {
-                    const isSelected = visit.id === selectedVisitId;
-                    return (
-                      <Pressable
-                        key={visit.id}
-                        accessibilityRole="button"
-                        testID={`summary-visit-${visit.id}`}
-                        onPress={() => void handleSelectVisit(visit)}
-                        style={[
-                          styles.visitChip,
-                          isSelected && styles.visitChipSelected,
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.visitChipText,
-                            isSelected && styles.visitChipTextSelected,
-                            rtl && styles.textRtl,
-                          ]}
-                        >
-                          {visit.doctor.name} · {pickLocalized(visit.clinic.name, lang)} ·{' '}
-                          {formatCairoDateTime(visit.startsAt, lang)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
+            {pastVisits.length > 1 ? (
+              <Dropdown
+                testID="summary-visit"
+                label={t('results.selectVisitLabel')}
+                placeholder={t('results.selectVisitLabel')}
+                options={pastVisits.map((visit) => ({
+                  value: visit.id,
+                  label: `${visit.doctor.name} · ${formatCairoDateTime(visit.startsAt, lang)}`,
+                  sublabel: `${pickLocalized(visit.clinic.name, lang)} · ${t(`status.${visit.status}`)}`,
+                }))}
+                value={selectedVisitId}
+                onChange={(id) => void handleSelectVisit(id)}
+              />
+            ) : null}
+
+            {selectedVisit ? (
+              <View style={[styles.visitHeader, rtl ? styles.rowReverse : styles.row]}>
+                <View style={styles.visitHeaderText}>
+                  <Text style={[styles.summaryDoctor, rtl && styles.textRtl]}>
+                    {selectedVisit.doctor.name}
+                  </Text>
+                  <Text style={[styles.metaLine, rtl && styles.textRtl]}>
+                    {formatCairoDateTime(selectedVisit.startsAt, lang)} ·{' '}
+                    {pickLocalized(selectedVisit.clinic.name, lang)}
+                  </Text>
+                </View>
+                <View style={styles.statusBadge} testID="past-visit-status">
+                  <Text style={styles.statusBadgeText}>{t(`status.${selectedVisit.status}`)}</Text>
                 </View>
               </View>
             ) : null}
 
-            {loadingSummary ? (
+            {selectedVisit && selectedVisit.status !== 'COMPLETED' ? (
+              <Text style={[styles.emptyText, rtl && styles.textRtl]} testID="no-summary-text">
+                {t('results.noSummaryForVisit')}
+              </Text>
+            ) : loadingSummary ? (
               <ActivityIndicator testID="visit-summary-loading" />
             ) : visitSummary ? (
               <View style={styles.summaryCard} testID="visit-summary-card">
-                <Text style={[styles.summaryDoctor, rtl && styles.textRtl]}>
-                  {t('results.summaryDoctorLabel')}: {visitSummary.doctorName}
-                </Text>
                 <Text style={[styles.metaLine, rtl && styles.textRtl]}>
                   {t('results.summaryCompletedAtLabel')}:{' '}
                   {formatCairoDateTime(visitSummary.completedAt, lang)}
@@ -490,42 +475,6 @@ const styles = StyleSheet.create({
   textRtl: {
     textAlign: 'right',
     writingDirection: 'rtl',
-  },
-  header: {
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  screenTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#0B5CAB',
-  },
-  headerActions: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  refreshButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#0B5CAB',
-    borderRadius: 8,
-  },
-  refreshButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  langButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#E3EEF9',
-    borderRadius: 8,
-  },
-  langButtonText: {
-    color: '#0B5CAB',
-    fontWeight: '600',
-    fontSize: 13,
   },
   errorBox: {
     backgroundColor: '#FDECEC',
@@ -630,33 +579,25 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  visitSelectorBlock: {
-    marginBottom: 12,
+  visitHeader: {
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
   },
-  selectorLabel: {
-    fontSize: 13,
+  visitHeaderText: {
+    flex: 1,
+  },
+  statusBadge: {
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  statusBadgeText: {
+    color: '#0369A1',
+    fontSize: 12,
     fontWeight: '600',
-    color: '#475569',
-    marginBottom: 6,
-  },
-  visitChip: {
-    padding: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#F8FAFC',
-  },
-  visitChipSelected: {
-    borderColor: '#0B5CAB',
-    backgroundColor: '#EBF5FF',
-  },
-  visitChipText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#334155',
-  },
-  visitChipTextSelected: {
-    color: '#0B5CAB',
   },
   summaryCard: {
     padding: 14,

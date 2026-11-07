@@ -50,7 +50,7 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - For now, login attempts are limited only by the gateway's per-IP limit. Locking an account after repeated failures comes with KAN-24.
 
 ## Booking
-- Patients browse departments → doctors → free slots, then book one.
+- Patients pick a department, then a doctor, then a day, then a free time, then book it. In the app each is a dropdown, and one with a single option is picked for them.
 - Each slot has its own start and end time; there is no fixed slot length.
 - A slot can only ever have one active booking. Two people booking at the same moment: one succeeds, the other is told the slot was taken.
 - A patient's appointments are split into **upcoming** (booked and not over yet, or checked in or with the doctor right now) and **past** (everything else, including cancelled and no-shows).
@@ -83,6 +83,12 @@ Only these moves are allowed. For example, a visit can't be completed before it 
   - `RESULT_READY` (`IN_CONSULTATION`, no test left at the lab, and at least one test `RELEASED`) → appointment clinic
   - `WITH_DOCTOR` (`IN_CONSULTATION` otherwise: no tests, or tests `AWAITING_REVIEW`, where the lab is done and the patient goes back to the doctor) → appointment clinic
   - `DONE` (`COMPLETED` with no test left at the lab, or `CANCELLED` / `NO_SHOW`) → no location (`null`). A result still `AWAITING_REVIEW` reaches the patient once the doctor releases it.
+- **My Visit (patient app):** the patient follows a visit as five fixed steps: Booked → Checked in → See the doctor → Lab / radiology tests → Done.
+  - The step labels are app text. What to do and where to go at the current step still come from `core.journey_stages`.
+  - The tests step is marked "only if your doctor orders tests". It shows as skipped when the visit ends without tests.
+  - After the lab the patient goes back to the doctor (`RESULT_READY`, or `WITH_DOCTOR` once the visit has tests). That stays on the tests step, so the steps only move forward.
+  - My Visit shows upcoming visits plus any of today's `COMPLETED` visits whose journey isn't `DONE` yet, so a patient sent to the lab after the doctor completes the visit keeps their directions.
+  - While a visit is active (checked in, with the doctor or at the lab) and My Visit is open, it refreshes every 30 seconds until live updates (KAN-27).
 
 ## Tests and results
 - A doctor orders a test during a visit. It goes to a clinic of the lab or radiology department, and the lab staff assigned to that clinic see it.
@@ -100,6 +106,7 @@ The AI is a helper, never a decision-maker, and the rest of the system must work
 
 - **Admin chatbot:** answers only from the approved hospital-information knowledge base, and always shows its sources. It says "I don't have that information" rather than guessing. It refuses medical questions and requests for patient data.
 - **Symptom checker:** suggests a department. Urgent symptoms are caught by a fixed list first and the patient is told to get help now, without asking the AI. If the AI is unsure, it says so.
+  - Until it is built, the patient app's Assistant tab is a placeholder. It shows a greeting saying the assistant is coming soon, the input is disabled, and nothing is sent anywhere. A fixed banner gives the emergency number (123).
 - **Result explanations:** the AI drafts a plain-language explanation. A doctor must approve it before the patient sees it. Every number and unit must match the original result.
 - **Wait-time estimate:** uses a learned model only if it beats the simple estimate (people ahead × average visit length) by at least 10%. Otherwise it uses the simple estimate.
 - Nothing that identifies a patient (name, phone, ID) is ever sent to the AI.

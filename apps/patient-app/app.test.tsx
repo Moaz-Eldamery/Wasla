@@ -4,11 +4,13 @@ import * as Sharing from 'expo-sharing';
 import LoginScreen from './app/(auth)/login';
 import SignUpScreen from './app/(auth)/sign-up';
 import VerifyCodeScreen from './app/(auth)/verify-code';
+import { Linking } from 'react-native';
+import AssistantScreen from './app/(tabs)/assistant';
 import BookScreen from './app/(tabs)/book';
-import JourneyScreen from './app/(tabs)/journey';
-import QueueScreen from './app/(tabs)/queue';
 import ResultsScreen from './app/(tabs)/results';
+import VisitScreen from './app/(tabs)/visit';
 import Index from './app/index';
+import { VISIT_REFRESH_MS, getVisitSteps } from './components/VisitSteps';
 import {
   clearSession,
   getSessionToken,
@@ -19,7 +21,6 @@ import {
   type Doctor,
   type Journey,
   type PatientResult,
-  type QueuePosition,
   type Slot,
   type VisitSummary,
 } from './lib/api';
@@ -38,6 +39,11 @@ jest.mock('expo-router', () => ({
   Redirect: ({ href }: { href: string }) => {
     const { Text } = jest.requireActual('react-native');
     return <Text testID="redirect-target">{href}</Text>;
+  },
+  // Every rendered screen counts as focused in tests.
+  useFocusEffect: (effect: () => void | (() => void)) => {
+    const { useEffect } = jest.requireActual('react');
+    useEffect(effect, [effect]);
   },
   Stack: () => null,
   Tabs: Object.assign(() => null, { Screen: () => null }),
@@ -59,6 +65,94 @@ const jsonResponse = (body: unknown, status = 200) => ({
   status,
   text: async () => JSON.stringify(body),
 });
+
+const patientUser = {
+  id: '11111111-1111-1111-1111-111111111111',
+  type: 'PATIENT' as const,
+  name: 'Salma Hassan',
+  phone: '+201000000006',
+  email: null,
+  roles: [],
+};
+
+const clinic = {
+  id: '22222222-2222-2222-2222-222222222222',
+  departmentId: '33333333-3333-3333-3333-333333333333',
+  name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
+  building: 'A',
+  floor: '2',
+  directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
+};
+
+const labClinic = {
+  id: '88888888-8888-8888-8888-888888888888',
+  departmentId: '99999999-9999-9999-9999-999999999999',
+  name: { ar: 'المعمل الرئيسي', en: 'Main Laboratory' },
+  building: 'B',
+  floor: 'Ground',
+  directions: { ar: 'المبنى ب، الدور الأرضي', en: 'Building B, ground floor' },
+};
+
+const department = (id: string, en: string, ar: string): Department => ({
+  id,
+  kind: 'CLINICAL',
+  name: { ar, en },
+  clinics: [clinic],
+});
+
+const doctorNamed = (id: string, name: string): Doctor => ({ id, name, clinics: [clinic] });
+
+const slotAt = (id: string, doctorId: string, startsAt: string): Slot => ({
+  id,
+  doctorId,
+  clinic,
+  startsAt,
+  endsAt: new Date(new Date(startsAt).getTime() + 15 * 60_000).toISOString(),
+});
+
+const appointmentWith = (
+  id: string,
+  status: Appointment['status'],
+  startsAt: string,
+  doctorName = 'Dr. Kareem Adel',
+): Appointment => ({
+  id,
+  status,
+  startsAt,
+  endsAt: startsAt,
+  bookedAt: '2026-11-01T10:00:00Z',
+  patient: { id: patientUser.id, name: patientUser.name },
+  doctor: { id: '44444444-4444-4444-4444-444444444444', name: doctorName },
+  clinic,
+});
+
+const journeyAt = (
+  appointmentId: string,
+  stage: Journey['stage'],
+  nextStepEn: string,
+  location: Journey['location'] = clinic,
+): Journey => ({
+  appointmentId,
+  stage,
+  title: { ar: stage, en: stage },
+  nextStep: { ar: `ع: ${nextStepEn}`, en: nextStepEn },
+  location,
+});
+
+/**
+ * Answers each request by its method and path, so screens that make several
+ * calls at once don't depend on the order they go out in. Change `routes`
+ * during a test to change what the server says next.
+ */
+const routeFetch = (routes: Record<string, unknown>) => {
+  (globalThis.fetch as jest.Mock).mockImplementation(async (url: string, init?: { method?: string }) => {
+    const path = url.replace(/^https?:\/\/[^/]+/, '');
+    const key = `${init?.method ?? 'GET'} ${path}`;
+    if (!(key in routes)) throw new Error(`Unexpected request: ${key}`);
+    const body = routes[key];
+    return typeof body === 'function' ? (body as () => unknown)() : jsonResponse(body);
+  });
+};
 
 // Tests live outside app/: expo-router would treat any file in app/ as a screen.
 describe('Patient app (KAN-14: sign up, log in and book)', () => {
@@ -192,362 +286,359 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     });
   });
 
-  it('browses departments -> doctors -> free slots, books a slot, sees appointments, and logs out', async () => {
-    setSession('live-token-abc', {
-      id: '11111111-1111-1111-1111-111111111111',
-      type: 'PATIENT',
-      name: 'Salma Hassan',
-      phone: '+201000000006',
-      email: null,
-      roles: [],
+  describe('booking with dropdowns', () => {
+    beforeEach(() => {
+      setSession('live-token-abc', patientUser);
     });
 
-    const clinic = {
-      id: '22222222-2222-2222-2222-222222222222',
-      departmentId: '33333333-3333-3333-3333-333333333333',
-      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
-      building: 'A',
-      floor: '2',
-      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
-    };
+    it('picks the only department, doctor, day and time for the patient, books, and links to My Visit', async () => {
+      const doctor = doctorNamed('44444444-4444-4444-4444-444444444444', 'Dr. Kareem Adel');
+      const slot = slotAt('55555555-5555-5555-5555-555555555555', doctor.id, '2026-11-08T08:00:00Z');
 
-    const departments: Department[] = [
-      {
-        id: clinic.departmentId,
-        kind: 'CLINICAL',
-        name: { ar: 'الباطنة', en: 'Internal Medicine' },
-        clinics: [clinic],
-      },
-    ];
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          jsonResponse([department(clinic.departmentId, 'Internal Medicine', 'الباطنة')]),
+        )
+        .mockResolvedValueOnce(jsonResponse([doctor]))
+        .mockResolvedValueOnce(jsonResponse([slot]))
+        .mockResolvedValueOnce(jsonResponse(appointmentWith('66666666-6666-6666-6666-666666666666', 'BOOKED', slot.startsAt), 201))
+        .mockResolvedValueOnce(jsonResponse([])) // free slots after booking
+        .mockResolvedValueOnce({ ok: true, status: 204, text: async () => '' }); // logout
 
-    const doctors: Doctor[] = [
-      {
-        id: '44444444-4444-4444-4444-444444444444',
-        name: 'Dr. Kareem Adel',
-        clinics: [clinic],
-      },
-    ];
+      await render(<BookScreen />);
 
-    const slots: Slot[] = [
-      {
-        id: '55555555-5555-5555-5555-555555555555',
-        doctorId: doctors[0].id,
-        clinic,
-        startsAt: '2026-11-07T08:00:00Z',
-        endsAt: '2026-11-07T08:15:00Z',
-      },
-    ];
+      // One choice each: all four fields fill themselves in
+      expect(await screen.findByText('Internal Medicine')).toBeTruthy();
+      expect(await screen.findByText('Dr. Kareem Adel')).toBeTruthy();
+      expect(await screen.findByText('Sun, Nov 8')).toBeTruthy();
+      expect(await screen.findByTestId('selected-slot-info')).toBeTruthy();
+      expect(screen.getByText('Hello, Salma Hassan')).toBeTruthy();
 
-    const bookedAppointment: Appointment = {
-      id: '66666666-6666-6666-6666-666666666666',
-      status: 'BOOKED',
-      startsAt: slots[0].startsAt,
-      endsAt: slots[0].endsAt,
-      bookedAt: '2026-11-06T08:00:00Z',
-      patient: {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: 'Salma Hassan',
-      },
-      doctor: {
-        id: doctors[0].id,
-        name: doctors[0].name,
-      },
-      clinic,
-    };
+      await fireEvent.press(screen.getByTestId('book-button'));
+      expect(await screen.findByText('Your appointment is booked.')).toBeTruthy();
+      const [bookUrl, bookInit] = (globalThis.fetch as jest.Mock).mock.calls[3];
+      expect(bookUrl).toMatch(/\/appointments$/);
+      expect(JSON.parse(bookInit.body)).toEqual({ slotId: slot.id });
 
-    (globalThis.fetch as jest.Mock)
-      // initial loadDepartments
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(departments),
-      })
-      // initial loadAppointments(upcoming)
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([]),
-      })
-      // listDepartmentDoctors
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(doctors),
-      })
-      // listDoctorFreeSlots
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(slots),
-      })
-      // bookAppointment
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 201,
-        text: async () => JSON.stringify(bookedAppointment),
-      })
-      // refresh free slots after booking
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([]),
-      })
-      // refresh upcoming appointments after booking
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([bookedAppointment]),
-      })
-      // logout
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 204,
-        text: async () => '',
+      // The doctor has no free times left
+      expect(await screen.findByTestId('day-dropdown-empty')).toBeTruthy();
+
+      await fireEvent.press(screen.getByTestId('booking-see-visit'));
+      expect(mockPush).toHaveBeenCalledWith('/(tabs)/visit');
+
+      // Arabic (RTL), then log out from the shared header
+      await act(async () => {
+        await setAppLanguage('ar');
+      });
+      expect(isRtlLanguage()).toBe(true);
+      expect(await screen.findByText('الباطنة')).toBeTruthy();
+      expect(screen.getByText('احجز زيارة')).toBeTruthy();
+
+      await fireEvent.press(await screen.findByText('تسجيل الخروج'));
+      await waitFor(() => {
+        expect(getSessionToken()).toBeNull();
+        expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
+      });
+    });
+
+    it('chooses department, doctor, day and time from dropdowns, and resets the day once it is fully booked', async () => {
+      const cardiology = department('33333333-0000-0000-0000-000000000002', 'Cardiology', 'القلب');
+      const internal = department(clinic.departmentId, 'Internal Medicine', 'الباطنة');
+      const kareem = doctorNamed('44444444-0000-0000-0000-000000000001', 'Dr. Kareem Adel');
+      const mona = doctorNamed('44444444-0000-0000-0000-000000000002', 'Dr. Mona Fathy');
+      // 10:00 Cairo on three different days, plus 10:30 on the second
+      const day1 = slotAt('55555555-0000-0000-0000-000000000001', mona.id, '2026-11-08T08:00:00Z');
+      const day2 = slotAt('55555555-0000-0000-0000-000000000002', mona.id, '2026-11-09T08:00:00Z');
+      const day2b = slotAt('55555555-0000-0000-0000-000000000004', mona.id, '2026-11-09T08:30:00Z');
+      const day3 = slotAt('55555555-0000-0000-0000-000000000003', mona.id, '2026-11-10T08:00:00Z');
+
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([cardiology, internal]))
+        .mockResolvedValueOnce(jsonResponse([kareem, mona]))
+        .mockResolvedValueOnce(jsonResponse([day1, day2, day2b, day3]))
+        .mockResolvedValueOnce(jsonResponse({}, 201)) // book day 2, 10:30
+        .mockResolvedValueOnce(jsonResponse([day1, day2, day3])); // free slots after booking
+
+      await render(<BookScreen />);
+
+      // Nothing below the department can be opened yet
+      expect((await screen.findByTestId('doctor-dropdown')).props.accessibilityState.disabled).toBe(true);
+      expect(screen.getByTestId('book-button').props.accessibilityState.disabled).toBe(true);
+
+      await fireEvent.press(await screen.findByTestId('department-dropdown'));
+      await fireEvent.press(screen.getByTestId(`department-dropdown-option-${internal.id}`));
+
+      await fireEvent.press(await screen.findByTestId('doctor-dropdown'));
+      await fireEvent.press(await screen.findByTestId(`doctor-dropdown-option-${mona.id}`));
+
+      await fireEvent.press(await screen.findByTestId('day-dropdown'));
+      await fireEvent.press(await screen.findByTestId('day-dropdown-option-2026-11-09'));
+
+      // Only the chosen day's times are offered
+      await fireEvent.press(screen.getByTestId('time-dropdown'));
+      expect(screen.queryByTestId(`time-dropdown-option-${day1.id}`)).toBeNull();
+      expect(screen.getByTestId(`time-dropdown-option-${day2.id}`)).toBeTruthy();
+      await fireEvent.press(screen.getByTestId(`time-dropdown-option-${day2b.id}`));
+
+      await fireEvent.press(screen.getByTestId('book-button'));
+      expect(await screen.findByText('Your appointment is booked.')).toBeTruthy();
+      expect(JSON.parse((globalThis.fetch as jest.Mock).mock.calls[3][1].body)).toEqual({
+        slotId: day2b.id,
       });
 
-    await render(<BookScreen />);
-
-    // Select department
-    const deptText = await screen.findByText('Internal Medicine');
-    expect(deptText).toBeTruthy();
-    await fireEvent.press(deptText);
-
-    // Select doctor
-    const docText = await screen.findByText('Dr. Kareem Adel');
-    expect(docText).toBeTruthy();
-    await fireEvent.press(docText);
-
-    // Book free slot
-    const bookBtn = await screen.findByText('Book Slot');
-    await fireEvent.press(bookBtn);
-
-    // Verify booking success and appointment card
-    expect(await screen.findByText('Appointment booked successfully!')).toBeTruthy();
-    expect(await screen.findByText('Booked')).toBeTruthy();
-
-    // Switch to Arabic and verify RTL & Arabic text
-    await act(async () => {
-      await setAppLanguage('ar');
+      // The form starts over at the day; the doctor keeps their remaining days
+      await waitFor(() => expect(screen.getByText('Choose a day')).toBeTruthy());
+      expect(screen.getByTestId('time-dropdown').props.accessibilityState.disabled).toBe(true);
+      await fireEvent.press(screen.getByTestId('day-dropdown'));
+      expect(screen.getByTestId('day-dropdown-option-2026-11-09')).toBeTruthy();
     });
-    expect(isRtlLanguage()).toBe(true);
-    expect(await screen.findByText('الباطنة')).toBeTruthy();
 
-    // Log out
-    await fireEvent.press(await screen.findByText('تسجيل الخروج'));
-    await waitFor(() => {
-      expect(getSessionToken()).toBeNull();
-      expect(mockReplace).toHaveBeenCalledWith('/(auth)/login');
+    it('says when someone else took the time and reloads the free times', async () => {
+      const doctor = doctorNamed('44444444-4444-4444-4444-444444444444', 'Dr. Kareem Adel');
+      const taken = slotAt('55555555-0000-0000-0000-000000000001', doctor.id, '2026-11-08T08:00:00Z');
+      const other = slotAt('55555555-0000-0000-0000-000000000002', doctor.id, '2026-11-08T09:00:00Z');
+
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([department(clinic.departmentId, 'Internal Medicine', 'الباطنة')]))
+        .mockResolvedValueOnce(jsonResponse([doctor]))
+        .mockResolvedValueOnce(jsonResponse([taken, other]))
+        .mockResolvedValueOnce(
+          jsonResponse({ error: { code: 'SLOT_TAKEN', message: 'Taken' } }, 409),
+        )
+        .mockResolvedValueOnce(jsonResponse([other]));
+
+      await render(<BookScreen />);
+      await fireEvent.press(await screen.findByTestId('time-dropdown'));
+      await fireEvent.press(screen.getByTestId(`time-dropdown-option-${taken.id}`));
+      await fireEvent.press(screen.getByTestId('book-button'));
+
+      expect(
+        await screen.findByText('This slot was just booked by someone else. Please pick another slot.'),
+      ).toBeTruthy();
+      expect(screen.queryByTestId('booking-success')).toBeNull();
+      // Only one time left, so it is chosen again for the patient
+      await waitFor(() => expect(screen.getByTestId('selected-slot-info')).toBeTruthy());
     });
   });
 
-  it('shows how many people are ahead in the queue and updates on refresh', async () => {
-    setSession('live-token-abc', {
-      id: '11111111-1111-1111-1111-111111111111',
-      type: 'PATIENT',
-      name: 'Salma Hassan',
-      phone: '+201000000006',
-      email: null,
-      roles: [],
+  describe('My Visit steps', () => {
+    const appointmentId = '77777777-7777-7777-7777-777777777777';
+
+    beforeEach(() => {
+      setSession('live-token-abc', patientUser);
     });
 
-    const clinic = {
-      id: '22222222-2222-2222-2222-222222222222',
-      departmentId: '33333333-3333-3333-3333-333333333333',
-      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
-      building: 'A',
-      floor: '2',
-      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
-    };
+    it('maps every backend stage onto the five steps, moving forward only', () => {
+      const states = (stage: Journey['stage'], hasTests: boolean) =>
+        getVisitSteps(stage, hasTests).steps.map((s) => s.state);
 
-    const checkedInAppointment: Appointment = {
-      id: '77777777-7777-7777-7777-777777777777',
-      status: 'CHECKED_IN',
-      startsAt: '2026-11-06T09:00:00Z',
-      endsAt: '2026-11-06T09:15:00Z',
-      bookedAt: '2026-11-05T10:00:00Z',
-      checkedInAt: '2026-11-06T08:50:00Z',
-      patient: {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: 'Salma Hassan',
-      },
-      doctor: {
-        id: '44444444-4444-4444-4444-444444444444',
-        name: 'Dr. Kareem Adel',
-      },
-      clinic,
-    };
-
-    const initialPosition: QueuePosition = {
-      appointmentId: checkedInAppointment.id,
-      status: 'CHECKED_IN',
-      peopleAhead: 3,
-    };
-
-    const refreshedPosition: QueuePosition = {
-      appointmentId: checkedInAppointment.id,
-      status: 'CHECKED_IN',
-      peopleAhead: 0,
-    };
-
-    (globalThis.fetch as jest.Mock)
-      // initial listMyAppointments('upcoming')
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([checkedInAppointment]),
-      })
-      // initial getQueuePosition
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(initialPosition),
-      })
-      // refresh listMyAppointments('upcoming')
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([checkedInAppointment]),
-      })
-      // refresh getQueuePosition
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(refreshedPosition),
-      });
-
-    await render(<QueueScreen />);
-
-    expect((await screen.findByTestId('people-ahead-count')).props.children).toBe(3);
-
-    // Trigger refresh
-    await fireEvent.press(await screen.findByTestId('queue-refresh-button'));
-    await waitFor(async () => {
-      expect((await screen.findByTestId('people-ahead-count')).props.children).toBe(0);
-    });
-    expect(await screen.findByText('You are next in line!')).toBeTruthy();
-  });
-
-  it('shows the patient journey stage, next step, and where to go in English and Arabic with refresh', async () => {
-    setSession('live-token-abc', {
-      id: '11111111-1111-1111-1111-111111111111',
-      type: 'PATIENT',
-      name: 'Salma Hassan',
-      phone: '+201000000006',
-      email: null,
-      roles: [],
+      expect(states('BOOKED', false)).toEqual(['current', 'upcoming', 'upcoming', 'optional', 'upcoming']);
+      expect(states('CHECKED_IN', false)).toEqual(['done', 'current', 'upcoming', 'optional', 'upcoming']);
+      expect(states('WITH_DOCTOR', false)).toEqual(['done', 'done', 'current', 'optional', 'upcoming']);
+      expect(states('TEST_ORDERED', true)).toEqual(['done', 'done', 'done', 'current', 'upcoming']);
+      // Back with the doctor after the lab stays on step 4
+      expect(states('WITH_DOCTOR', true)).toEqual(['done', 'done', 'done', 'current', 'upcoming']);
+      expect(states('RESULT_READY', true)).toEqual(['done', 'done', 'done', 'current', 'upcoming']);
+      expect(getVisitSteps('TEST_ORDERED', true).testsPhase).toBe('atLab');
+      expect(getVisitSteps('RESULT_READY', true).testsPhase).toBe('backToDoctor');
+      expect(getVisitSteps('WITH_DOCTOR', true).testsPhase).toBe('backToDoctor');
+      // Finished: the tests step is skipped when there were none
+      expect(states('DONE', false)).toEqual(['done', 'done', 'done', 'skipped', 'done']);
+      expect(states('DONE', true)).toEqual(['done', 'done', 'done', 'done', 'done']);
     });
 
-    const clinic = {
-      id: '22222222-2222-2222-2222-222222222222',
-      departmentId: '33333333-3333-3333-3333-333333333333',
-      name: { ar: 'عيادة الباطنة ٣', en: 'Clinic 3' },
-      building: 'A',
-      floor: '2',
-      directions: { ar: 'الدور الثاني، يمين المصعد', en: '2nd floor, right of the lift' },
-    };
+    it('shows the checked-in step with people ahead and where to go, and refreshes every 30 seconds', async () => {
+      jest.useFakeTimers();
+      try {
+        const visit = appointmentWith(appointmentId, 'CHECKED_IN', '2026-11-08T09:00:00Z');
+        const routes: Record<string, unknown> = {
+          'GET /me/appointments?when=upcoming': [visit],
+          'GET /me/appointments?when=past': [],
+          [`GET /appointments/${appointmentId}/journey`]: journeyAt(
+            appointmentId,
+            'CHECKED_IN',
+            'Wait at the clinic waiting area until the doctor calls you',
+          ),
+          'GET /me/results': [],
+          [`GET /appointments/${appointmentId}/queue-position`]: {
+            appointmentId,
+            status: 'CHECKED_IN',
+            peopleAhead: 3,
+          },
+        };
+        routeFetch(routes);
 
-    const labClinic = {
-      id: '88888888-8888-8888-8888-888888888888',
-      departmentId: '99999999-9999-9999-9999-999999999999',
-      name: { ar: 'المعمل الرئيسي', en: 'Main Laboratory' },
-      building: 'B',
-      floor: 'Ground',
-      directions: { ar: 'المبنى ب، الدور الأرضي', en: 'Building B, ground floor' },
-    };
+        await render(<VisitScreen />);
 
-    const appointment: Appointment = {
-      id: '77777777-7777-7777-7777-777777777777',
-      status: 'CHECKED_IN',
-      startsAt: '2026-11-06T09:00:00Z',
-      endsAt: '2026-11-06T09:15:00Z',
-      bookedAt: '2026-11-05T10:00:00Z',
-      checkedInAt: '2026-11-06T08:50:00Z',
-      patient: {
-        id: '11111111-1111-1111-1111-111111111111',
-        name: 'Salma Hassan',
-      },
-      doctor: {
-        id: '44444444-4444-4444-4444-444444444444',
-        name: 'Dr. Kareem Adel',
-      },
-      clinic,
-    };
+        expect((await screen.findByTestId('people-ahead-count')).props.children).toBe(3);
+        expect(screen.getByTestId('visit-step-booked-done')).toBeTruthy();
+        expect(screen.getByTestId('visit-step-checkedIn-current')).toBeTruthy();
+        expect(screen.getByTestId('visit-step-tests-optional')).toBeTruthy();
+        expect(screen.getByText('Only if your doctor orders tests')).toBeTruthy();
+        expect(screen.getByTestId('visit-next-step').props.children).toBe(
+          'Wait at the clinic waiting area until the doctor calls you',
+        );
+        expect(screen.getByTestId('visit-location-name').props.children).toBe(
+          'Internal Medicine Clinic 1',
+        );
+        // A single visit needs no visit picker
+        expect(screen.queryByTestId('visit-dropdown')).toBeNull();
 
-    const checkedInJourney: Journey = {
-      appointmentId: appointment.id,
-      stage: 'CHECKED_IN',
-      title: { ar: 'تم تسجيل الحضور', en: 'Checked in' },
-      nextStep: {
-        ar: 'انتظر في منطقة الانتظار حتى ينادي الطبيب اسمك',
-        en: 'Wait at the clinic waiting area until the doctor calls you',
-      },
-      location: clinic,
-    };
+        // 30 seconds later, without the patient doing anything
+        routes[`GET /appointments/${appointmentId}/queue-position`] = {
+          appointmentId,
+          status: 'CHECKED_IN',
+          peopleAhead: 0,
+        };
+        await act(async () => {
+          jest.advanceTimersByTime(VISIT_REFRESH_MS);
+        });
+        await waitFor(() =>
+          expect(screen.getByTestId('people-ahead-count').props.children).toBe(0),
+        );
+        expect(screen.getByText('You are next!')).toBeTruthy();
 
-    const testOrderedJourney: Journey = {
-      appointmentId: appointment.id,
-      stage: 'TEST_ORDERED',
-      title: { ar: 'تم طلب فحص', en: 'Test ordered' },
-      nextStep: {
-        ar: 'توجه إلى عيادة الفحص لإجراء الفحص المطلوب',
-        en: 'Go to the test clinic to complete the ordered test',
-      },
-      location: labClinic,
-    };
+        // Called in, then sent to the lab
+        routes[`GET /appointments/${appointmentId}/journey`] = journeyAt(
+          appointmentId,
+          'TEST_ORDERED',
+          'Go to the lab for your blood test',
+          labClinic,
+        );
+        routes['GET /me/results'] = [
+          {
+            testId: 'aaaa1111-1111-1111-1111-111111111111',
+            appointmentId,
+            testName: 'CBC',
+            orderedAt: '2026-11-08T09:20:00Z',
+            status: 'WAITING_FOR_REVIEW',
+          },
+        ];
+        await act(async () => {
+          jest.advanceTimersByTime(VISIT_REFRESH_MS);
+        });
+        await waitFor(() => expect(screen.getByTestId('visit-step-tests-current')).toBeTruthy());
+        expect(screen.getByTestId('visit-tests-phase').props.children).toBe(
+          'Go to the lab for your tests',
+        );
+        expect(screen.getByTestId('visit-location-name').props.children).toBe('Main Laboratory');
+        expect(screen.queryByTestId('people-ahead-count')).toBeNull();
 
-    (globalThis.fetch as jest.Mock)
-      // initial listMyAppointments('upcoming')
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([appointment]),
-      })
-      // initial getAppointmentJourney
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(checkedInJourney),
-      })
-      // refresh listMyAppointments('upcoming')
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify([appointment]),
-      })
-      // refresh getAppointmentJourney
-      .mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify(testOrderedJourney),
-      });
+        // Arabic (RTL)
+        await act(async () => {
+          await setAppLanguage('ar');
+        });
+        expect(screen.getByTestId('visit-location-name').props.children).toBe('المعمل الرئيسي');
+        expect(screen.getByText('التحاليل والأشعة')).toBeTruthy();
+      } finally {
+        jest.useRealTimers();
+      }
+    });
 
-    await render(<JourneyScreen />);
-
-    expect((await screen.findByTestId('journey-stage-title')).props.children).toBe('Checked in');
-    expect((await screen.findByTestId('journey-next-step')).props.children).toBe(
-      'Wait at the clinic waiting area until the doctor calls you',
-    );
-    expect((await screen.findByTestId('journey-location-name')).props.children).toBe('Clinic 3');
-
-    // Refresh updates stage to TEST_ORDERED and location to Building B Lab
-    await fireEvent.press(await screen.findByTestId('journey-refresh-button'));
-    await waitFor(async () => {
-      expect((await screen.findByTestId('journey-stage-title')).props.children).toBe(
-        'Test ordered',
+    it("keeps today's completed visit while the lab step is left, and moves on to the return trip", async () => {
+      const labVisit = appointmentWith(appointmentId, 'COMPLETED', new Date().toISOString());
+      const doneVisit = appointmentWith(
+        '77777777-0000-0000-0000-000000000002',
+        'COMPLETED',
+        new Date().toISOString(),
+        'Dr. Mona Fathy',
       );
-    });
-    expect((await screen.findByTestId('journey-location-name')).props.children).toBe(
-      'Main Laboratory',
-    );
+      const nextWeek = appointmentWith(
+        '77777777-0000-0000-0000-000000000003',
+        'BOOKED',
+        '2026-11-14T09:00:00Z',
+      );
+      const routes: Record<string, unknown> = {
+        'GET /me/appointments?when=upcoming': [nextWeek],
+        'GET /me/appointments?when=past': [labVisit, doneVisit],
+        [`GET /appointments/${labVisit.id}/journey`]: journeyAt(
+          labVisit.id,
+          'TEST_ORDERED',
+          'Go to the lab',
+          labClinic,
+        ),
+        [`GET /appointments/${doneVisit.id}/journey`]: journeyAt(doneVisit.id, 'DONE', 'Nothing left', null),
+        [`GET /appointments/${nextWeek.id}/journey`]: journeyAt(nextWeek.id, 'BOOKED', 'Come on the day'),
+        'GET /me/results': [
+          {
+            testId: 'aaaa1111-1111-1111-1111-111111111111',
+            appointmentId: labVisit.id,
+            testName: 'CBC',
+            orderedAt: labVisit.startsAt,
+            status: 'WAITING_FOR_REVIEW',
+          },
+        ],
+      };
+      routeFetch(routes);
 
-    // Switch to Arabic and verify RTL journey text
+      await render(<VisitScreen />);
+
+      // The unfinished visit opens first; the finished one isn't offered
+      expect(await screen.findByTestId('visit-step-tests-current')).toBeTruthy();
+      expect(screen.getByTestId('visit-location-name').props.children).toBe('Main Laboratory');
+      await fireEvent.press(screen.getByTestId('visit-dropdown'));
+      expect(screen.getByTestId(`visit-dropdown-option-${labVisit.id}`)).toBeTruthy();
+      expect(screen.getByTestId(`visit-dropdown-option-${nextWeek.id}`)).toBeTruthy();
+      expect(screen.queryByTestId(`visit-dropdown-option-${doneVisit.id}`)).toBeNull();
+      await fireEvent.press(screen.getByTestId('visit-dropdown-close'));
+
+      // Lab done: back to the doctor, still on step 4
+      routes[`GET /appointments/${labVisit.id}/journey`] = journeyAt(
+        labVisit.id,
+        'RESULT_READY',
+        'Go back to Dr. Kareem Adel',
+      );
+      await act(async () => {
+        await screen.getByTestId('visit-scroll-view').props.refreshControl.props.onRefresh();
+      });
+      await waitFor(() =>
+        expect(screen.getByTestId('visit-tests-phase').props.children).toBe(
+          'Tests done: go back to your doctor',
+        ),
+      );
+      expect(screen.getByTestId('visit-step-doctor-done')).toBeTruthy();
+      expect(screen.getByTestId('visit-location-name').props.children).toBe(
+        'Internal Medicine Clinic 1',
+      );
+
+      // Switching to next week's visit shows it as booked
+      await fireEvent.press(screen.getByTestId('visit-dropdown'));
+      await fireEvent.press(screen.getByTestId(`visit-dropdown-option-${nextWeek.id}`));
+      expect(await screen.findByTestId('visit-step-booked-current')).toBeTruthy();
+    });
+
+    it('offers booking when there is no visit to follow', async () => {
+      routeFetch({
+        'GET /me/appointments?when=upcoming': [],
+        'GET /me/appointments?when=past': [],
+      });
+
+      await render(<VisitScreen />);
+      expect(await screen.findByText('You have no upcoming visits.')).toBeTruthy();
+      await fireEvent.press(screen.getByTestId('visit-go-book'));
+      expect(mockPush).toHaveBeenCalledWith('/(tabs)/book');
+    });
+  });
+
+  it('shows the assistant as coming soon, with input off and the emergency number one tap away', async () => {
+    setSession('live-token-abc', patientUser);
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+
+    await render(<AssistantScreen />);
+    expect(await screen.findByTestId('assistant-greeting')).toBeTruthy();
+    expect(screen.getByTestId('assistant-input').props.editable).toBe(false);
+    expect(screen.getByTestId('assistant-send').props.accessibilityState.disabled).toBe(true);
+
+    await fireEvent.press(screen.getByText('Emergency? Call 123'));
+    expect(openURL).toHaveBeenCalledWith('tel:123');
+    // Nothing is ever sent to the backend
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+
     await act(async () => {
       await setAppLanguage('ar');
     });
-    expect((await screen.findByTestId('journey-stage-title')).props.children).toBe('تم طلب فحص');
-    expect((await screen.findByTestId('journey-location-name')).props.children).toBe(
-      'المعمل الرئيسي',
-    );
+    expect(screen.getByText('حالة طارئة؟ اتصل بـ 123')).toBeTruthy();
+    openURL.mockRestore();
   });
 
   describe('results and visit summary (KAN-16)', () => {
@@ -558,15 +649,6 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       phone: '+201000000006',
       email: null,
       roles: [],
-    };
-
-    const clinic = {
-      id: '22222222-2222-2222-2222-222222222222',
-      departmentId: '33333333-3333-3333-3333-333333333333',
-      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
-      building: 'A',
-      floor: '2',
-      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
     };
 
     const pendingResult: PatientResult = {
@@ -751,8 +833,10 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       await render(<ResultsScreen />);
       expect((await screen.findByTestId('visit-summary-text')).props.children).toBe('Summary A');
 
-      await fireEvent.press(screen.getByTestId(`summary-visit-${visitB.id}`));
-      await fireEvent.press(screen.getByTestId(`summary-visit-${visitA.id}`));
+      await fireEvent.press(screen.getByTestId('summary-visit'));
+      await fireEvent.press(screen.getByTestId(`summary-visit-option-${visitB.id}`));
+      await fireEvent.press(screen.getByTestId('summary-visit'));
+      await fireEvent.press(screen.getByTestId(`summary-visit-option-${visitA.id}`));
       expect((await screen.findByTestId('visit-summary-text')).props.children).toBe(
         'Summary A again',
       );
@@ -762,66 +846,24 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
       });
       expect(screen.getByTestId('visit-summary-text').props.children).toBe('Summary A again');
     });
-  });
 
-  it('falls back to all days when the chosen day runs out of free slots', async () => {
-    setSession('live-token-abc', {
-      id: '11111111-1111-1111-1111-111111111111',
-      type: 'PATIENT',
-      name: 'Salma Hassan',
-      phone: '+201000000006',
-      email: null,
-      roles: [],
+    it('lists every past visit and only asks for a summary of a completed one', async () => {
+      const cancelled: Appointment = { ...visitB, status: 'CANCELLED' };
+      (globalThis.fetch as jest.Mock)
+        .mockResolvedValueOnce(jsonResponse([]))
+        .mockResolvedValueOnce(jsonResponse([cancelled, visitA]))
+        .mockResolvedValueOnce(jsonResponse(summaryFor(visitA, 'Summary A')));
+
+      await render(<ResultsScreen />);
+      // The completed visit is picked first
+      expect((await screen.findByTestId('visit-summary-text')).props.children).toBe('Summary A');
+
+      await fireEvent.press(screen.getByTestId('summary-visit'));
+      await fireEvent.press(screen.getByTestId(`summary-visit-option-${cancelled.id}`));
+      expect(await screen.findByTestId('no-summary-text')).toBeTruthy();
+      expect(screen.getByTestId('past-visit-status')).toBeTruthy();
+      expect(screen.getByText('Cancelled')).toBeTruthy();
+      expect(globalThis.fetch).toHaveBeenCalledTimes(3);
     });
-    const clinic = {
-      id: '22222222-2222-2222-2222-222222222222',
-      departmentId: '33333333-3333-3333-3333-333333333333',
-      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
-      building: 'A',
-      floor: '2',
-      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
-    };
-    const doctor: Doctor = {
-      id: '44444444-4444-4444-4444-444444444444',
-      name: 'Dr. Kareem Adel',
-      clinics: [clinic],
-    };
-    const slot = (id: string, startsAt: string): Slot => ({
-      id,
-      doctorId: doctor.id,
-      clinic,
-      startsAt,
-      endsAt: startsAt,
-    });
-    // 10:00 Cairo on three different days
-    const day1 = slot('55555555-0000-0000-0000-000000000001', '2026-11-08T08:00:00Z');
-    const day2 = slot('55555555-0000-0000-0000-000000000002', '2026-11-09T08:00:00Z');
-    const day3 = slot('55555555-0000-0000-0000-000000000003', '2026-11-10T08:00:00Z');
-
-    (globalThis.fetch as jest.Mock)
-      .mockResolvedValueOnce(
-        jsonResponse([
-          { id: clinic.departmentId, kind: 'CLINICAL', name: { ar: 'الباطنة', en: 'Internal Medicine' }, clinics: [clinic] },
-        ]),
-      )
-      .mockResolvedValueOnce(jsonResponse([])) // upcoming appointments
-      .mockResolvedValueOnce(jsonResponse([doctor]))
-      .mockResolvedValueOnce(jsonResponse([day1, day2, day3]))
-      .mockResolvedValueOnce(jsonResponse({}, 201)) // book day 2
-      .mockResolvedValueOnce(jsonResponse([day1, day3])) // slots after booking
-      .mockResolvedValueOnce(jsonResponse([])); // upcoming appointments after booking
-
-    await render(<BookScreen />);
-    await fireEvent.press(await screen.findByText('Internal Medicine'));
-    await fireEvent.press(await screen.findByText('Dr. Kareem Adel'));
-
-    await fireEvent.press(await screen.findByTestId('slot-day-2026-11-09'));
-    expect(screen.queryByTestId(`slot-item-${day1.id}`)).toBeNull();
-    await fireEvent.press(screen.getByTestId(`book-slot-${day2.id}`));
-
-    expect(await screen.findByText('Appointment booked successfully!')).toBeTruthy();
-    expect(await screen.findByTestId(`slot-item-${day1.id}`)).toBeTruthy();
-    expect(screen.getByTestId(`slot-item-${day3.id}`)).toBeTruthy();
-    expect(screen.queryByTestId('slot-day-2026-11-09')).toBeNull();
   });
 });
