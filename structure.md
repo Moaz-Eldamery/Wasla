@@ -28,7 +28,7 @@ patient-app / hospital-dashboard
 - **Core service:** NestJS + TypeScript, modular monolith (six modules), Socket.IO for live updates, transactional outbox in Postgres with a poller inside the core for async work. No Redis.
 - **AI service:** Python FastAPI, Claude API. Reachable only from the core, never from the internet.
 - **Database:** PostgreSQL 16 + pgvector, Prisma. One clinical database with `auth` and `core` schemas, plus a separate `wasla_ai` database. Each service has its own DB user (see `schema.md`).
-- **Mobile app:** React Native + Expo (expo-router), i18next.
+- **Mobile app:** React Native + Expo (expo-router), i18next. `expo-file-system` and `expo-sharing` open and share released result files.
 - **Website:** React + Vite, MUI, TanStack Query, i18next.
 - **Tooling:** Node 24 LTS (at least 24.18, pinned in `.nvmrc`), pnpm monorepo, Docker Compose, GitHub Actions. Prism 5.16 serves the mock API from `contracts/openapi.yaml` plus the drafts in `contracts/drafts/` (`pnpm mock`, through `contracts/mock.mjs`); it needs Node 24.18 or newer.
 - **Lint and tests:**
@@ -84,8 +84,8 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 ├── apps/                        the frontends. They talk ONLY to the gateway
 │   ├── patient-app/             Expo (expo-router)
 │   │   ├── app/                 _layout.tsx + one file per screen (index.tsx redirects to (auth) or (tabs))
-│   │   ├── app/(auth)/          screens before login: sign-up, verify-code, login
-│   │   ├── app/(tabs)/          screens after login: book, queue, journey, results, profile
+│   │   ├── app/(auth)/          screens before login: _layout.tsx, sign-up, verify-code, login
+│   │   ├── app/(tabs)/          screens after login: _layout.tsx, book, queue, journey, results; profile planned (KAN-29)
 │   │   ├── lib/                 api.ts, socket.ts, api-types.ts: the ONLY backend calls
 │   │   └── translations/        ar.json, en.json, i18n.ts
 │   └── hospital-dashboard/      Vite + React, MUI, TanStack Query, i18next

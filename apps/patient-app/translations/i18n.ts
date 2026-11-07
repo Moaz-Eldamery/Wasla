@@ -115,6 +115,38 @@ export function formatCairoDateTime(
   }).format(date);
 }
 
+/** Returns the YYYY-MM-DD calendar day in Africa/Cairo for grouping slots. */
+export function getCairoDayKey(isoString: string): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return isoString.slice(0, 10);
+  }
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date);
+}
+
+/** Formats a short day label (e.g. "Sat, Nov 7") in Africa/Cairo time. */
+export function formatCairoShortDay(
+  isoString: string,
+  lang: AppLanguage = currentLang,
+): string {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return isoString;
+  }
+  const locale = lang === 'ar' ? 'ar-EG' : 'en-US';
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: 'Africa/Cairo',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+}
+
 /** Translates a contract ErrorCode into localized user-facing text. */
 export function translateErrorCode(code: ErrorCode | string): string {
   ensureI18n();

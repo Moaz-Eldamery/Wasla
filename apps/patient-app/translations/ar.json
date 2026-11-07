@@ -58,7 +58,8 @@
     "timeLabel": "الوقت",
     "statusLabel": "الحالة",
     "changeDepartment": "تغيير القسم",
-    "changeDoctor": "تغيير الطبيب"
+    "changeDoctor": "تغيير الطبيب",
+    "allDaysFilter": "كل الأيام"
   },
   "queue": {
     "tabTitle": "الدور",
@@ -84,6 +85,30 @@
     "directionsLabel": "الاتجاهات",
     "refreshButton": "تحديث"
   },
+  "results": {
+    "tabTitle": "النتائج والملخص",
+    "screenTitle": "نتائج الفحوصات وملخص الزيارة",
+    "refreshButton": "تحديث",
+    "testResultsSectionTitle": "نتائج التحاليل والأشعة",
+    "noResults": "لا توجد نتائج فحوصات حتى الآن.",
+    "waitingForReviewBadge": "بانتظار مراجعة الطبيب",
+    "waitingForReviewNote": "النتيجة قيد مراجعة الطبيب وستظهر لك فور اعتمادها.",
+    "releasedBadge": "متاحة",
+    "orderedAtLabel": "تاريخ الطلب",
+    "releasedAtLabel": "تاريخ الاعتماد",
+    "fileLabel": "الملف",
+    "downloadButton": "فتح النتيجة",
+    "downloadedBanner": "تم حفظ {{fileName}} على هذا الهاتف",
+    "shareResultButton": "مشاركة",
+    "openFailed": "تعذّر فتح ملف النتيجة على هذا الهاتف. جرّب مشاركته مع تطبيق آخر.",
+    "visitSummarySectionTitle": "ملخصات الزيارات المكتملة",
+    "noCompletedVisits": "لا توجد زيارات مكتملة حتى الآن.",
+    "selectCompletedVisitLabel": "اختر زيارة مكتملة",
+    "summaryDoctorLabel": "الطبيب",
+    "summaryCompletedAtLabel": "تاريخ الانتهاء",
+    "summaryHeading": "ملخص الزيارة",
+    "summaryNotYetAvailable": "لم يضف الطبيب ملخصاً للمريض لهذه الزيارة بعد."
+  },
   "status": {
     "BOOKED": "محجوز",
     "CHECKED_IN": "تم تسجيل الحضور",
@@ -105,6 +130,7 @@
     "CODE_EXPIRED": "انتهت صلاحية كود التأكيد. اطلب كوداً جديداً.",
     "SLOT_TAKEN": "تم حجز هذا الموعد للتو من قبل مريض آخر. اختر موعداً آخر.",
     "SLOT_UNAVAILABLE": "هذا الموعد لم يعد متاحاً.",
+    "NOT_YET_AVAILABLE": "ملخص الزيارة غير متاح بعد.",
     "INTERNAL": "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى."
   }
 }
