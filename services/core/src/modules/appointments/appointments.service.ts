@@ -156,7 +156,8 @@ export class AppointmentsService {
           gte: start > now ? start : now,
           lt: startOfCairoDay(addDays(lastDay, 1)),
         },
-        clinic: { active: true },
+        // Bookable only while the clinic and its department are both active.
+        clinic: { active: true, department: { active: true } },
         appointments: { none: HOLDS_SLOT },
       },
       select: slotSelect,
@@ -183,7 +184,7 @@ export class AppointmentsService {
       select: {
         status: true,
         startsAt: true,
-        clinic: { select: { active: true } },
+        clinic: { select: { active: true, department: { select: { active: true } } } },
         doctor: { select: { active: true } },
         appointments: {
           where: HOLDS_SLOT,
@@ -200,6 +201,7 @@ export class AppointmentsService {
       slot.status !== 'OPEN' ||
       slot.startsAt <= now ||
       !slot.clinic.active ||
+      !slot.clinic.department.active ||
       !slot.doctor.active
     ) {
       await this.recordFailedBooking(caller, slotId, 'SLOT_UNAVAILABLE');
@@ -370,6 +372,27 @@ export class AppointmentsService {
       where: { ...HOLDS_SLOT, slot: { clinicId, startsAt: { gte: start, lt: end } } },
       select: appointmentSelect,
       orderBy: { slot: { startsAt: 'asc' } },
+    });
+    return rows.map(toAppointmentView);
+  }
+
+  /**
+   * The calling doctor's own appointments for one Cairo day (default today),
+   * in every clinic they work in. Cancelled ones are left out.
+   */
+  async listDoctorDay(
+    caller: Caller,
+    day?: string,
+    now: Date = new Date(),
+  ): Promise<AppointmentView[]> {
+    const { start, end } = cairoDayRange(day ?? cairoToday(now));
+    const rows = await this.prisma.appointment.findMany({
+      where: {
+        ...HOLDS_SLOT,
+        slot: { doctorId: caller.id, startsAt: { gte: start, lt: end } },
+      },
+      select: appointmentSelect,
+      orderBy: [{ slot: { startsAt: 'asc' } }, { id: 'asc' }],
     });
     return rows.map(toAppointmentView);
   }

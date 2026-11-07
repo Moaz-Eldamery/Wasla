@@ -14,6 +14,7 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 
 - Every request checks both the role **and** whether the record belongs to that user. Someone else's record returns "not found", so its existence isn't leaked.
 - Important actions (logins, bookings, including failed ones, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
+- Admins search the log by who (name or phone number), what kind of action and Cairo days, newest first, 50 entries at a time. The screen shows who did what to which record, the outcome and the IP address, never the entry's extra details. Related stored actions are grouped (for example every read of an appointment, queue or journey is "patient record opened").
 
 ## Hospital setup
 - A department has one or more clinics. A clinic is a place patients go (a clinic room, the lab, a radiology room) with a building, floor and directions in Arabic and English.
@@ -23,12 +24,14 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - A department's type (clinical, lab, radiology) is fixed once it is created. Names and directions are kept in Arabic and English, and both are required.
 
 ## Admin statistics
-*Draft definitions from the admin screens (KAN-20); KAN-39 confirms them when it builds the numbers.*
 - Counts and averages only, never a patient's name. Days are Cairo calendar days, and a range is at most 92 days.
+- Each appointment counts on the Cairo day of its slot. Cancelled appointments are never counted.
 - **Visits:** appointments that reached `COMPLETED`, per clinical department.
-- **Average wait:** minutes from check-in to the consultation starting.
+- **Average wait:** minutes from check-in to the consultation starting, over the appointments that have both.
 - **No-show rate:** no-shows divided by the appointments due that day, leaving out cancelled ones.
 - When there is nothing to measure (no appointments, a closed day, a day still to come), the value is "Not available", never 0.
+- Totals for the whole range are weighted by appointments, not an average of the days.
+- The chart lists every active clinical department, and an inactive one only while it has visits in the range.
 
 ## Accounts
 - Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.

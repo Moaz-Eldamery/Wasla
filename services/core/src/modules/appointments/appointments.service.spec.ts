@@ -54,7 +54,7 @@ function openSlot(holders: { id: string; patientId: string }[] = []) {
   return {
     status: 'OPEN',
     startsAt: LATER,
-    clinic: { active: true },
+    clinic: { active: true, department: { active: true } },
     doctor: { active: true },
     appointments: holders,
   };
@@ -144,7 +144,8 @@ describe('AppointmentsService.book', () => {
   it.each([
     ['blocked', { status: 'BLOCKED' }],
     ['in the past', { startsAt: new Date('2026-11-04T10:00:00Z') }],
-    ['in an inactive clinic', { clinic: { active: false } }],
+    ['in an inactive clinic', { clinic: { active: false, department: { active: true } } }],
+    ['in an active clinic of an inactive department', { clinic: { active: true, department: { active: false } } }],
     ['with an inactive doctor', { doctor: { active: false } }],
   ])('refuses a slot %s with SLOT_UNAVAILABLE', async (_name, change) => {
     const { prisma, service } = setup();
@@ -220,5 +221,47 @@ describe('AppointmentsService.listClinicDay', () => {
         }),
       }),
     );
+  });
+});
+
+describe('AppointmentsService.listDoctorDay', () => {
+  const doctor: Caller = {
+    id: 'e0000000-0000-4000-8000-000000000001',
+    type: 'STAFF',
+    roles: ['DOCTOR'],
+  };
+
+  it("lists only the calling doctor's appointments for the whole Cairo day, leaving out cancelled ones", async () => {
+    const { prisma, service } = setup();
+    prisma.appointment.findMany.mockResolvedValue([appointmentRow(alice.id)]);
+
+    const day = await service.listDoctorDay(doctor, '2026-11-05');
+
+    expect(day.map((a) => a.id)).toEqual([APPT]);
+    expect(prisma.appointment.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          status: { not: 'CANCELLED' },
+          slot: {
+            doctorId: doctor.id,
+            startsAt: {
+              gte: new Date('2026-11-04T22:00:00Z'),
+              lt: new Date('2026-11-05T22:00:00Z'),
+            },
+          },
+        },
+      }),
+    );
+  });
+
+  it('defaults to today in Cairo', async () => {
+    const { prisma, service } = setup();
+    prisma.appointment.findMany.mockResolvedValue([]);
+
+    // 23:30 UTC on 4 Nov is already 5 Nov in Cairo.
+    await service.listDoctorDay(doctor, undefined, new Date('2026-11-04T23:30:00Z'));
+
+    const where = prisma.appointment.findMany.mock.calls[0][0].where;
+    expect(where.slot.startsAt.gte).toEqual(new Date('2026-11-04T22:00:00Z'));
   });
 });

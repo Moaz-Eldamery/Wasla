@@ -54,4 +54,10 @@ export class AppointmentsController {
   ) {
     return this.appointments.listClinicDay(caller, clinicId, query.date);
   }
+
+  @Get('doctors/me/appointments')
+  @Roles('DOCTOR')
+  listDoctorDay(@CurrentCaller() caller: Caller, @Query() query: DayQuery) {
+    return this.appointments.listDoctorDay(caller, query.date);
+  }
 }

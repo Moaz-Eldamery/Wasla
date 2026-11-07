@@ -11,6 +11,7 @@ import { ApiError, type ErrorCode } from './api-error.js';
 const CODE_BY_STATUS: Record<number, ErrorCode> = {
   400: 'VALIDATION_FAILED',
   401: 'UNAUTHENTICATED',
+  403: 'FORBIDDEN',
   404: 'NOT_FOUND',
   429: 'RATE_LIMITED',
 };

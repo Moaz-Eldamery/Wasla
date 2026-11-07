@@ -91,6 +91,8 @@ describe.skipIf(!enabled)(
             )
               .toString()
               .padStart(15, '1')}`,
+            // Staff need a work email to log in (accounts_login_identifier); patients have none.
+            email: roles.length ? `${randomUUID()}@e2e.test` : null,
             passwordHash: 'fake',
             roles,
             phoneVerifiedAt: new Date(),

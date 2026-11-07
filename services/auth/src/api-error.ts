@@ -4,9 +4,11 @@ import { HttpException } from '@nestjs/common';
 export type ErrorCode =
   | 'VALIDATION_FAILED'
   | 'UNAUTHENTICATED'
+  | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'RATE_LIMITED'
   | 'PHONE_TAKEN'
+  | 'EMAIL_TAKEN'
   | 'PHONE_NOT_VERIFIED'
   | 'INVALID_CREDENTIALS'
   | 'CODE_INVALID'
@@ -34,6 +36,10 @@ export class ApiError extends HttpException {
 
 export function unauthenticated(): ApiError {
   return new ApiError(401, 'UNAUTHENTICATED', 'No valid session.');
+}
+
+export function forbidden(): ApiError {
+  return new ApiError(403, 'FORBIDDEN', "Your account can't do this.");
 }
 
 export function rateLimited(retryAfterSeconds: number): ApiError {
