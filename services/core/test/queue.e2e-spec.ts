@@ -45,7 +45,7 @@ describe.skipIf(!enabled)('Check-in and queue (e2e, real database)', () => {
 
     const staff = (name: string, roles: ('DOCTOR' | 'RECEPTIONIST')[]) =>
       seed.account.create({
-        data: { type: 'STAFF', name, phone: fakePhone(), passwordHash: 'fake', roles },
+        data: { type: 'STAFF', name, email: `${randomUUID()}@e2e.test`, passwordHash: 'fake', roles },
       });
     const department = await seed.department.create({
       data: { kind: 'CLINICAL', nameAr: `قلب ${tag}`, nameEn: `Cardiology ${tag}` },

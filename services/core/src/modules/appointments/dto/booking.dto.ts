@@ -4,22 +4,9 @@ import {
   IsOptional,
   IsUUID,
   Validate,
-  ValidatorConstraint,
-  type ValidatorConstraintInterface,
 } from 'class-validator';
 import { DepartmentKind } from '../../../generated/prisma/enums.js';
-import { isCairoDay } from '../../../shared/cairo-time.js';
-
-@ValidatorConstraint({ name: 'cairoDay' })
-class IsCairoDay implements ValidatorConstraintInterface {
-  validate(value: unknown): boolean {
-    return typeof value === 'string' && isCairoDay(value);
-  }
-
-  defaultMessage(): string {
-    return 'must be a date written as YYYY-MM-DD';
-  }
-}
+import { IsCairoDay } from '../../../shared/validators.js';
 
 /** Body of `POST /appointments`. */
 export class BookAppointmentDto {

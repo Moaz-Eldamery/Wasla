@@ -30,14 +30,20 @@ const FUTURE_WORKING_DAYS = Number(args['future-days']);
 
 /** Shared by every demo account. Demo databases only. */
 const DEMO_PASSWORD = 'demo-password';
-/** The fixed demo logins, one per staff role plus a patient. Listed in the README. */
+/**
+ * The fixed demo logins, one per staff role plus a patient. Listed in the
+ * README. Staff log in to the website with a work email (`.test` is a reserved
+ * domain, so these never reach a real inbox); the patient logs in to the app
+ * with a phone number.
+ */
+const STAFF_EMAIL_DOMAIN = 'wasla.test';
 const DEMO_LOGINS = [
-  { role: 'admin', phone: '+201000000001' },
-  { role: 'receptionist', phone: '+201000000002' },
-  { role: 'doctor', phone: '+201000000003' },
-  { role: 'lab', phone: '+201000000004' },
-  { role: 'radiology', phone: '+201000000005' },
-  { role: 'patient', phone: '+201000000006' },
+  { role: 'admin', login: `admin@${STAFF_EMAIL_DOMAIN}` },
+  { role: 'receptionist', login: `receptionist@${STAFF_EMAIL_DOMAIN}` },
+  { role: 'doctor', login: `doctor@${STAFF_EMAIL_DOMAIN}` },
+  { role: 'lab', login: `lab@${STAFF_EMAIL_DOMAIN}` },
+  { role: 'radiology', login: `radiology@${STAFF_EMAIL_DOMAIN}` },
+  { role: 'patient', login: '+201000000006' },
 ];
 const SLOT_MINUTES = 15;
 const DAY_START_HOUR = 9; // Cairo time
@@ -280,7 +286,7 @@ try {
     await db.query('COMMIT');
     console.log('Demo data loaded:', counts);
     console.log(`Demo logins (password "${DEMO_PASSWORD}"):`);
-    for (const login of DEMO_LOGINS) console.log(`  ${login.role.padEnd(13)} ${login.phone}`);
+    for (const login of DEMO_LOGINS) console.log(`  ${login.role.padEnd(13)} ${login.login}`);
   }
 } catch (error) {
   await db.query('ROLLBACK').catch(() => {});
@@ -297,19 +303,33 @@ async function build(db: pg.PoolClient): Promise<Record<string, number>> {
 
   const accounts: Row[] = [];
   const staffClinics: Row[] = [];
-  let staffPhone = 7; // +201000000001..6 are the demo logins
+  let staffNumber = 1;
+  // Every row has the same columns (insert() takes them from the first row).
   const account = (row: Row): string => {
     const id = randomUUID();
-    accounts.push({ id, password_hash: passwordHash, phone_verified_at: now, ...row });
+    accounts.push({
+      id,
+      password_hash: passwordHash,
+      phone: null,
+      email: null,
+      phone_verified_at: null,
+      ...row,
+    });
     return id;
   };
-  const staff = (name: string, roles: string[], phone?: string): string =>
+  // Staff: a work email to log in with, and no phone (it's optional for staff).
+  const staff = (name: string, roles: string[], demoLogin?: string): string =>
     account({
       type: 'STAFF',
       name,
       roles,
-      phone: phone ?? `+2010000000${String(staffPhone++).padStart(2, '0')}`,
+      email: demoLogin
+        ? `${demoLogin}@${STAFF_EMAIL_DOMAIN}`
+        : `staff${String(staffNumber++).padStart(2, '0')}@${STAFF_EMAIL_DOMAIN}`,
     });
+  // Patients: a verified phone number to log in to the app with.
+  const patient = (name: string, phone: string): string =>
+    account({ type: 'PATIENT', name, phone, roles: [], phone_verified_at: now });
 
   // Departments, clinics and the staff who work in them.
   const departments: Row[] = [];
@@ -337,7 +357,7 @@ async function build(db: pg.PoolClient): Promise<Record<string, number>> {
         const id = staff(
           isDemoDoctor ? 'Dr. Demo Doctor' : doctorName(),
           ['DOCTOR'],
-          isDemoDoctor ? '+201000000003' : undefined,
+          isDemoDoctor ? 'doctor' : undefined,
         );
         doctors.push({ id, clinicId, visitMinutes: d.visitMinutes });
         staffClinics.push({ staff_id: id, clinic_id: clinicId });
@@ -345,18 +365,18 @@ async function build(db: pg.PoolClient): Promise<Record<string, number>> {
     }
   }
 
-  // Demo logins (fixed numbers), then one receptionist per clinical department.
+  // Demo logins (fixed emails), then one receptionist per clinical department.
   const [labClinic] = clinicsByKind.LAB;
   const [radiologyClinic] = clinicsByKind.RADIOLOGY;
-  staff('Demo Admin', ['ADMIN'], '+201000000001');
-  const demoReceptionist = staff('Demo Receptionist', ['RECEPTIONIST'], '+201000000002');
+  staff('Demo Admin', ['ADMIN'], 'admin');
+  const demoReceptionist = staff('Demo Receptionist', ['RECEPTIONIST'], 'receptionist');
   const firstDepartment = clinics.filter((c) => c.department_id === departments[0].id);
   for (const c of firstDepartment) {
     staffClinics.push({ staff_id: demoReceptionist, clinic_id: c.id });
   }
-  const demoLab = staff('Demo Lab Technician', ['LAB'], '+201000000004');
+  const demoLab = staff('Demo Lab Technician', ['LAB'], 'lab');
   staffClinics.push({ staff_id: demoLab, clinic_id: labClinic });
-  const demoRadiology = staff('Demo Radiographer', ['LAB'], '+201000000005');
+  const demoRadiology = staff('Demo Radiographer', ['LAB'], 'radiology');
   staffClinics.push({ staff_id: demoRadiology, clinic_id: radiologyClinic });
   for (const d of departments.slice(1)) {
     if (d.kind !== 'CLINICAL') continue;
@@ -367,22 +387,10 @@ async function build(db: pg.PoolClient): Promise<Record<string, number>> {
   }
 
   // Patients: the demo one first, then made-up ones.
-  const demoPatient = account({
-    type: 'PATIENT',
-    name: 'Demo Patient',
-    phone: '+201000000006',
-    roles: [],
-  });
+  const demoPatient = patient('Demo Patient', '+201000000006');
   const patients = [demoPatient];
   for (let i = 1; i <= PATIENTS - 1; i++) {
-    patients.push(
-      account({
-        type: 'PATIENT',
-        name: fakeName(),
-        phone: `+2012${String(i).padStart(8, '0')}`,
-        roles: [],
-      }),
-    );
+    patients.push(patient(fakeName(), `+2012${String(i).padStart(8, '0')}`));
   }
 
   const slots: Row[] = [];

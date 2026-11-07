@@ -12,6 +12,11 @@ export const staffKeys = {
   list: (q: string, status: string) => ['staff', q, status] as const,
 }
 
+/** A plausible email address (the server checks it properly). */
+export function isEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254
+}
+
 /**
  * Accepts an Egyptian mobile number as staff tend to type it (`010 1234 5678`,
  * `01012345678`, `+20 10…`) and returns it in E.164 (`+201012345678`), or null.

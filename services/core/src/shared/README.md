@@ -14,6 +14,7 @@ Code several modules use, as files (not sub-folders): the database client, who i
 - `api-error.ts`: `ApiError` (the contract's error body), `notFound()`, and `IdPipe` for `:id` parameters.
 - `api-exception.filter.ts`: turns every error into the contract's error body; unknown errors become 500 `INTERNAL`.
 - `cairo-time.ts`: Cairo calendar days ↔ UTC instants, daylight saving included. Test: `cairo-time.spec.ts`.
+- `validators.ts`: `IsCairoDay`, for `YYYY-MM-DD` query parameters (`@Validate(IsCairoDay)`).
 - `clinic.views.ts`: the contract's `Clinic` shape, `clinicSelect` and `toClinicView()`, used by every module that returns a clinic (appointments, patient journey).
 
 - `record-access.service.ts`: checks the ordering doctor, the visit's doctor/clinic assignment, the lab clinic assignment, or patient ownership and release state before accessing clinical records. `patientVisit()` checks ownership before the visit summary can be loaded. Denials are audited outside the caller's transaction so rollback cannot erase them. Test: `record-access.service.spec.ts`.

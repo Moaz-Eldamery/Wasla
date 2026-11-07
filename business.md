@@ -14,6 +14,7 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 
 - Every request checks both the role **and** whether the record belongs to that user. Someone else's record returns "not found", so its existence isn't leaked.
 - Important actions (logins, bookings, including failed ones, reading medical records, releasing results, role changes, refused access) are written to an audit log. The log can't be edited or deleted.
+- Admins search the log by who (name or phone number), what kind of action and Cairo days, newest first, 50 entries at a time. The screen shows who did what to which record, the outcome and the IP address, never the entry's extra details. Related stored actions are grouped (for example every read of an appointment, queue or journey is "patient record opened").
 
 ## Hospital setup
 - A department has one or more clinics. A clinic is a place patients go (a clinic room, the lab, a radiology room) with a building, floor and directions in Arabic and English.
@@ -23,24 +24,29 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 - A department's type (clinical, lab, radiology) is fixed once it is created. Names and directions are kept in Arabic and English, and both are required.
 
 ## Admin statistics
-*Draft definitions from the admin screens (KAN-20); KAN-39 confirms them when it builds the numbers.*
 - Counts and averages only, never a patient's name. Days are Cairo calendar days, and a range is at most 92 days.
+- Each appointment counts on the Cairo day of its slot. Cancelled appointments are never counted.
 - **Visits:** appointments that reached `COMPLETED`, per clinical department.
-- **Average wait:** minutes from check-in to the consultation starting.
+- **Average wait:** minutes from check-in to the consultation starting, over the appointments that have both.
 - **No-show rate:** no-shows divided by the appointments due that day, leaving out cancelled ones.
 - When there is nothing to measure (no appointments, a closed day, a day still to come), the value is "Not available", never 0.
+- Totals for the whole range are weighted by appointments, not an average of the days.
+- The chart lists every active clinical department, and an inactive one only while it has visits in the range.
 
 ## Accounts
 - Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.
 - Patients are identified by an internal ID, **not** a National ID.
-- Staff accounts are created by an admin, with a name, a phone number and one or more roles. Wasla makes a temporary password that the admin sees once, to hand over in person; it is never shown or sent again.
+- Staff accounts are created by an admin, with a name, the staff member's work email, an optional phone number and one or more roles. Wasla makes a temporary password that the admin sees once, to hand over in person; it is never shown or sent again.
 - Deactivating a staff member logs them out immediately. Reactivating them lets them log in again with the password they had.
 - An admin can't deactivate their own account or remove their own admin role, so there is always someone who can undo a change.
-- Everyone logs in with phone number and password. Staff don't get a phone code: the admin created their account.
+- Each kind of account logs in to its own app:
+  - Patients log in to the **patient app** with phone number and password.
+  - Staff log in to the **website** with work email and password. The email is matched without regard to case. Staff don't get a code: the admin created their account.
+  - A staff account can't log in to the app (even with a phone number on file), and a patient account can't log in to the website.
 - A session lasts 7 days from login; then the user logs in again. Logging out ends that session at once. A deactivated account can't log in, and its open sessions stop working at once.
 - A phone code is valid for 10 minutes and allows 5 wrong guesses; after that the patient asks for a new one. At most 3 codes per phone number per hour.
 - Signing up again with a number that was never verified starts over (new name, password and code). A verified number, or a staff member's, can't be used to sign up.
-- Wrong phone, wrong password and deactivated account all get the same "wrong phone number or password" answer, and asking to resend a code answers the same way for every number, so nobody can find out who is registered.
+- Wrong phone or email, wrong password, deactivated account and an account of the other kind (staff in the app, a patient on the website) all get the same "wrong phone number (or email) or password" answer, and asking to resend a code answers the same way for every number, so nobody can find out who is registered.
 - For now, login attempts are limited only by the gateway's per-IP limit. Locking an account after repeated failures comes with KAN-24.
 
 ## Booking

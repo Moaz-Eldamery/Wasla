@@ -13,7 +13,10 @@ export interface SessionUser {
   id: string;
   type: AccountType;
   name: string;
-  phone: string;
+  /** Always set for patients; optional for staff. */
+  phone: string | null;
+  /** Staff only: their work email, which they log in with. */
+  email: string | null;
   roles: StaffRole[];
 }
 
@@ -63,7 +66,15 @@ export class SessionService {
         revokedAt: true,
         lastSeenAt: true,
         account: {
-          select: { id: true, type: true, name: true, phone: true, roles: true, active: true },
+          select: {
+            id: true,
+            type: true,
+            name: true,
+            phone: true,
+            email: true,
+            roles: true,
+            active: true,
+          },
         },
       },
     });

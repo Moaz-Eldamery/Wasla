@@ -2,7 +2,12 @@ import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { clientIp } from '../audit.service.js';
 import { AuthenticationService } from './authentication.service.js';
-import { LoginDto, ResendCodeDto, VerifyPhoneDto } from './dto/authentication.dto.js';
+import {
+  LoginDto,
+  ResendCodeDto,
+  StaffLoginDto,
+  VerifyPhoneDto,
+} from './dto/authentication.dto.js';
 import { bearerToken } from './session.service.js';
 
 /**
@@ -13,10 +18,18 @@ import { bearerToken } from './session.service.js';
 export class AuthenticationController {
   constructor(private readonly auth: AuthenticationService) {}
 
+  /** Patients, from the app: phone and password. */
   @Post('login')
   @HttpCode(200)
   login(@Body() body: LoginDto, @Req() req: Request) {
     return this.auth.login(body.phone, body.password, clientIp(req));
+  }
+
+  /** Staff, from the website: work email and password. */
+  @Post('staff/login')
+  @HttpCode(200)
+  staffLogin(@Body() body: StaffLoginDto, @Req() req: Request) {
+    return this.auth.staffLogin(body.email, body.password, clientIp(req));
   }
 
   @Post('logout')

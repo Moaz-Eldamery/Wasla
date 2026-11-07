@@ -43,7 +43,7 @@ One system follows the visit from start to finish. The patient's app and the sta
 - **Backend status (2026-11-06):**
   - Auth, booking, check-in and queue have a real backend.
   - Visit notes, lab tests and results, and the chatbot (KAN-10, KAN-11, KAN-22) don't yet. Their screens are built against the contract and tested with `pnpm mock`, so they work unchanged once the backend lands.
-  - The admin's staff, hospital setup, statistics and audit log screens (KAN-20) are built against a draft (`contracts/drafts/admin.yaml`) until KAN-36, KAN-39 and KAN-62 agree the endpoints.
+  - The admin's staff, hospital setup, statistics and audit log screens (KAN-20) run on the real backend (KAN-36, KAN-39, KAN-62).
 
 ## Brand Commitments
 

@@ -21,7 +21,7 @@ function renderAudit() {
 const firstPage: AuditPage = {
   nextCursor: 'page-2',
   entries: [
-    auditEntry('3', { actor: { id: 'rec-1', name: 'Nadia Hassan', type: 'STAFF' }, action: 'ACCESS_DENIED', outcome: 'DENIED', entityType: 'VISIT_NOTES', entityId: '3c2d1e0f-9a8b-4c7d-8e6f-5a4b3c2d1e0f' }),
+    auditEntry('3', { actor: { id: 'rec-1', name: 'Nadia Hassan', type: 'STAFF' }, action: 'ACCESS_DENIED', outcome: 'DENIED', entityType: 'APPOINTMENT', entityId: '3c2d1e0f-9a8b-4c7d-8e6f-5a4b3c2d1e0f' }),
     auditEntry('2', { actor: null, action: 'LOGIN_FAILED', outcome: 'FAILED', entityType: null, entityId: null, ip: '41.33.12.7' }),
     auditEntry('1'),
   ],

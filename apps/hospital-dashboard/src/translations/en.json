@@ -9,13 +9,12 @@
   },
   "login": {
     "title": "Log in",
-    "subtitle": "Use the phone number and password your hospital admin gave you.",
-    "phone": "Phone number",
-    "phoneHint": "For example +201000000001",
+    "subtitle": "Use the work email and password your hospital admin gave you. Patients use the Wasla app.",
+    "email": "Work email",
+    "emailHint": "For example receptionist@hospital.eg",
     "password": "Password",
     "submit": "Log in",
     "submitting": "Logging in…",
-    "patientAccount": "This website is for hospital staff. Patients use the Wasla app.",
     "sideTitle": "Every visit, from the front desk to the result.",
     "sideBody": "Check patients in, run the queue, and follow each visit as it moves through the clinic."
   },
@@ -91,7 +90,7 @@
     "FORBIDDEN": "Your account can't do that.",
     "NOT_FOUND": "That record wasn't found. It may have been removed.",
     "RATE_LIMITED": "Too many attempts. Wait a minute, then try again.",
-    "INVALID_CREDENTIALS": "That phone number and password don't match an active account.",
+    "INVALID_CREDENTIALS": "That email and password don't match an active staff account.",
     "PHONE_NOT_VERIFIED": "This phone number hasn't been verified yet.",
     "INVALID_TRANSITION": "That step isn't possible any more. The list has been refreshed.",
     "INTERNAL": "Something went wrong on our side. Try again in a moment.",
@@ -99,7 +98,8 @@
     "FILE_TOO_LARGE": "The file is over 10 MB. Choose a smaller file.",
     "FILE_TYPE_NOT_ALLOWED": "Only PDF, JPEG or PNG files can be sent.",
     "AI_UNAVAILABLE": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes.",
-    "PHONE_TAKEN": "This phone number already has an account."
+    "PHONE_TAKEN": "This phone number already has an account.",
+    "EMAIL_TAKEN": "This work email already has an account."
   },
   "doctor": {
     "title": "My patients today",
@@ -281,7 +281,7 @@
     "intro": "Everyone who logs in to the staff website. Add people, set what they can do, and turn accounts off when someone leaves.",
     "add": "Add staff member",
     "search": "Search staff",
-    "searchPlaceholder": "Name or phone number",
+    "searchPlaceholder": "Name, work email or phone number",
     "statusFilter": "Show",
     "filter": {
       "all": "All",
@@ -293,7 +293,7 @@
     "empty": "No staff accounts yet.",
     "col": {
       "name": "Name",
-      "phone": "Phone",
+      "email": "Work email",
       "roles": "Roles",
       "status": "Status",
       "actions": "Actions"
@@ -321,8 +321,11 @@
       "addTitle": "Add a staff member",
       "name": "Full name",
       "nameRequired": "Enter their full name.",
-      "phone": "Mobile number",
-      "phoneHint": "They log in with this number, e.g. 010 1234 5678",
+      "email": "Work email",
+      "emailHint": "They log in to this website with it, e.g. nadia.hassan@hospital.eg",
+      "emailInvalid": "Enter an email address, e.g. nadia.hassan@hospital.eg.",
+      "phone": "Mobile number (optional)",
+      "phoneHint": "For contacting them. It isn’t used to log in.",
       "phoneInvalid": "Enter an Egyptian mobile number, e.g. 010 1234 5678.",
       "roles": "Roles",
       "rolesRequired": "Choose at least one role.",
@@ -502,7 +505,7 @@
     "entity": {
       "ACCOUNT": "Account",
       "APPOINTMENT": "Appointment",
-      "VISIT_NOTES": "Visit notes",
+      "SLOT": "Time slot",
       "TEST_ORDER": "Test",
       "DEPARTMENT": "Department",
       "CLINIC": "Clinic"
@@ -518,15 +521,18 @@
       "LOGIN_FAILED": "Failed login",
       "LOGOUT": "Logged out",
       "PATIENT_REGISTERED": "Patient signed up",
+      "PHONE_VERIFIED": "Phone number confirmed",
       "ACCESS_DENIED": "Access refused",
       "APPOINTMENT_BOOKED": "Appointment booked",
       "APPOINTMENT_CANCELLED": "Appointment cancelled",
       "CHECK_IN": "Checked in",
       "VISIT_STARTED": "Visit started",
       "VISIT_COMPLETED": "Visit finished",
+      "RECORD_VIEWED": "Patient record opened",
       "NOTES_VIEWED": "Visit notes opened",
       "NOTES_SAVED": "Visit notes saved",
       "TEST_ORDERED": "Test ordered",
+      "TEST_STARTED": "Test started",
       "RESULT_UPLOADED": "Result uploaded",
       "RESULT_RELEASED": "Result released",
       "RESULT_VIEWED": "Result opened",
@@ -536,7 +542,8 @@
       "STAFF_REACTIVATED": "Staff member reactivated",
       "DEPARTMENT_CHANGED": "Department changed",
       "CLINIC_CHANGED": "Clinic changed",
-      "CLINIC_STAFF_CHANGED": "Clinic staff changed"
+      "CLINIC_STAFF_CHANGED": "Clinic staff changed",
+      "OTHER": "Other"
     }
   }
 }

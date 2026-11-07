@@ -6,7 +6,7 @@ import {
   logout as apiLogout,
   session,
   setUnauthenticatedHandler,
-  type LoginRequest,
+  type StaffLoginRequest,
   type User,
 } from './lib/api.ts'
 
@@ -18,7 +18,7 @@ type SessionState =
 
 interface SessionValue {
   state: SessionState
-  login(body: LoginRequest): Promise<User>
+  login(body: StaffLoginRequest): Promise<User>
   logout(): Promise<void>
 }
 

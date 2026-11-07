@@ -9,7 +9,7 @@ import { Providers } from '../../Providers.tsx'
 import { appointment, clinic, fakeGateway, NOW } from '../../test-fixtures.ts'
 import { setLanguage } from '../../translations/i18n.ts'
 
-const doctor: User = { id: 'doctor-1', type: 'STAFF', name: 'Dr. Rania Mostafa', phone: '+201000000003', roles: ['DOCTOR'] }
+const doctor: User = { id: 'doctor-1', type: 'STAFF', name: 'Dr. Rania Mostafa', phone: null, email: 'doctor@hospital.test', roles: ['DOCTOR'] }
 const labClinic = { ...clinic, id: 'lab-1', departmentId: 'lab', name: { en: 'Main Lab', ar: 'المختبر الرئيسي' } }
 const departments = [{ id: 'lab', kind: 'LAB', name: { en: 'Laboratory', ar: 'المختبر' }, clinics: [labClinic] }]
 

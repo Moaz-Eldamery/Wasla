@@ -2,7 +2,7 @@
 
 The hospital admin's section of the staff website (KAN-20): statistics, the AI assistant, staff and roles, departments and clinics, and the audit log, under `/admin/...`.
 
-**Rule:** No medical records on any admin screen: no visit notes, results or patient names (the audit log names who did something, never what a record says). Staff, setup, statistics and audit calls follow the draft `contracts/drafts/admin.yaml` until their backend cards agree them.
+**Rule:** No medical records on any admin screen: no visit notes, results or patient names (the audit log names who did something, never what a record says). Staff are added with a work email (their login) and an optional phone number.
 
 ## Files
 
@@ -44,12 +44,12 @@ The hospital admin's section of the staff website (KAN-20): statistics, the AI a
   - the 1,000-character limit
   - Shift+Enter
 - `StaffPage.tsx`: `/admin/staff`.
-  - **List:** every staff account with its roles and active or inactive status. Search by name or phone, and show all, active or inactive.
-  - **Add:** name, mobile number (typed the way staff write it, e.g. `010 1234 5678`) and one or more roles. The temporary password the server makes is shown once, with Copy.
+  - **List:** every staff account with its roles and active or inactive status. The work email shows with the phone number, when there is one. Search by name, work email or phone, and show all, active or inactive.
+  - **Add:** name, work email (their login), an optional mobile number (typed the way staff write it, e.g. `010 1234 5678`) and one or more roles. A taken email or number shows under its field. The temporary password the server makes is shown once, with Copy.
   - **Change roles:** one or more roles per person.
   - **Deactivate or reactivate:** each asks first. Deactivating says the person is logged out immediately.
   - **Self-protection:** admins can't deactivate themselves or drop their own admin role. `RoleTags` lists roles in a fixed order; the hospital screen uses it too.
-- `staff.ts`: the role order, which roles can work in a clinic, the staff list's query keys, and `normalizePhone` (Egyptian mobile numbers to E.164).
+- `staff.ts`: the role order, which roles can work in a clinic, the staff list's query keys, `isEmail` (a quick check before the server's), and `normalizePhone` (Egyptian mobile numbers to E.164).
 - `StaffPage.test.tsx`:
   - the list and search
   - adding someone and the one-time password
