@@ -54,17 +54,22 @@ Every patient and staff account.
 | id | uuid | no | primary key |
 | type | AccountType | no | `PATIENT` or `STAFF` |
 | name | text | no | |
-| phone | text | no | unique; login identifier for everyone (E.164, e.g. `+201000000001`) |
+| phone | text | yes | unique; E.164, e.g. `+201000000001`. Patients: required, their app login. Staff: optional contact number, never a login |
+| email | text | yes | unique, stored lowercase. Staff: required, their website login (work email). Patients: always null |
 | password_hash | text | no | argon2. Only `wasla_auth` can read it |
 | roles | StaffRole[] | no | empty for patients |
 | active | boolean | no | default `true`. `false` = can't log in; sessions are revoked |
-| phone_verified_at | timestamptz | yes | patients can't log in until set. Staff accounts are created verified |
+| phone_verified_at | timestamptz | yes | patients can't log in until set. Not used for staff |
 | created_at | timestamptz | no | default now |
 | updated_at | timestamptz | no | |
 
 Indexes / constraints:
-- unique `phone`
-- check: patients have no roles (raw SQL)
+- unique `phone`; unique `email`
+- check: patients have no roles (raw SQL, first migration)
+- check `accounts_login_identifier`: a patient has a phone and no email; a staff account has an email (raw SQL, migration `20261106152244_staff_email_login`)
+- check `accounts_email_lowercase`: `email = lower(email)` (same migration)
+
+`wasla_core` can't read `email` (its column grant is `id, type, name, phone, roles, active`).
 
 ### auth.sessions
 Login sessions. The client holds the token; only its hash is stored.
@@ -319,6 +324,10 @@ Prisma can't express these, so they are written by hand at the end of `database/
 4. Check on `auth.accounts`: `type = 'STAFF' OR roles = '{}'`.
 5. A trigger on `core.audit_log` that raises an error on `UPDATE`, `DELETE` and `TRUNCATE`.
 6. The grants listed under "DB users" above, under "Rights that go further".
+
+## Raw SQL in later migrations
+
+- `20261106152244_staff_email_login`: checks `accounts_login_identifier` and `accounts_email_lowercase` on `auth.accounts` (see that table). It also gives staff accounts that existed before it a placeholder email, `staff-<id>@wasla.invalid`, to be replaced with the person's real work email.
 
 ## Not drafted yet
 

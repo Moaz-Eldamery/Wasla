@@ -7,7 +7,7 @@ export type ErrorCode = Schemas['ErrorCode']
 export type LocalizedText = Schemas['LocalizedText']
 export type User = Schemas['User']
 export type StaffRole = Schemas['StaffRole']
-export type LoginRequest = Schemas['LoginRequest']
+export type StaffLoginRequest = Schemas['StaffLoginRequest']
 export type LoginResponse = Schemas['LoginResponse']
 export type Clinic = Schemas['Clinic']
 export type Appointment = Schemas['Appointment']
@@ -155,8 +155,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
 
 // ------------------------------------------------------------------ auth
 
-export function login(body: LoginRequest): Promise<LoginResponse> {
-  return request('/auth/login', { method: 'POST', body, anonymous: true })
+/** Staff log in to the website with their work email (patients use the app). */
+export function login(body: StaffLoginRequest): Promise<LoginResponse> {
+  return request('/auth/staff/login', { method: 'POST', body, anonymous: true })
 }
 
 export function logout(): Promise<void> {

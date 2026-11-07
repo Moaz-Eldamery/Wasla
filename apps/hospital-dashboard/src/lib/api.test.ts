@@ -20,11 +20,12 @@ describe('api client', () => {
   })
 
   it('does not send the token to the public login endpoint', async () => {
-    const calls = fakeGateway({ 'POST /auth/login': () => ({ body: { token: 't', expiresAt: '', user: {} } }) })
+    const calls = fakeGateway({ 'POST /auth/staff/login': () => ({ body: { token: 't', expiresAt: '', user: {} } }) })
     session.token = 'old'
 
-    await login({ phone: '+201000000010', password: 'secret123' })
+    await login({ email: 'nadia.hassan@hospital.test', password: 'secret123' })
 
+    expect(calls[0].path).toBe('/auth/staff/login')
     expect(new Headers(calls[0].init.headers).get('Authorization')).toBeNull()
   })
 

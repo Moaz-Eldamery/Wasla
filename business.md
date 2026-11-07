@@ -33,14 +33,17 @@ What Wasla does and the rules it follows. If code and this file disagree, ask be
 ## Accounts
 - Patients register with name, phone number and password. The phone is verified with a 6-digit code. SMS is **simulated** in the prototype: the code is shown on screen and in the logs.
 - Patients are identified by an internal ID, **not** a National ID.
-- Staff accounts are created by an admin, with a name, a phone number and one or more roles. Wasla makes a temporary password that the admin sees once, to hand over in person; it is never shown or sent again.
+- Staff accounts are created by an admin, with a name, the staff member's work email, an optional phone number and one or more roles. Wasla makes a temporary password that the admin sees once, to hand over in person; it is never shown or sent again.
 - Deactivating a staff member logs them out immediately. Reactivating them lets them log in again with the password they had.
 - An admin can't deactivate their own account or remove their own admin role, so there is always someone who can undo a change.
-- Everyone logs in with phone number and password. Staff don't get a phone code: the admin created their account.
+- Each kind of account logs in to its own app:
+  - Patients log in to the **patient app** with phone number and password.
+  - Staff log in to the **website** with work email and password. The email is matched without regard to case. Staff don't get a code: the admin created their account.
+  - A staff account can't log in to the app (even with a phone number on file), and a patient account can't log in to the website.
 - A session lasts 7 days from login; then the user logs in again. Logging out ends that session at once. A deactivated account can't log in, and its open sessions stop working at once.
 - A phone code is valid for 10 minutes and allows 5 wrong guesses; after that the patient asks for a new one. At most 3 codes per phone number per hour.
 - Signing up again with a number that was never verified starts over (new name, password and code). A verified number, or a staff member's, can't be used to sign up.
-- Wrong phone, wrong password and deactivated account all get the same "wrong phone number or password" answer, and asking to resend a code answers the same way for every number, so nobody can find out who is registered.
+- Wrong phone or email, wrong password, deactivated account and an account of the other kind (staff in the app, a patient on the website) all get the same "wrong phone number (or email) or password" answer, and asking to resend a code answers the same way for every number, so nobody can find out who is registered.
 - For now, login attempts are limited only by the gateway's per-IP limit. Locking an account after repeated failures comes with KAN-24.
 
 ## Booking

@@ -18,6 +18,7 @@ export const receptionist: User = {
   type: 'STAFF',
   name: 'Nadia Hassan',
   phone: '+201000000010',
+  email: 'nadia.hassan@hospital.test',
   roles: ['RECEPTIONIST'],
 }
 

@@ -38,17 +38,17 @@ export class IdentityService {
     }
 
     const passwordHash = await hashPassword(password);
-    let account: { id: string; phone: string };
+    let account: { id: string };
     try {
       account = existing
         ? await this.prisma.account.update({
             where: { id: existing.id },
             data: { name, passwordHash },
-            select: { id: true, phone: true },
+            select: { id: true },
           })
         : await this.prisma.account.create({
             data: { type: 'PATIENT', name, phone, passwordHash },
-            select: { id: true, phone: true },
+            select: { id: true },
           });
     } catch (error) {
       // Two sign-ups for the same number at once: the second one loses.
@@ -65,6 +65,6 @@ export class IdentityService {
       ip,
       details: { restarted: Boolean(existing) },
     });
-    return this.otp.send(account);
+    return this.otp.send({ id: account.id, phone });
   }
 }

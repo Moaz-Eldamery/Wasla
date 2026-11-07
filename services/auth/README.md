@@ -19,4 +19,4 @@ Its own NestJS service: login, sessions and the check the gateway runs before ev
 - `src/generated/`: the Prisma client, generated on install. Never edit it.
 - `src/health.controller.ts`: `GET /auth/health`, for Docker and Uptime Kuma. Test: `health.controller.spec.ts`.
 - `test/app.e2e-spec.ts`: end-to-end tests for the health endpoint and the auth check without a session.
-- `test/auth.e2e-spec.ts`: sign-up, login, the auth check and logout against a real, migrated database, plus the code limits, deactivation and DB grants. Skipped unless `DATABASE_URL` (as `wasla_auth`) and `SEED_DATABASE_URL` (as `wasla_migrator`) are set; CI's `database` job runs it.
+- `test/auth.e2e-spec.ts`: sign-up, login, the auth check and logout against a real, migrated database, plus staff email login, keeping the two logins apart, the login checks on `auth.accounts`, the code limits, deactivation and DB grants. Skipped unless `DATABASE_URL` (as `wasla_auth`) and `SEED_DATABASE_URL` (as `wasla_migrator`) are set; CI's `database` job runs it.

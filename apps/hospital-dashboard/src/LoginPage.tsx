@@ -13,13 +13,16 @@ import { useSession } from './session.tsx'
 import { color } from './theme.ts'
 import { currentLanguage, errorMessage, setLanguage } from './translations/i18n.ts'
 
-/** Staff log in with the phone number and password an admin gave them. */
+/**
+ * Staff log in with the work email and password an admin gave them. Only
+ * staff accounts can log in here; patients use the app with their phone.
+ */
 export function LoginPage() {
   const { t } = useTranslation()
   const lang = currentLanguage()
-  const { login, logout } = useSession()
+  const { login } = useSession()
   const navigate = useNavigate()
-  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -29,12 +32,7 @@ export function LoginPage() {
     setSubmitting(true)
     setError(null)
     try {
-      const user = await login({ phone: phone.trim(), password })
-      if (user.type !== 'STAFF') {
-        await logout()
-        setError(t('login.patientAccount'))
-        return
-      }
+      const user = await login({ email: email.trim(), password })
       void navigate(homePathFor(user) ?? '/', { replace: true })
     } catch (err) {
       setError(errorMessage(err))
@@ -121,12 +119,14 @@ export function LoginPage() {
           </Box>
           {error && <Alert severity="error">{error}</Alert>}
           <TextField
-            label={t('login.phone')}
-            helperText={t('login.phoneHint')}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            label={t('login.email')}
+            helperText={t('login.emailHint')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
             autoComplete="username"
-            inputMode="tel"
+            autoCapitalize="none"
+            spellCheck={false}
             required
             autoFocus
             slotProps={{ htmlInput: { dir: 'ltr' } }}
@@ -139,7 +139,7 @@ export function LoginPage() {
             autoComplete="current-password"
             required
           />
-          <Button type="submit" variant="contained" size="large" disabled={submitting || !phone || !password}>
+          <Button type="submit" variant="contained" size="large" disabled={submitting || !email || !password}>
             {submitting ? t('login.submitting') : t('login.submit')}
           </Button>
         </Box>

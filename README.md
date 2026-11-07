@@ -27,16 +27,18 @@ docker compose run --rm seed                      # fake hospital: departments, 
 docker compose run --rm seed --past-visits 10000  # more history (also --patients, --past-days, --future-days)
 ```
 
-It only fills an empty database (start over with `docker compose down -v`). Every name and number is made up. Demo logins, all with the password `demo-password`:
+It only fills an empty database (start over with `docker compose down -v`). Every name, number and email is made up. Demo logins, all with the password `demo-password`. Staff log in to the website with an email; the patient logs in to the app with a phone number:
 
-| Role | Phone |
+| Role | Login |
 |---|---|
-| Admin | +201000000001 |
-| Receptionist (Internal Medicine clinics) | +201000000002 |
-| Doctor (Internal Medicine Clinic 1) | +201000000003 |
-| Lab | +201000000004 |
-| Radiology | +201000000005 |
-| Patient | +201000000006 |
+| Admin | admin@wasla.test |
+| Receptionist (Internal Medicine clinics) | receptionist@wasla.test |
+| Doctor (Internal Medicine Clinic 1) | doctor@wasla.test |
+| Lab | lab@wasla.test |
+| Radiology | radiology@wasla.test |
+| Patient (app) | +201000000006 |
+
+A database seeded before staff email logins existed has placeholder staff emails after its next migration. Start over with `docker compose down -v` and seed again to get the logins above.
 
 ## Work on one part
 

@@ -75,6 +75,30 @@ Changes: 2026-11-06 18:01
 Changes: 2026-11-06 16:57
 
 > can you copy CLAUDE.md and make agents.md for you to read from
+## 2026-11-06 17:17 +0200 · NourElghaly
+Changes: none
+
+> put and comitt, make me as the only author
+
+## 2026-11-06 15:44 +0200 · NourElghaly
+Changes: none
+
+> the record wasn't found yet
+
+## 2026-11-06 15:32 +0200 · NourElghaly
+Changes: none
+
+> now the thing is there could be multiple of each, so how would we do this?
+
+## 2026-11-06 15:19 +0200 · NourElghaly
+Changes: 2026-11-06 15:31
+
+> the phone number was just for patients, for the web stuff i think we should have a idfferent system.
+
+## 2026-11-06 15:10 +0200 · NourElghaly
+Changes: none
+
+> for some reason i can't log in, also, it doesnt make sense to have the username entry for the reciptionst be a phone number or what do you think?
 
 ## 2026-11-06 15:04 +0200 · NourElghaly
 Changes: 2026-11-06 15:06

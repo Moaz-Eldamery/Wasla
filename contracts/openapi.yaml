@@ -181,8 +181,11 @@ paths:
   /auth/login:
     post:
       tags: [Auth]
-      summary: Log in (patients and staff)
-      description: Phone number and password for everyone. Patients must have verified their phone first.
+      summary: Log in (patients, from the app)
+      description: |
+        Phone number and password. Patients only: a staff account's phone gets
+        `INVALID_CREDENTIALS` (staff use `POST /auth/staff/login`). Patients must
+        have verified their phone first.
       operationId: login
       x-service: auth
       x-roles: [public]
@@ -208,6 +211,40 @@ paths:
                 $ref: '#/components/schemas/Error'
         '403':
           description: '`PHONE_NOT_VERIFIED`'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/staff/login:
+    post:
+      tags: [Auth]
+      summary: Log in (staff, from the website)
+      description: |
+        Work email and password, matched without regard to case. Staff only: a
+        patient account can't log in here. Staff accounts are created by an admin,
+        so there's no phone code.
+      operationId: staffLogin
+      x-service: auth
+      x-roles: [public]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+      responses:
+        '200':
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: '`INVALID_CREDENTIALS` (wrong email or password, or account inactive)'
           content:
             application/json:
               schema:
@@ -1328,6 +1365,17 @@ components:
         password:
           type: string
 
+    StaffLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        password:
+          type: string
+
     LoginResponse:
       type: object
       required: [token, expiresAt, user]
@@ -1343,7 +1391,7 @@ components:
 
     User:
       type: object
-      required: [id, type, name, phone, roles]
+      required: [id, type, name, phone, email, roles]
       properties:
         id:
           type: string
@@ -1353,7 +1401,14 @@ components:
         name:
           type: string
         phone:
-          $ref: '#/components/schemas/Phone'
+          description: Always set for patients (they log in with it); optional for staff
+          oneOf:
+            - $ref: '#/components/schemas/Phone'
+            - type: 'null'
+        email:
+          description: Staff only (they log in with it); `null` for patients
+          type: [string, 'null']
+          format: email
         roles:
           type: array
           description: Empty for patients

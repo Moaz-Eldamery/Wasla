@@ -105,10 +105,34 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Log in (patients and staff)
-         * @description Phone number and password for everyone. Patients must have verified their phone first.
+         * Log in (patients, from the app)
+         * @description Phone number and password. Patients only: a staff account's phone gets
+         *     `INVALID_CREDENTIALS` (staff use `POST /auth/staff/login`). Patients must
+         *     have verified their phone first.
          */
         post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/staff/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Log in (staff, from the website)
+         * @description Work email and password, matched without regard to case. Staff only: a
+         *     patient account can't log in here. Staff accounts are created by an admin,
+         *     so there's no phone code.
+         */
+        post: operations["staffLogin"];
         delete?: never;
         options?: never;
         head?: never;
@@ -735,6 +759,11 @@ export interface components {
             phone: components["schemas"]["Phone"];
             password: string;
         };
+        StaffLoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
         LoginResponse: {
             /** @description Send as `Authorization: Bearer <token>`. */
             token: string;
@@ -747,7 +776,13 @@ export interface components {
             id: string;
             type: components["schemas"]["AccountType"];
             name: string;
-            phone: components["schemas"]["Phone"];
+            /** @description Always set for patients (they log in with it); optional for staff */
+            phone: components["schemas"]["Phone"] | null;
+            /**
+             * Format: email
+             * @description Staff only (they log in with it); `null` for patients
+             */
+            email: string | null;
             /** @description Empty for patients */
             roles: components["schemas"]["StaffRole"][];
         };
@@ -1191,6 +1226,40 @@ export interface operations {
             };
             /** @description `PHONE_NOT_VERIFIED` */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            429: components["responses"]["RateLimited"];
+        };
+    };
+    staffLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Logged in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description `INVALID_CREDENTIALS` (wrong email or password, or account inactive) */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
