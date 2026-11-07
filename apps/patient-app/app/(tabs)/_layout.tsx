@@ -37,6 +37,12 @@ export default function TabsLayout() {
           title: t('journey.tabTitle'),
         }}
       />
+      <Tabs.Screen
+        name="results"
+        options={{
+          title: t('results.tabTitle'),
+        }}
+      />
     </Tabs>
   );
 }

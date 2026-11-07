@@ -1,3 +1,8 @@
+## 2026-11-07 06:34 +0200 · Youssef Salem
+Prompt: 2026-11-07 06:30 · Youssef Salem
+What: KAN-16 patient mobile app test results and visit summaries. Added listMyResults, downloadTestResult and getVisitSummary to apps/patient-app/lib/api.ts, added the results tab screen in apps/patient-app/app/(tabs)/results.tsx (shows "Waiting for review" for unreleased tests, downloads released result files with the session token, and displays completed visit summaries), added Arabic (RTL) and English strings in translations/ar.json and translations/en.json, and added tests in apps/patient-app/app.test.tsx.
+Files: apps/patient-app/lib/api.ts, apps/patient-app/app/(tabs)/_layout.tsx, apps/patient-app/app/(tabs)/results.tsx, apps/patient-app/translations/en.json, apps/patient-app/translations/ar.json, apps/patient-app/app.test.tsx, apps/patient-app/README.md, apps/patient-app/app/(tabs)/README.md, apps/patient-app/lib/README.md
+
 ## 2026-11-06 20:02 +0200 · NourElghaly
 Prompt: 2026-11-06 20:01 · NourElghaly
 What: Merged feat/kan-10-lab-results (private lab results workflow) and feat/kan-11-visit-notes (versioned visit notes and patient summaries, built on KAN-10) into main. Both merged cleanly on top of KAN-17 to KAN-20; lint, unit tests and build pass on the merged tree.

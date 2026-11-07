@@ -84,6 +84,29 @@
     "directionsLabel": "Directions",
     "refreshButton": "Refresh"
   },
+  "results": {
+    "tabTitle": "Results & Summary",
+    "screenTitle": "Results & Visit Summary",
+    "refreshButton": "Refresh",
+    "testResultsSectionTitle": "Lab & Radiology Results",
+    "noResults": "You have no test results yet.",
+    "waitingForReviewBadge": "Waiting for review",
+    "waitingForReviewNote": "Your result is being reviewed by the doctor and will be available once released.",
+    "releasedBadge": "Released",
+    "orderedAtLabel": "Ordered",
+    "releasedAtLabel": "Released",
+    "fileLabel": "File",
+    "downloadButton": "Open / Download Result",
+    "downloading": "Downloading...",
+    "downloadedBanner": "Downloaded {{fileName}} ({{contentType}})",
+    "visitSummarySectionTitle": "Completed Visit Summaries",
+    "noCompletedVisits": "You have no completed visits yet.",
+    "selectCompletedVisitLabel": "Select a completed visit",
+    "summaryDoctorLabel": "Doctor",
+    "summaryCompletedAtLabel": "Completed",
+    "summaryHeading": "Visit Summary",
+    "summaryNotYetAvailable": "The doctor has not added a patient summary for this visit yet."
+  },
   "status": {
     "BOOKED": "Booked",
     "CHECKED_IN": "Checked in",
@@ -105,6 +128,7 @@
     "CODE_EXPIRED": "This verification code has expired. Please request a new one.",
     "SLOT_TAKEN": "This slot was just booked by someone else. Please pick another slot.",
     "SLOT_UNAVAILABLE": "This slot is no longer available.",
+    "NOT_YET_AVAILABLE": "This visit summary is not available yet.",
     "INTERNAL": "Something went wrong. Please try again."
   }
 }

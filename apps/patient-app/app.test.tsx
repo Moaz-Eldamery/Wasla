@@ -5,6 +5,7 @@ import VerifyCodeScreen from './app/(auth)/verify-code';
 import BookScreen from './app/(tabs)/book';
 import JourneyScreen from './app/(tabs)/journey';
 import QueueScreen from './app/(tabs)/queue';
+import ResultsScreen from './app/(tabs)/results';
 import Index from './app/index';
 import {
   clearSession,
@@ -15,8 +16,10 @@ import {
   type Department,
   type Doctor,
   type Journey,
+  type PatientResult,
   type QueuePosition,
   type Slot,
+  type VisitSummary,
 } from './lib/api';
 import ar from './translations/ar.json';
 import en from './translations/en.json';
@@ -521,5 +524,139 @@ describe('Patient app (KAN-14: sign up, log in and book)', () => {
     expect((await screen.findByTestId('journey-location-name')).props.children).toBe(
       'المعمل الرئيسي',
     );
+  });
+
+  it('lists unreleased and released results, downloads a released result, and shows the completed visit summary', async () => {
+    setSession('live-token-abc', {
+      id: '11111111-1111-1111-1111-111111111111',
+      type: 'PATIENT',
+      name: 'Salma Hassan',
+      phone: '+201000000006',
+      roles: [],
+    });
+
+    const clinic = {
+      id: '22222222-2222-2222-2222-222222222222',
+      departmentId: '33333333-3333-3333-3333-333333333333',
+      name: { ar: 'عيادة الباطنة ١', en: 'Internal Medicine Clinic 1' },
+      building: 'A',
+      floor: '2',
+      directions: { ar: 'المبنى أ، الدور الثاني', en: 'Building A, 2nd floor' },
+    };
+
+    const pendingResult: PatientResult = {
+      testId: 'aaaa1111-1111-1111-1111-111111111111',
+      appointmentId: '77777777-7777-7777-7777-777777777777',
+      testName: 'Chest X-Ray',
+      orderedAt: '2026-11-06T09:10:00Z',
+      status: 'WAITING_FOR_REVIEW',
+      releasedAt: null,
+      file: null,
+    };
+
+    const releasedResult: PatientResult = {
+      testId: 'bbbb2222-2222-2222-2222-222222222222',
+      appointmentId: '77777777-7777-7777-7777-777777777777',
+      testName: 'Complete Blood Count (CBC)',
+      orderedAt: '2026-11-06T09:05:00Z',
+      status: 'RELEASED',
+      releasedAt: '2026-11-06T11:30:00Z',
+      file: {
+        fileName: 'cbc-report.pdf',
+        contentType: 'application/pdf',
+        sizeBytes: 24576,
+        uploadedAt: '2026-11-06T11:00:00Z',
+      },
+    };
+
+    const completedAppointment: Appointment = {
+      id: '77777777-7777-7777-7777-777777777777',
+      status: 'COMPLETED',
+      startsAt: '2026-11-06T09:00:00Z',
+      endsAt: '2026-11-06T09:15:00Z',
+      bookedAt: '2026-11-05T10:00:00Z',
+      checkedInAt: '2026-11-06T08:50:00Z',
+      startedAt: '2026-11-06T09:00:00Z',
+      completedAt: '2026-11-06T09:20:00Z',
+      patient: {
+        id: '11111111-1111-1111-1111-111111111111',
+        name: 'Salma Hassan',
+      },
+      doctor: {
+        id: '44444444-4444-4444-4444-444444444444',
+        name: 'Dr. Kareem Adel',
+      },
+      clinic,
+    };
+
+    const summary: VisitSummary = {
+      appointmentId: completedAppointment.id,
+      doctorName: 'Dr. Kareem Adel',
+      completedAt: '2026-11-06T09:20:00Z',
+      summary: 'Continue iron supplement once daily for 4 weeks and drink plenty of water.',
+    };
+
+    (globalThis.fetch as jest.Mock)
+      // listMyResults
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify([pendingResult, releasedResult]),
+      })
+      // listMyAppointments('past')
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify([completedAppointment]),
+      })
+      // getVisitSummary
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify(summary),
+      })
+      // downloadTestResult
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: {
+          get: (name: string) =>
+            name.toLowerCase() === 'content-type' ? 'application/pdf' : null,
+        },
+        text: async () => '%PDF-1.7 fake pdf content',
+      });
+
+    await render(<ResultsScreen />);
+
+    // Unreleased result shows "Waiting for review" and no download button
+    expect(await screen.findByText('Chest X-Ray')).toBeTruthy();
+    expect(await screen.findByText('Waiting for review')).toBeTruthy();
+    expect(screen.queryByTestId(`download-result-${pendingResult.testId}`)).toBeNull();
+
+    // Released result shows "Released" and can be downloaded
+    expect(await screen.findByText('Complete Blood Count (CBC)')).toBeTruthy();
+    expect(await screen.findByText('Released')).toBeTruthy();
+    const downloadBtn = await screen.findByTestId(`download-result-${releasedResult.testId}`);
+    await fireEvent.press(downloadBtn);
+
+    expect(
+      await screen.findByTestId(`downloaded-result-${releasedResult.testId}`),
+    ).toBeTruthy();
+    expect(
+      await screen.findByText('Downloaded cbc-report.pdf (application/pdf)'),
+    ).toBeTruthy();
+
+    // Completed visit summary is shown
+    expect((await screen.findByTestId('visit-summary-text')).props.children).toBe(
+      summary.summary,
+    );
+
+    // Switch to Arabic and verify RTL strings
+    await act(async () => {
+      await setAppLanguage('ar');
+    });
+    expect(await screen.findByText('بانتظار مراجعة الطبيب')).toBeTruthy();
+    expect(await screen.findByText('متاحة')).toBeTruthy();
+    expect(await screen.findByText('ملخص الزيارة')).toBeTruthy();
   });
 });

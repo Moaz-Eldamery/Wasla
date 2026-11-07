@@ -19,6 +19,16 @@ export type AppointmentStatus = components['schemas']['AppointmentStatus'];
 export type QueuePosition = components['schemas']['QueuePosition'];
 export type Journey = components['schemas']['Journey'];
 export type JourneyStageCode = components['schemas']['JourneyStageCode'];
+export type PatientResult = components['schemas']['PatientResult'];
+export type ResultFile = components['schemas']['ResultFile'];
+export type VisitSummary = components['schemas']['VisitSummary'];
+
+export interface DownloadedResultFile {
+  testId: string;
+  contentType: string;
+  sizeBytes: number;
+  blob?: Blob;
+}
 
 /** Error thrown when the backend returns a non-2xx response or network error. */
 export class ApiClientError extends Error {
@@ -287,4 +297,86 @@ export async function getAppointmentJourney(appointmentId: string): Promise<Jour
     method: 'GET',
     authenticated: true,
   });
+}
+
+/** Test results and visit summary endpoints (KAN-16) */
+export async function listMyResults(): Promise<PatientResult[]> {
+  return request<PatientResult[]>('/me/results', {
+    method: 'GET',
+    authenticated: true,
+  });
+}
+
+export async function downloadTestResult(testId: string): Promise<DownloadedResultFile> {
+  const headers: Record<string, string> = {};
+  if (sessionToken) {
+    headers.Authorization = `Bearer ${sessionToken}`;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(
+      `${getApiBaseUrl()}/tests/${encodeURIComponent(testId)}/result/file`,
+      {
+        method: 'GET',
+        headers,
+      },
+    );
+  } catch {
+    throw new ApiClientError(0, 'INTERNAL', 'Network request failed');
+  }
+
+  if (!response.ok) {
+    let parsed: unknown = null;
+    try {
+      const text = await response.text();
+      if (text.length > 0) {
+        parsed = JSON.parse(text);
+      }
+    } catch {
+      parsed = null;
+    }
+    const errObj = (parsed as Partial<ApiErrorBody> | null)?.error;
+    const code: ErrorCode =
+      errObj?.code ??
+      (response.status === 401
+        ? 'UNAUTHENTICATED'
+        : response.status === 404
+          ? 'NOT_FOUND'
+          : 'INTERNAL');
+    const message = errObj?.message ?? `HTTP ${response.status}`;
+    if (response.status === 401) {
+      clearSession();
+    }
+    throw new ApiClientError(response.status, code, message, errObj?.details);
+  }
+
+  const contentType =
+    response.headers?.get?.('content-type') ?? 'application/octet-stream';
+  if (typeof response.blob === 'function') {
+    const blob = await response.blob();
+    return {
+      testId,
+      contentType: blob.type || contentType,
+      sizeBytes: blob.size ?? 0,
+      blob,
+    };
+  }
+
+  const text = typeof response.text === 'function' ? await response.text() : '';
+  return {
+    testId,
+    contentType,
+    sizeBytes: text.length,
+  };
+}
+
+export async function getVisitSummary(appointmentId: string): Promise<VisitSummary> {
+  return request<VisitSummary>(
+    `/appointments/${encodeURIComponent(appointmentId)}/summary`,
+    {
+      method: 'GET',
+      authenticated: true,
+    },
+  );
 }
