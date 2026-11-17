@@ -8,6 +8,16 @@ Hospital visit app: a patient mobile app, a staff website and the backend behind
 - Docker Desktop (or Docker Engine with Compose)
 - uv (Python), only if you work on the AI service
 
+## Run everything with one command
+
+```sh
+./dev.sh          # backend in Docker (+ demo data on an empty database), staff website, patient app (Expo)
+./dev.sh --web    # same, but the patient app opens in the browser
+./dev.sh --mock   # no Docker: both frontends use the mock API
+```
+
+The website is on http://localhost:5173. The frontends call the gateway on the `GATEWAY_PORT` from `.env` (change it if another program uses 8080). Ctrl+C stops the website and the app; the Docker stack keeps running (`docker compose down` stops it). On Windows, run it from Git Bash.
+
 ## Run the whole system
 
 ```sh

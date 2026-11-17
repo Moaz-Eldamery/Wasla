@@ -1,3 +1,43 @@
+## 2026-11-17 20:30 +0200 · Moaz Mohamed
+Changes: none
+
+> i can not type to the ai bot in the patient chatbot page
+
+## 2026-11-17 20:24 +0200 · Moaz Mohamed
+Changes: none
+
+> Jemini key= [REDACTED]    [REDACTED]  use them for ai feature ok
+
+## 2026-11-17 20:18 +0200 · Moaz Mohamed
+Changes: none
+
+> what about push e38f865 it should allow chatbot to work is it allowed to work
+
+## 2026-11-17 19:54 +0200 · Moaz Mohamed
+Changes: 2026-11-17 19:55
+
+> i can not login to the app from the browser using the credintials you gave me
+
+## 2026-11-17 19:17 +0200 · Moaz Mohamed
+Changes: 2026-11-17 19:35
+
+> i can not login using the credinital you gave me. + last time i used to run the app on the browser. why can't i do that now
+
+## 2026-11-17 18:45 +0200 · Moaz Mohamed
+Changes: none
+
+> can you now run the website and the app
+
+## 2026-11-17 18:41 +0200 · Moaz Mohamed
+Changes: 2026-11-17 18:42
+
+> can you create the sh file that makes both the website and the app run in one single command?
+
+## 2026-11-17 15:45 +0200 · Moaz Mohamed
+Changes: none
+
+> can you run the webstie and the app
+
 ## 2026-11-07 19:41 +0200 · Moaz Mohamed
 Changes: 2026-11-07 19:41
 

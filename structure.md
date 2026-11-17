@@ -28,7 +28,7 @@ patient-app / hospital-dashboard
 - **Core service:** NestJS + TypeScript, modular monolith (six modules), Socket.IO for live updates, transactional outbox in Postgres with a poller inside the core for async work. No Redis.
 - **AI service:** Python FastAPI, Claude API. Reachable only from the core, never from the internet.
 - **Database:** PostgreSQL 16 + pgvector, Prisma. One clinical database with `auth` and `core` schemas, plus a separate `wasla_ai` database. Each service has its own DB user (see `schema.md`).
-- **Mobile app:** React Native + Expo (expo-router), i18next. `expo-file-system` and `expo-sharing` open and share released result files.
+- **Mobile app:** React Native + Expo (expo-router), i18next. `expo-file-system` and `expo-sharing` open and share released result files. `react-native-web` lets it run in a browser (`expo start --web`).
 - **Website:** React + Vite, MUI, TanStack Query, i18next.
 - **Tooling:** Node 24 LTS (at least 24.18, pinned in `.nvmrc`), pnpm monorepo, Docker Compose, GitHub Actions. Prism 5.16 serves the mock API from `contracts/openapi.yaml` plus the drafts in `contracts/drafts/` (`pnpm mock`, through `contracts/mock.mjs`); it needs Node 24.18 or newer.
 - **Lint and tests:**
@@ -54,6 +54,7 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 ├── changelog.md                 every change, newest at the top (format in CLAUDE.md)
 ├── prompt_log.md                every prompt, newest at the top (format in CLAUDE.md)
 ├── README.md                    how to run, test and mock the system
+├── dev.sh                       one command to run the backend (Docker), the website and the patient app
 ├── package.json                 pnpm workspace root: lint, test, build, mock, db:migrate, db:seed scripts
 ├── .nvmrc                       Node version for everyone and CI (24 LTS)
 ├── pnpm-workspace.yaml          which folders are JS/TS workspaces; which deps may run install scripts
@@ -156,7 +157,7 @@ MinIO (result files) and monitoring (Uptime Kuma) have no folder: they are entri
 - **Gateway routes:**
   - `/auth` and `/auth/*` go to the auth service, with no auth check, so login works without a session.
   - Everything else goes to the core, after the `auth-check` forward-auth to `auth:3000/auth/check`.
-- **Middlewares on every route:** `strip-identity` (drops any `X-User-*` header the client sends), `rate-limit` (per IP) and `body-limit` (11 MB).
+- **Middlewares on every route:** `cors` (first; answers browser preflights and allows only the origins in `CORS_ORIGINS`, by default the patient app on Expo web at localhost:8081/8082), `strip-identity` (drops any `X-User-*` header the client sends), `rate-limit` (per IP) and `body-limit` (11 MB).
 - **Startup order:** the core doesn't wait for the AI service, because it has to work without it. `minio-init` creates the private results bucket once and exits.
 - **Images:** each image builds from the repo root with the service's own `Dockerfile`, so the auth and core images can use the pnpm workspace lockfile.
 

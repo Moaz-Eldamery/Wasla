@@ -1,3 +1,18 @@
+## 2026-11-17 19:55 +0200 · Moaz Mohamed
+Prompt: 2026-11-17 19:54 · Moaz Mohamed
+What: The patient app in a browser (expo start --web on localhost:8081) couldn't log in: it calls the gateway on another origin, and the gateway answered the CORS preflight with 404. Added a `cors` middleware to the gateway, first on both routes, that answers preflights and allows only the origins in CORS_ORIGINS (default localhost:8081 and 8082).
+Files: docker-compose.yml, .env.example, structure.md
+
+## 2026-11-17 19:35 +0200 · Moaz Mohamed
+Prompt: 2026-11-17 19:17 · Moaz Mohamed
+What: Fixed `./dev.sh`. The frontends now call the gateway on the GATEWAY_PORT set in .env (8080 can be taken by another program, which made logins hang), and it runs pnpm install once up front so the website and the app don't collide in parallel installs. Added react-native-web, react-dom and @expo/metro-runtime to the patient app so `./dev.sh --web` (expo start --web) runs it in the browser.
+Files: dev.sh, apps/patient-app/package.json, pnpm-lock.yaml, README.md, structure.md
+
+## 2026-11-17 18:42 +0200 · Moaz Mohamed
+Prompt: 2026-11-17 18:41 · Moaz Mohamed
+What: Added dev.sh, which runs the whole thing with one command: starts the Docker backend, seeds demo data if the database is empty, then runs the staff website and the patient app together (--web opens the app in the browser, --mock uses the mock API instead of Docker). Documented it in README.md and structure.md.
+Files: dev.sh, README.md, structure.md
+
 ## 2026-11-07 19:41 +0200 · Moaz Mohamed
 Prompt: 2026-11-07 19:41 · Moaz Mohamed
 What: Merged `main` into `dashboard-backend` before opening the pull request. Nour's patient-app UI commit rewrote `app.test.tsx`, which conflicted with the `email: null` fix; kept `main`'s tests and gave their four test users `email: null` again, which the staff-email change makes required. Patient app: lint clean, 16 tests pass.

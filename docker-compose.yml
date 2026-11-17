@@ -56,10 +56,18 @@ services:
       # be reachable without a session.
       - traefik.http.routers.auth.rule=Path(`/auth`) || PathPrefix(`/auth/`)
       - traefik.http.routers.auth.entrypoints=web
-      - traefik.http.routers.auth.middlewares=strip-identity,rate-limit,body-limit
+      - traefik.http.routers.auth.middlewares=cors,strip-identity,rate-limit,body-limit
       - traefik.http.services.auth.loadbalancer.server.port=3000
       # Middlewares shared by every route. They live here because the auth
       # service is always running when the gateway is.
+      #   cors: lets the patient app in a browser (expo start --web, another
+      #   origin) call the gateway. Answers the preflight itself, so it runs
+      #   first, before auth-check. Only the origins in CORS_ORIGINS.
+      - traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=${CORS_ORIGINS:-http://localhost:8081,http://localhost:8082}
+      - traefik.http.middlewares.cors.headers.accesscontrolallowmethods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+      - traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Authorization,Content-Type
+      - traefik.http.middlewares.cors.headers.accesscontrolmaxage=600
+      - traefik.http.middlewares.cors.headers.addvaryheader=true
       #   strip-identity: drops identity headers a client tries to send itself
       - traefik.http.middlewares.strip-identity.headers.customrequestheaders.X-User-Id=
       - traefik.http.middlewares.strip-identity.headers.customrequestheaders.X-User-Type=
@@ -101,7 +109,7 @@ services:
       - traefik.http.routers.core.rule=PathPrefix(`/`)
       - traefik.http.routers.core.priority=1
       - traefik.http.routers.core.entrypoints=web
-      - traefik.http.routers.core.middlewares=strip-identity,rate-limit,body-limit,auth-check
+      - traefik.http.routers.core.middlewares=cors,strip-identity,rate-limit,body-limit,auth-check
       - traefik.http.services.core.loadbalancer.server.port=3000
 
   ai:
