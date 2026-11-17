@@ -14,4 +14,20 @@ The patient mobile app (React Native + Expo, expo-router), in Arabic and English
 - `assets/`: app icons and splash image.
 - `app/_layout.tsx`: the root layout (a stack navigator) around every screen, re-rendering when the language changes.
 - `app/index.tsx`: redirects to `/(tabs)/book` when logged in or `/(auth)/login` when logged out.
+- `eas.json`: internal Android preview APK profile.
+
+## Android preview APK
+
+An internal APK profile is available with `eas.json`:
+
+```sh
+cd apps/patient-app
+EXPO_PUBLIC_API_URL=https://YOUR-REAL-DOMAIN/api eas build --platform android --profile preview
+```
+
+Sign in to an Expo account and initialize/link this app to its EAS project before
+building. Set `EXPO_PUBLIC_API_URL` to the deployed HTTPS gateway URL before the
+build; the repository does not contain a public server URL, so this profile does not
+claim to connect to a server. EAS Free includes a limited number of low-priority
+builds each month and does not charge overages on the Free plan.
 

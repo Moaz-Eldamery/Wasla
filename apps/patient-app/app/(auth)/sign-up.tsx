@@ -61,7 +61,7 @@ export default function SignUpScreen() {
 
   return (
     <ScrollView
-      contentContainerStyle={[styles.container, rtl ? styles.rtl : styles.ltr]}
+      contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
       <View style={[styles.topBar, rtl ? styles.rowReverse : styles.row]}>
@@ -152,12 +152,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#F4F7FB',
     justifyContent: 'center',
-  },
-  ltr: {
-    direction: 'ltr',
-  },
-  rtl: {
-    direction: 'rtl',
   },
   row: {
     flexDirection: 'row',

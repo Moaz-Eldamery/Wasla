@@ -588,4 +588,126 @@ Changes: 2026-11-04 15:00
 >
 > prompt_log is a file that shows all of the prompts written to the agent and links the prompt to the change log
 >
-> the claude.md file should inform the coding agent of what each of these md files do and makes sure that the agent edits these changes with every prompt
+> the claude.md file should inform the coding agent of what each of these md files do and makes sure that the agent edits these changes         with every prompt       
+## 2026-11-17 22:19 +02:00 · omaima-elshaib
+Changes: 2026-11-17 22:36
+
+> Investigate the   Wasla project in the    currently open workspa  ce.
+>
+> My goal    is to fix the Pati     ent App registration error and the React Native Web warning about the invalid "direction" style property.
+>
+> Please:
+> 1. Trace patient registration from the frontend to the backend and identify the actual cause of the failure.
+> 2. Check whether the required Docker services, especially Gateway and Auth, are running and correctly configured.
+> 3. Identify and fix invalid direction styles across the affected screens, using accessible RTL/LTR handling.
+> 4. Check API configuration without exposing or changing secrets.
+> 5. Run relevant checks and tests.
+>
+> You may modify only the files necessary for these fixes. Preserve my existing uncommitted changes. Do not delete files, reset Git, or run destructive Docker commands.
+>
+> Do not guess the root cause. Report your findings, changed files, and test results.
+            ## 2026-11-17 22:48     +02:00 · omaima-elshaib
+                                        Changes: 2026-11-17 23:00
+
+            > The Patient App registration is STILL failing in the browser with:
+> "Something went wrong. Please try again."
+> The previous simulated registration probe returned 201 Created, but the real registration from the UI still fails.
+> Please investigate the actual failed browser registration:
+> 1.
+> Inspect the frontend request and response, including HTTP status and safe error details.
+> Do not assume the simulated probe proves that real registration works.
+## 2026-11-17 23:02 +02:00 · omaima-elshaib
+Changes: 2026-11-17 23:03
+
+> Take ownership of completing the Wasla Patient App repair. I do not want to approve and review every small step individually.
+> You are authorized to:
+> 1.
+> Finish fixing the confirmed CORS preflight failure on POST /auth/register.
+> Important requirements:
+> •
+> Preserve all my existing uncommitted changes and work.
+> When finished, give me one concise final report with:
+> •
+> Root causes fixed.
+> Do not stop at investigation. Complete the fixes and launch the application.
+## 2026-11-17 23:15 +02:00 · omaima-elshaib
+Changes: none
+
+> Take ownership of completing the Now that the Patient App is running, I want to run the REST of the Wasla project.
+> Please inspect the monorepo and identify all runnable applications and required backend services, including:
+> •
+> Patient App
+> Start all existing applications and required services safely. Use available ports without stopping unrelated processes. Check each application's dependencies and environment configuration without exposing or changing secrets.
+> Preserve all existing uncommitted changes. Do not delete files, reset Git, remove Docker volumes, or run destructive commands.
+> Verify that each application starts successfully and report:
+> 1.
+> Application/service name
+> Keep the Patient App running at localhost:8081 if possible. Do not claim an application is running unless you verify it.
+## 2026-11-17 23:51 +02:00 · omaima-elshaib
+Changes: none
+
+> Take ownership of a complete, non-destructive health check of the Wasla monorepo before we push changes to GitHub.
+> IMPORTANT:
+> •
+> Do NOT create demo accounts or run database seed commands.
+> Tasks:
+> 1.
+> Verify that Patient App and Hospital Dashboard are running.
+> At the end, provide:
+> •
+> A clear PASS/FAIL report for each app and service.
+> Stop after the report. Do not commit or push anything.
+## 2026-11-17 23:55 +02:00 · omaima-elshaib
+Changes: none
+
+> Take ownership of a complete, non-destructive health check of the Wasla monorepo before we push changes to GitHub.
+> IMPORTANT:
+> •
+> Do NOT create demo accounts or run database seed commands.
+> Tasks:
+> 1.
+> Verify that Patient App and Hospital Dashboard are running.
+> At the end, provide:
+> •
+> A clear PASS/FAIL report for each app and service.
+> Stop after the report. Do not commit or push anything.
+## 2026-11-18 00:00 +02:00 · omaima-elshaib
+Changes: 2026-11-18 00:01
+
+> Fix only the two issues identified in the latest Wasla health report.
+> 1.
+> Hospital Dashboard production build:
+> •
+> Inspect the failing test fixture.
+> Then:
+> •
+> Run the affected tests.
+> Safety:
+> •
+> Do not create demo accounts or run seed commands.
+## 2026-11-18 00:02 +02:00 · omaima-elshaib
+Changes: none
+
+> Fix only the two issues identified in the latest Wasla health report.
+> 1.
+> Hospital Dashboard production build:
+> •
+> Inspect the failing test fixture.
+> Then:
+> •
+> Run the affected tests.
+> Safety:
+> •
+> Do not create demo accounts or run seed commands.
+## 2026-11-18 00:07 +02:00 · omaima-elshaib
+Changes: none
+
+> The Hospital Dashboard build issue is fixed. Now verify the second issue only:
+> 1.
+> Check whether the Patient App generated API types are still out of date.
+> Do not modify unrelated files. Do not create demo accounts, run seed commands, reset databases, delete files, commit, or push. Preserve all existing changes.
+## 2026-11-18 00:23 +02:00 · omaima-elshaib
+Changes: 2026-11-18 00:23
+
+> Commit and push all pending Wasla project changes to the existing private GitHub repository on the current main branch. Exclude only the root .env file and actual secrets. Include all source code, configuration, Docker, deployment, documentation, and test files. Preserve every existing change. Do not reset, discard, or undo anything. Do not bypass secret protection. Report the commit hash and push result.
+> Specify how to handle untracked files

@@ -176,7 +176,6 @@ export default function VisitScreen() {
       contentContainerStyle={[
         styles.container,
         { paddingTop: insets.top + 16 },
-        rtl ? styles.rtl : styles.ltr,
       ]}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => void loadVisits(selectedId, true)} />
@@ -278,8 +277,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     backgroundColor: '#F4F7FB',
   },
-  ltr: { direction: 'ltr' },
-  rtl: { direction: 'rtl' },
   textRtl: {
     textAlign: 'right',
     writingDirection: 'rtl',

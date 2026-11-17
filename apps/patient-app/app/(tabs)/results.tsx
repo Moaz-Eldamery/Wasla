@@ -211,7 +211,6 @@ export default function ResultsScreen() {
       contentContainerStyle={[
         styles.container,
         { paddingTop: insets.top + 16 },
-        rtl ? styles.rtl : styles.ltr,
       ]}
       refreshControl={
         <RefreshControl
@@ -459,12 +458,6 @@ const styles = StyleSheet.create({
     color: '#0B5CAB',
     fontSize: 14,
     fontWeight: '600',
-  },
-  ltr: {
-    direction: 'ltr',
-  },
-  rtl: {
-    direction: 'rtl',
   },
   row: {
     flexDirection: 'row',

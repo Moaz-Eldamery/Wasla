@@ -113,7 +113,7 @@ export function Dropdown({
           onPress={() => setOpen(false)}
         />
         <View
-          style={[styles.sheet, { paddingBottom: insets.bottom + 12 }, rtl ? styles.rtl : styles.ltr]}
+          style={[styles.sheet, { paddingBottom: insets.bottom + 12 }]}
           testID={`${testID}-sheet`}
         >
           <View style={[styles.sheetHeader, rtl ? styles.rowReverse : styles.row]}>
@@ -169,8 +169,6 @@ const styles = StyleSheet.create({
     color: '#334155',
     marginBottom: 6,
   },
-  ltr: { direction: 'ltr' },
-  rtl: { direction: 'rtl' },
   row: { flexDirection: 'row' },
   rowReverse: { flexDirection: 'row-reverse' },
   textRtl: {

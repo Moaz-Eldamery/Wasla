@@ -84,3 +84,7 @@ The hospital admin's section of the staff website (KAN-20): statistics, the AI a
   - a backwards range
   - loading older entries
 - `ConfirmDialog.tsx`: the "are you sure" dialog for deactivating, reactivating and removing. It stays open with the server's reason if the change is refused.
+
+The KAN-6 worktree also contains an additional assistant screen at `/admin-chatbot`
+that calls the same Core chatbot endpoint. The primary admin assistant is
+`ChatPage.tsx` at `/admin/assistant`.

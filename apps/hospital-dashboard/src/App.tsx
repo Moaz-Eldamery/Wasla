@@ -17,6 +17,7 @@ import { StatisticsPage } from './pages/admin/StatisticsPage.tsx'
 import { LabPage } from './pages/lab/LabPage.tsx'
 import { DoctorPage } from './pages/physician/DoctorPage.tsx'
 import { TodayPage } from './pages/receptionist/TodayPage.tsx'
+import { AdminPage } from './pages/admin/AdminPage.tsx'
 import { homePathFor } from './roles.ts'
 import { useSession } from './session.tsx'
 
@@ -107,6 +108,14 @@ export default function App() {
         <Route path="audit" element={<AuditPage />} />
         <Route path="*" element={<Navigate to="statistics" replace />} />
       </Route>
+      <Route
+        path="/admin-chatbot"
+        element={
+          <RequireRole role="ADMIN">
+            <AdminPage />
+          </RequireRole>
+        }
+      />
       <Route
         path="/"
         element={

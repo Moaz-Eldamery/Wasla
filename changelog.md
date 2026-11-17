@@ -430,3 +430,23 @@ Files: CLAUDE.md, prompt_log.md, changelog.md
 Prompt: 2026-11-04 15:00 · NourElghaly
 What: Added the agent workflow. CLAUDE.md explains the five project files and the update loop the agent follows on every prompt. Created starter versions of business.md (rules taken from the agreed backlog), schema.md (empty, no tables yet), structure.md, changelog.md and prompt_log.md.
 Files: CLAUDE.md, business.md, schema.md, structure.md, changelog.md, prompt_log.md
+## 2026-11-17 22:36 +02:00 · omaima-elshaib
+Prompt: 2026-11-17 22:19 +02:00 · omaima-elshaib
+What: Removed React Native Web-incompatible `direction` style properties from Patient App auth, booking, visit, results, assistant and dropdown screens while preserving row reversal and Arabic text alignment. Verified the live registration route after starting the stopped Gateway and Auth services.
+Files: apps/patient-app/app/(auth)/login.tsx, apps/patient-app/app/(auth)/sign-up.tsx, apps/patient-app/app/(auth)/verify-code.tsx, apps/patient-app/app/(tabs)/assistant.tsx, apps/patient-app/app/(tabs)/book.tsx, apps/patient-app/app/(tabs)/results.tsx, apps/patient-app/app/(tabs)/visit.tsx, apps/patient-app/components/Dropdown.tsx
+## 2026-11-17 23:00 +02:00 · omaima-elshaib
+Prompt: 2026-11-17 22:48 +02:00 · omaima-elshaib
+What: Fixed browser registration by enabling configurable CORS in the Auth service. The prior `OPTIONS /auth/register` preflight returned 404; Auth now accepts the Patient App web origin and returns 204 with the allowed headers. A real browser submission returned 201 and reached the verification screen.
+Files: services/auth/src/main.ts, docker-compose.yml, .env.example
+## 2026-11-17 23:03 +02:00 · omaima-elshaib
+Prompt: 2026-11-17 23:02 +02:00 · omaima-elshaib
+What: Completed the ownership pass by confirming the live CORS preflight, successful browser registration flow, running web launch, and passing Patient App/Auth tests.
+Files: prompt_log.md
+## 2026-11-18 00:01 +02:00 · omaima-elshaib
+Prompt: 2026-11-18 00:00 +02:00 · omaima-elshaib
+What: Fixed the two pre-push health issues: refreshed the Patient App generated API types and added the missing `email` field to the Hospital Dashboard admin test user fixture. The dashboard production build and affected dashboard tests pass, and the Patient App lint/type-generated-types check passes.
+Files: apps/patient-app/lib/api-types.ts, apps/hospital-dashboard/src/pages/admin/AdminPage.test.tsx
+## 2026-11-18 00:23 +02:00 · omaima-elshaib
+Prompt: 2026-11-18 00:23 +02:00 · omaima-elshaib
+What: Committing the pending Wasla source, configuration, Docker, deployment, documentation, test, and repair changes to the private GitHub repository while preserving the root .env and other ignored build artifacts locally.
+Files: all pending source, configuration, Docker, deployment, documentation, test, and project-log changes

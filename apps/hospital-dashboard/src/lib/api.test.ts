@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fakeGateway } from '../test-fixtures.ts'
-import { ApiError, checkIn, listClinicAppointments, login, session, setUnauthenticatedHandler } from './api.ts'
+import { ApiError, askChatbot, checkIn, listClinicAppointments, login, session, setUnauthenticatedHandler } from './api.ts'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -17,6 +17,27 @@ describe('api client', () => {
     expect(calls[0].path).toBe('/clinics/c1/appointments')
     expect((fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0]).toBe('/api/clinics/c1/appointments?date=2026-11-06')
     expect(new Headers(calls[0].init.headers).get('Authorization')).toBe('Bearer tok-123')
+  })
+
+  it('posts admin chatbot questions to the Core contract with the session token', async () => {
+    const calls = fakeGateway({
+      'POST /admin/chatbot/messages': () => ({
+        body: {
+          status: 'NO_INFORMATION',
+          answer: "I don't have that information",
+          language: 'en',
+          sources: [],
+        },
+      }),
+    })
+    session.token = 'admin-token'
+
+    const response = await askChatbot('Where is the main reception?')
+
+    expect(response.status).toBe('NO_INFORMATION')
+    expect(calls[0].path).toBe('/admin/chatbot/messages')
+    expect(JSON.parse(String(calls[0].init.body))).toEqual({ question: 'Where is the main reception?' })
+    expect(new Headers(calls[0].init.headers).get('Authorization')).toBe('Bearer admin-token')
   })
 
   it('does not send the token to the public login endpoint', async () => {

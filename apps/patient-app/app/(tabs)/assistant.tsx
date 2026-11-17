@@ -16,7 +16,7 @@ export default function AssistantScreen() {
   const rtl = isRtlLanguage(getAppLanguage());
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top + 16 }, rtl ? styles.rtl : styles.ltr]}>
+    <View style={[styles.screen, { paddingTop: insets.top + 16 }]}>
       <View style={styles.padded}>
         <ScreenHeader title={t('assistant.screenTitle')} />
 
@@ -82,8 +82,6 @@ const styles = StyleSheet.create({
   padded: {
     paddingHorizontal: 16,
   },
-  ltr: { direction: 'ltr' },
-  rtl: { direction: 'rtl' },
   row: { flexDirection: 'row' },
   rowReverse: { flexDirection: 'row-reverse' },
   textRtl: {

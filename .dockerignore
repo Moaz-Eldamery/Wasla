@@ -1,14 +1,16 @@
-# Every image builds from the repo root. Keep the context small and free of secrets.
 .git
 .github
-**/node_modules
-**/dist
-# Generated Prisma clients are rebuilt inside the image by pnpm install.
-**/src/generated
-**/.venv
-**/__pycache__
-**/*.pyc
 .env
 .env.*
 !.env.example
-apps
+node_modules
+**/node_modules
+**/.venv
+**/venv
+**/dist
+**/build
+**/coverage
+**/.expo
+**/__pycache__
+**/*.py[cod]
+*.log

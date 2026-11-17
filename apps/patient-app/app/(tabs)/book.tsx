@@ -198,7 +198,6 @@ export default function BookScreen() {
       contentContainerStyle={[
         styles.container,
         { paddingTop: insets.top + 16 },
-        rtl ? styles.rtl : styles.ltr,
       ]}
       keyboardShouldPersistTaps="handled"
     >
@@ -333,8 +332,6 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     backgroundColor: '#F4F7FB',
   },
-  ltr: { direction: 'ltr' },
-  rtl: { direction: 'rtl' },
   textRtl: {
     textAlign: 'right',
     writingDirection: 'rtl',

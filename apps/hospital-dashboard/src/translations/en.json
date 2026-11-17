@@ -93,6 +93,7 @@
     "INVALID_CREDENTIALS": "That email and password don't match an active staff account.",
     "PHONE_NOT_VERIFIED": "This phone number hasn't been verified yet.",
     "INVALID_TRANSITION": "That step isn't possible any more. The list has been refreshed.",
+    "AI_UNAVAILABLE": "The assistant is temporarily unavailable. Try again shortly.",
     "INTERNAL": "Something went wrong on our side. Try again in a moment.",
     "NETWORK": "The server can't be reached. Check the connection and try again.",
     "FILE_TOO_LARGE": "The file is over 10 MB. Choose a smaller file.",
@@ -100,6 +101,19 @@
     "AI_UNAVAILABLE": "The assistant is unavailable right now. Everything else in Wasla keeps working; try again in a few minutes.",
     "PHONE_TAKEN": "This phone number already has an account.",
     "EMAIL_TAKEN": "This work email already has an account."
+  },
+  "adminChatbot": {
+    "title": "Hospital information assistant",
+    "intro": "Ask about departments, locations, opening hours, booking rules, and visiting information.",
+    "privacy": "Use this assistant for general hospital information. Do not include patient details.",
+    "question": "Your question",
+    "placeholder": "For example: When is reception open?",
+    "send": "Ask",
+    "sending": "Searching the knowledge base…",
+    "empty": "Ask a question to get an answer from hospital information.",
+    "answer": "Answer",
+    "sources": "Sources",
+    "characterCount": "{{count}} / 1000"
   },
   "doctor": {
     "title": "My patients today",
