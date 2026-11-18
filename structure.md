@@ -50,7 +50,10 @@ All folders below exist. Files marked **planned** don't exist yet; the card in b
 ├── business.md                  business logic and rules
 ├── schema.md                    databases, schemas, tables
 ├── structure.md                 this file
-├── PRODUCT.md                   who uses Wasla, what it must do, brand and design principles (read before UI work)
+├── PRODUCT.md                   who uses Wasla, what it must do, brand and design principles
+├── SPRINT-1-TEST-PLAN.md        formal Sprint 1 test design (KAN-64)
+├── SPRINT-1-TEST-REPORT.md      Sprint 1 acceptance evidence (KAN-64)
+├── SPRINT-1-RETROSPECTIVE.md    Sprint 1 retrospective and risk update (KAN-65) (read before UI work)
 ├── changelog.md                 every change, newest at the top (format in CLAUDE.md)
 ├── prompt_log.md                every prompt, newest at the top (format in CLAUDE.md)
 ├── README.md                    how to run, test and mock the system

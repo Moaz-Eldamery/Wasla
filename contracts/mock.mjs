@@ -15,6 +15,7 @@ const contract = parse(readFileSync(join(here, 'openapi.yaml'), 'utf8'))
 // Prism would otherwise invent a user, usually a receptionist.
 const demoStaff = { id: '6f1c2a10-1d1e-4c3a-9a51-0a0000000001', type: 'STAFF', name: 'Demo Admin', phone: null, email: 'admin@wasla.test', roles: ['ADMIN', 'RECEPTIONIST', 'DOCTOR', 'LAB'] }
 contract.paths['/auth/login'].post.responses['200'].content['application/json'].example = { token: 'mock-session', expiresAt: '2099-01-01T00:00:00Z', user: demoStaff }
+contract.paths['/auth/staff/login'].post.responses['200'].content['application/json'].example = { token: 'mock-session', expiresAt: '2099-01-01T00:00:00Z', user: demoStaff }
 contract.paths['/auth/me'].get.responses['200'].content['application/json'].example = demoStaff
 
 const draftsDir = join(here, 'drafts')

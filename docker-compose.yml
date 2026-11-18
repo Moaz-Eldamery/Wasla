@@ -83,6 +83,7 @@ services:
     environment:
       PORT: "3000"
       DATABASE_URL: postgresql://wasla_core:${CORE_DB_PASSWORD:?}@postgres:5432/wasla_clinical?schema=core
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8081}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:?}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:?}
@@ -104,6 +105,13 @@ services:
       - traefik.http.routers.core.entrypoints=web
       - traefik.http.routers.core.middlewares=strip-identity,rate-limit,body-limit,auth-check
       - traefik.http.services.core.loadbalancer.server.port=3000
+      # Browser preflights must reach CORS handling without a session. This route
+      # has no forward-auth middleware and has priority over the protected route.
+      - traefik.http.routers.core-options.rule=Method(`OPTIONS`) && PathPrefix(`/`)
+      - traefik.http.routers.core-options.priority=110
+      - traefik.http.routers.core-options.entrypoints=web
+      - traefik.http.routers.core-options.middlewares=strip-identity,rate-limit,body-limit
+      - traefik.http.routers.core-options.service=core
 
   ai:
     build:

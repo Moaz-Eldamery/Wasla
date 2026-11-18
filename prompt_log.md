@@ -1,3 +1,108 @@
+## 2026-11-18 02:26 +0200 · omaima-elshaib
+Changes: 2026-11-18 02:26 +0200
+
+> Finish the Wasla repository in one final operation.
+> FIRST, clean up unnecessary files that YOU created during this stabilization session and that are not needed for coding, running the application, or tomorrow's demo.
+> Delete only these files if they were created by your stabilization work:
+> •
+> SDS.md
+> Also remove only the references to these deleted files from structure.md and remove only the related stabilization documentation entries from changelog.md.
+> Keep:
+> •
+> All actual source-code changes and verified runtime fixes.
+> Do NOT delete or modify any source code or existing working functionality.
+> Do NOT delete unrelated files or user changes.
+> Do NOT use Jira or MCP.
+> Do NOT reset, clean, stash, or revert the repository.
+> Do NOT run tests again.
+> Do NOT make any additional code changes.
+> THEN:
+> 1.
+> Review git status.
+> If authentication requires my interaction, stop and tell me exactly what I need to do.
+> Do everything in this single operation and report only the final result: files deleted, commit hash, push status, and whether the working tree is clean.
+
+## 2026-11-18 02:20 +0200 · omaima-elshaib
+Changes: 2026-11-18 02:20 +0200
+
+> Based on your completed read-only review, now perform a minimal cleanup of ONLY the unnecessary documentation changes you created during this stabilization session.
+> Remove only these newly created files if they were created by this session and are not required for the demo:
+> •
+> SRS.md
+> Also inspect structure.md, changelog.md, and prompt_log.md. Remove or adjust ONLY the entries that refer specifically to the documentation files being removed or unnecessary work from this stabilization session. Preserve all pre-existing content and unrelated user edits.
+> KEEP the verified runtime fixes:
+> •
+> contracts/mock.mjs
+> Do NOT modify or revert anything that was already committed, including:
+> •
+> services/auth/src/main.ts
+> STRICT SAFETY RULES:
+> •
+> No Jira or MCP.
+> After cleanup:
+> 1.
+> Run git status.
+
+## 2026-11-18 02:15 +0200 · omaima-elshaib
+Changes: 2026-11-18 02:15 +0200
+
+> Review ALL edits you made during this stabilization session, across all 14 changed files.
+> Do not make any further edits yet.
+> I want you to inspect every changed file and compare your changes against the original code and the actual project requirements and existing Sprint 1 scope.
+> For EACH changed file:
+> 1.
+> Identify exactly what you changed.
+> Important constraints:
+> •
+> Do NOT use Jira or MCP.
+> At the end, provide a concise, accessible summary listing all 14 files, their classifications, and the exact changes that should be retained for tomorrow's demo versus changes that should not be retained.
+> Wait for my approval before making any changes.
+
+## 2026-11-18 02:08 +0200 · omaima-elshaib
+Changes: none
+
+> Forget Jira completely. Do not use Jira or MCP for this task.
+> I need you to finish stabilizing the existing Wasla project for tomorrow's demo. I am tired and need you to work autonomously.
+> Your task is ONLY to:
+> •
+> Inspect the existing project files, code, configuration, and current implementation.
+> STRICT RULES:
+> •
+> Do NOT access Jira.
+> Focus on making the existing project stable and ready to run for tomorrow's demo.
+> Work autonomously. Do not stop at an audit or plan. Fix verified existing problems, run tests, and verify the application.
+> If a change is uncertain or would require inventing behavior, leave it unchanged.
+> At the end, give me only a concise summary:
+> 1.
+> What existing problems you fixed.
+> I need to sleep, so avoid unnecessary questions and do not ask me to make decisions unless absolutely unavoidable.
+
+## 2026-11-18 01:59 +0200 · Moaz Mohamed
+Changes: 2026-11-18 02:02
+
+> STOP making assumptions about Sprint 1 scope.
+> Important corrections:
+> 1.
+> Use ONLY the actual Jira issue descriptions, acceptance criteria, and explicitly documented Sprint 1 requirements as the source of truth.
+> For the changes you have already made:
+> •
+> Review every modified file against an explicit Sprint 1 requirement.
+> From now on, make only changes directly supported by explicit Sprint 1 requirements. If evidence is missing or ambiguous, stop and ask instead of assuming.
+> Report each proposed change with its Jira issue key and exact acceptance criterion before applying it.
+
+## 2026-11-18 01:53 +0200 · Moaz Mohamed
+Changes: 2026-11-18 01:57
+
+> Work autonomously on the Wasla project and complete Sprint 1 so it is ready for tomorrow's demo.
+> Use Atlassian Rovo MCP to read the actual Jira Sprint 1 issues and acceptance criteria. Compare them with the repository and identify all missing Sprint 1 work.
+> YOUR TASK:
+> 1.
+> Implement every genuinely missing feature belonging to Sprint 1.
+> STRICT SCOPE PROTECTION:
+> • Jira Sprint 1 issues and acceptance criteria define the scope.
+> Do not stop after producing an audit or a plan. Carry out the missing Sprint 1 implementation and demo-data preparation, then verify it.
+> If Jira access fails, do not guess which features belong to Sprint 1. Report the blocker and stop scope-dependent changes.
+
 ## 2026-11-07 19:41 +0200 · Moaz Mohamed
 Changes: 2026-11-07 19:41
 
@@ -711,3 +816,119 @@ Changes: 2026-11-18 00:23
 
 > Commit and push all pending Wasla project changes to the existing private GitHub repository on the current main branch. Exclude only the root .env file and actual secrets. Include all source code, configuration, Docker, deployment, documentation, and test files. Preserve every existing change. Do not reset, discard, or undo anything. Do not bypass secret protection. Report the commit hash and push result.
 > Specify how to handle untracked files
+## 2026-11-18 00:59 +02:00 · omaima-elshaib
+Changes: 2026-11-18 01:16
+
+> bTake full ownership of completing and stabilizing the entire Wasla project in the current workspace. I want the WHOLE project working, not just an audit or a repair plan.
+> You are authorized to perform all necessary safe development tasks without asking me to approve every small step.
+> MAIN OBJECTIVE:
+> Make every Wasla component work together end-to-end on my local machine.
+> 1.
+> Inspect the entire repository, project instructions, architecture, Git status, existing changes, and current running services.
+> IMPORTANT SAFETY AND PRESERVATION RULES:
+> •
+> Preserve all existing project work and the successful GitHub commit.
+> FINAL ACCEPTANCE:
+> The project is complete only when all required services are running, both applications build successfully, tests pass, and the main end-to-end workflows are verified.
+> At the end, provide one concise report containing:
+> •
+> Every issue fixed.
+> Do not give me a plan and stop. Execute the work until the entire project is working as completely as possible.
+## 2026-11-18 01:22 +02:00 · omaima-elshaib
+Changes: 2026-11-18 01:23
+
+> Continue from the current state. Do not discard or undo any changes.
+> Finish the Wasla project acceptance checks in this same run.
+> 1.
+> Resolve the remaining Prism mock POST instability, or clearly document it if it is only a tooling limitation.
+> Do not stop at a partial result. Continue until all feasible checks are complete. At the end, give me a clear report of what works, what does not, test results, running services, and whether the changes were pushed.
+## 2026-11-18 01:31 +02:00 · omaima-elshaib
+Changes: 2026-11-18 01:35
+
+> You are responsible for completing the current Wasla Sprint 1 work end to end. Work autonomously in this single session. Do not repeatedly ask me for instructions or confirmation for routine development decisions.
+> IMPORTANT CONTEXT:
+> Some Wasla features are intentionally deferred to the next sprint / Milestone 3. They are planned future work, NOT bugs, missing requirements, or incomplete Sprint 1 tasks.
+> PHASE 1 — REVIEW JIRA AND PROJECT SCOPE
+> 1.
+> Connect to our actual Jira project using the available Atlassian MCP integration.
+> PHASE 2 — DEFINE THE SCOPE
+> Classify every relevant feature and issue into:
+> •
+> Sprint 1: completed.
+> Do not move issues between sprints.
+> Do not change Jira statuses, priorities, assignments, or acceptance criteria.
+> Do not implement any deferred feature.
+> PHASE 3 — COMPLETE SPRINT 1
+> After establishing the scope, continue autonomously:
+> 1.
+> Review all existing local changes and the 8 Suggested Edits. Preserve valid work.
+> PHASE 4 — TESTING AND VERIFICATION
+> Run the relevant checks:
+> •
+> Lint
+> Verify each Sprint 1 feature against its Jira acceptance criteria.
+> Clearly distinguish passed, failed, skipped, and blocked tests. Never report skipped tests as passed.
+> Do not require next-sprint functionality to pass Sprint 1 acceptance.
+> PHASE 5 — FINAL GIT REVIEW
+> 1.
+> Review the complete diff.
+> PHASE 6 — FINAL REPORT
+> Give me one complete, clear report containing:
+> A. Jira Sprint 1 issues and their final status.
+> B. Completed Sprint 1 features.
+> C. Remaining Sprint 1 work, if any.
+> D. Features intentionally deferred to the next sprint, with their Jira issue keys.
+> E. Tests passed, failed, skipped, and blocked.
+> F. Build results.
+> G. Running services and local URLs.
+> H. Files changed.
+> I. Commit hash and push status.
+> J. Any blockers that genuinely require my intervention.
+> IMPORTANT FINAL RULES:
+> •
+> Work in one continuous run and complete all feasible Sprint 1 work.
+## 2026-11-18 01:37 +02:00 · omaima-elshaib
+Changes: none
+
+> You are responsible for completing the current Wasla Sprint 1 work end to end. Work autonomously in this single session. Do not repeatedly ask me for instructions or confirmation for routine development decisions.
+> IMPORTANT CONTEXT:
+> Some Wasla features are intentionally deferred to the next sprint / Milestone 3. They are planned future work, NOT bugs, missing requirements, or incomplete Sprint 1 tasks.
+> PHASE 1 — REVIEW JIRA AND PROJECT SCOPE
+> 1.
+> Connect to our actual Jira project using the available Atlassian MCP integration.
+> PHASE 2 — DEFINE THE SCOPE
+> Classify every relevant feature and issue into:
+> •
+> Sprint 1: completed.
+> Do not move issues between sprints.
+> Do not change Jira statuses, priorities, assignments, or acceptance criteria.
+> Do not implement any deferred feature.
+> PHASE 3 — COMPLETE SPRINT 1
+> After establishing the scope, continue autonomously:
+> 1.
+> Review all existing local changes and the 8 Suggested Edits. Preserve valid work.
+> PHASE 4 — TESTING AND VERIFICATION
+> Run the relevant checks:
+> •
+> Lint
+> Verify each Sprint 1 feature against its Jira acceptance criteria.
+> Clearly distinguish passed, failed, skipped, and blocked tests. Never report skipped tests as passed.
+> Do not require next-sprint functionality to pass Sprint 1 acceptance.
+> PHASE 5 — FINAL GIT REVIEW
+> 1.
+> Review the complete diff.
+> PHASE 6 — FINAL REPORT
+> Give me one complete, clear report containing:
+> A. Jira Sprint 1 issues and their final status.
+> B. Completed Sprint 1 features.
+> C. Remaining Sprint 1 work, if any.
+> D. Features intentionally deferred to the next sprint, with their Jira issue keys.
+> E. Tests passed, failed, skipped, and blocked.
+> F. Build results.
+> G. Running services and local URLs.
+> H. Files changed.
+> I. Commit hash and push status.
+> J. Any blockers that genuinely require my intervention.
+> IMPORTANT FINAL RULES:
+> •
+> Work in one continuous run and complete all feasible Sprint 1 work.

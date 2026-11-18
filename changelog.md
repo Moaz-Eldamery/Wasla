@@ -1,3 +1,18 @@
+## 2026-11-18 02:26 +0200 · omaima-elshaib
+Prompt: 2026-11-18 02:26 +0200 · omaima-elshaib
+What: Removed the unnecessary stabilization-session SDS document and its direct structure/history references while preserving source code and runtime fixes.
+Files: SDS.md, structure.md, changelog.md, prompt_log.md
+
+## 2026-11-18 02:20 +0200 · omaima-elshaib
+Prompt: 2026-11-18 02:20 +0200 · omaima-elshaib
+What: Removed the unnecessary stabilization-session SRS document and its direct structure/history references while preserving the remaining documentation and runtime fixes.
+Files: SRS.md, structure.md, changelog.md, prompt_log.md
+
+## 2026-11-18 01:57 +0200 · Moaz Mohamed
+Prompt: 2026-11-18 01:53 · Moaz Mohamed
+What: Read the actual Wasla Jira scope through Atlassian Rovo. Sprint 1 functional issues KAN-4 through KAN-22 are Done; KAN-6 and KAN-23 are Backlog and remain deferred. Added the formal test plan/report and Sprint 1 retrospective documents, then verified lint, unit tests, builds, AI checks, local services, and recorded database E2E skips honestly.
+Files: SPRINT-1-TEST-PLAN.md, SPRINT-1-TEST-REPORT.md, SPRINT-1-RETROSPECTIVE.md, structure.md, changelog.md, prompt_log.md
+
 ## 2026-11-07 19:41 +0200 · Moaz Mohamed
 Prompt: 2026-11-07 19:41 · Moaz Mohamed
 What: Merged `main` into `dashboard-backend` before opening the pull request. Nour's patient-app UI commit rewrote `app.test.tsx`, which conflicted with the `email: null` fix; kept `main`'s tests and gave their four test users `email: null` again, which the staff-email change makes required. Patient app: lint clean, 16 tests pass.
@@ -450,3 +465,19 @@ Files: apps/patient-app/lib/api-types.ts, apps/hospital-dashboard/src/pages/admi
 Prompt: 2026-11-18 00:23 +02:00 · omaima-elshaib
 What: Committing the pending Wasla source, configuration, Docker, deployment, documentation, test, and repair changes to the private GitHub repository while preserving the root .env and other ignored build artifacts locally.
 Files: all pending source, configuration, Docker, deployment, documentation, test, and project-log changes
+## 2026-11-18 01:16 +02:00 · omaima-elshaib
+Prompt: 2026-11-18 00:59 +02:00 · omaima-elshaib
+What: Stabilized end-to-end local operation by refreshing the dashboard contract types, enabling Core CORS for Patient App protected requests, bypassing forward-auth for Traefik Core OPTIONS preflights, fixing the mock staff-login response to return a staff identity, and starting Uptime Kuma.
+Files: apps/hospital-dashboard/src/lib/api-types.ts, contracts/mock.mjs, docker-compose.yml, services/core/src/main.ts
+## 2026-11-18 01:23 +02:00 · omaima-elshaib
+Prompt: 2026-11-18 01:22 +02:00 · omaima-elshaib
+What: Completed the final acceptance pass: verified Prism staff POST stability through Node and PowerShell, retained all prior runtime fixes, and confirmed the new stabilization changes remain distinct from the previously pushed commit.
+Files: prompt_log.md, changelog.md
+## 2026-11-18 01:35 +02:00 · omaima-elshaib
+Prompt: 2026-11-18 01:31 +02:00 · omaima-elshaib
+What: Completed the Sprint 1 acceptance pass with a full lint/unit/build run, Core-to-AI integration verification, Docker health checks, and browser workflow checks. Stabilized Core browser CORS and corrected the mock staff-login identity. Jira status verification was blocked because no Atlassian/Jira MCP was available; no Jira statuses were changed.
+Files: apps/hospital-dashboard/src/lib/api-types.ts, contracts/mock.mjs, docker-compose.yml, prompt_log.md, changelog.md, services/core/src/main.ts
+## 2026-11-18 02:02 +0200 · Moaz Mohamed
+Prompt: 2026-11-18 01:59 · Moaz Mohamed
+What: Reviewed current modifications against exact Jira acceptance criteria. Retained the previously authorized CORS changes as non-Sprint bug fixes, and corrected the KAN-65 SRS and SDS documents with the required change log, Jira board link, schema, API contract references, class diagram, and booking/check-in/result-release sequence diagrams.
+Files: changelog.md, prompt_log.md
